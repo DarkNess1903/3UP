@@ -1,0 +1,185 @@
+<?php
+session_start();
+include '../connectDB.php';
+include 'topnavbar.php';
+
+// ตรวจสอบการเข้าสู่ระบบ
+if (!isset($_SESSION['customer_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$customer_id = $_SESSION['customer_id'];
+$cart_id = $_POST['cart_id'] ?? null;
+
+if (!$cart_id) {
+    die("ไม่พบ Cart ID");
+}
+
+// ตรวจสอบว่ามีข้อมูลในตะกร้าหรือไม่
+$cart_query = "SELECT * FROM cart WHERE cart_id = ? AND customer_id = ?";
+$stmt = mysqli_prepare($conn, $cart_query);
+mysqli_stmt_bind_param($stmt, 'ii', $cart_id, $customer_id);
+mysqli_stmt_execute($stmt);
+$cart_result = mysqli_stmt_get_result($stmt);
+
+if (!$cart_result || mysqli_num_rows($cart_result) == 0) {
+    die("ไม่พบตะกร้า");
+}
+
+// ดึงข้อมูลตะกร้า
+$items_query = "SELECT ci.cart_item_id, p.product_id, p.name, p.image, ci.quantity, ci.price, (ci.quantity * ci.price) AS total
+                FROM cart_items ci
+                JOIN product p ON ci.product_id = p.product_id
+                WHERE ci.cart_id = ?";
+$stmt = mysqli_prepare($conn, $items_query);
+mysqli_stmt_bind_param($stmt, 'i', $cart_id);
+mysqli_stmt_execute($stmt);
+$items_result = mysqli_stmt_get_result($stmt);
+
+if (!$items_result) {
+    die("เกิดข้อผิดพลาดในการดึงข้อมูล: " . mysqli_error($conn));
+}
+
+// คำนวณยอดรวม
+$grand_total = 0;
+while ($item = mysqli_fetch_assoc($items_result)) {
+    $grand_total += $item['total'];
+}
+
+// รีเซ็ตตัวชี้ผลลัพธ์เพื่อดึงข้อมูลสินค้าซ้ำ
+mysqli_data_seek($items_result, 0);
+
+// การแทรกข้อมูลการสั่งซื้อและอัพเดตสต็อก
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
+    // ประมวลผลใบเสร็จการชำระเงิน
+    $payment_slip = $_FILES['payment_slip'];
+    $upload_dir = __DIR__ . '/../Admin/uploads/';
+    $upload_file = $upload_dir . basename($payment_slip['name']);
+
+    if (move_uploaded_file($payment_slip['tmp_name'], $upload_file)) {
+        // แทรกคำสั่งซื้อใหม่ลงในตาราง orders
+        $order_query = "INSERT INTO orders (customer_id, total_amount, payment_slip, order_date) VALUES (?, ?, ?, NOW())";
+        $stmt = mysqli_prepare($conn, $order_query);
+        mysqli_stmt_bind_param($stmt, 'ids', $customer_id, $grand_total, $upload_file);
+        if (!mysqli_stmt_execute($stmt)) {
+            die("ข้อผิดพลาดในการแทรกคำสั่งซื้อ: " . mysqli_error($conn));
+        }
+
+        $order_id = mysqli_insert_id($conn);
+
+        // แทรกข้อมูลการสั่งซื้อและอัพเดตสต็อก
+        $items_query = "SELECT product_id, quantity, price FROM cart_items WHERE cart_id = ?";
+        $stmt = mysqli_prepare($conn, $items_query);
+        mysqli_stmt_bind_param($stmt, 'i', $cart_id);
+        mysqli_stmt_execute($stmt);
+        $items_result = mysqli_stmt_get_result($stmt);
+
+        while ($item = mysqli_fetch_assoc($items_result)) {
+            $product_id = $item['product_id'];
+            $quantity = $item['quantity'];
+
+            // แทรกข้อมูลลงใน orderdetails
+            $orderdetails_query = "INSERT INTO orderdetails (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
+            $stmt = mysqli_prepare($conn, $orderdetails_query);
+            mysqli_stmt_bind_param($stmt, 'iiid', $order_id, $product_id, $quantity, $item['price']);
+            if (!mysqli_stmt_execute($stmt)) {
+                die("ข้อผิดพลาดในการแทรกข้อมูลการสั่งซื้อ: " . mysqli_error($conn));
+            }
+
+            // อัพเดตสต็อก
+            $update_stock_query = "UPDATE product SET stock_quantity = stock_quantity - ? WHERE product_id = ?";
+            $stmt = mysqli_prepare($conn, $update_stock_query);
+            mysqli_stmt_bind_param($stmt, 'ii', $quantity, $product_id);
+            if (!mysqli_stmt_execute($stmt)) {
+                die("ข้อผิดพลาดในการอัพเดตสต็อก: " . mysqli_error($conn));
+            }
+        }
+
+        // ลบรายการในตะกร้า
+        $delete_cart_items_query = "DELETE FROM cart_items WHERE cart_id = ?";
+        $stmt = mysqli_prepare($conn, $delete_cart_items_query);
+        mysqli_stmt_bind_param($stmt, 'i', $cart_id);
+        if (!mysqli_stmt_execute($stmt)) {
+            die("ข้อผิดพลาดในการลบรายการตะกร้า: " . mysqli_error($conn));
+        }
+
+        // ลบตะกร้า
+        $delete_cart_query = "DELETE FROM cart WHERE cart_id = ?";
+        $stmt = mysqli_prepare($conn, $delete_cart_query);
+        mysqli_stmt_bind_param($stmt, 'i', $cart_id);
+        if (!mysqli_stmt_execute($stmt)) {
+            die("ข้อผิดพลาดในการลบตะกร้า: " . mysqli_error($conn));
+        }
+
+        header("Location: thank_you.php"); // เปลี่ยนเส้นทางไปที่หน้าขอบคุณ
+        exit();
+    } else {
+        die("ข้อผิดพลาดในการอัพโหลดใบเสร็จการชำระเงิน");
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Checkout - Meat Store</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Confirm Your Order</h1>
+    </header>
+
+    <main>
+        <section class="confirm-checkout">
+            <h2>Confirm Order</h2>
+            <form action="confirm_checkout.php" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="cart_id" value="<?php echo htmlspecialchars($cart_id, ENT_QUOTES, 'UTF-8'); ?>">
+                <h3>Your Cart Items:</h3>
+                <?php if (mysqli_num_rows($items_result) > 0): ?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($item = mysqli_fetch_assoc($items_result)): ?>
+                            <tr>
+                                <td><img src="path/to/uploads/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
+                                <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td><?php echo htmlspecialchars($item['quantity'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td><?php echo number_format($item['price'], 2); ?></td>
+                                <td><?php echo number_format($item['total'], 2); ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+                <p><strong>Grand Total: <?php echo number_format($grand_total, 2); ?></strong></p>
+                <?php else: ?>
+                <p>Your cart is empty.</p>
+                <?php endif; ?>
+                <label for="payment_slip">Upload Payment Slip:</label>
+                <input type="file" name="payment_slip" id="payment_slip" required>
+                <button type="submit">Submit</button>
+            </form>
+            <p><a href="cart.php">Back to Cart</a></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Meat Store. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+
+<?php
+mysqli_close($conn);
+?>

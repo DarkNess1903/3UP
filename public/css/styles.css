@@ -1,0 +1,327 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+}
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+main {
+    padding: 20px;
+}
+
+.product-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.product {
+    border: 1px solid #ddd;
+    padding: 10px;
+    width: 200px;
+}
+
+.product img {
+    width: 100%;
+    height: auto;
+}
+
+footer {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+}
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+main {
+    padding: 20px;
+}
+
+.product-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.product {
+    border: 1px solid #ddd;
+    padding: 10px;
+    width: 200px;
+}
+
+.product img {
+    width: 100%;
+    height: auto;
+}
+
+footer {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+}
+
+/* CSS สำหรับไอคอนตะกร้า */
+.cart-icon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    z-index: 1000;
+}
+
+.cart-icon a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 24px;
+    display: block;
+}
+
+.cart-count {
+    display: block;
+    font-size: 14px;
+    margin-top: 5px;
+    background-color: #f00;
+    color: #fff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    margin: 0 auto;
+}
+
+/* ตะกร้าสินค้า */
+.cart {
+    padding: 20px;
+}
+
+.cart table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.cart table, .cart th, .cart td {
+    border: 1px solid #ddd;
+}
+
+.cart th, .cart td {
+    padding: 10px;
+    text-align: left;
+}
+
+.cart .checkout-button {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-top: 20px;
+    background-color: #333;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.cart .checkout-button:hover {
+    background-color: #555;
+}
+
+/* เช็คเอาต์ */
+.checkout {
+    padding: 20px;
+}
+
+.checkout table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.checkout table, .checkout th, .checkout td {
+    border: 1px solid #ddd;
+}
+
+.checkout th, .checkout td {
+    padding: 10px;
+    text-align: left;
+}
+
+.checkout form {
+    margin-top: 20px;
+}
+
+.checkout form label {
+    display: block;
+    margin: 10px 0 5px;
+}
+
+.checkout form input[type="text"],
+.checkout form input[type="tel"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+}
+
+.checkout form input[type="submit"] {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+}
+
+.checkout form input[type="submit"]:hover {
+    background-color: #555;
+}
+
+/* ระบบลงทะเบียนและเข้าสู่ระบบ */
+.register, .login {
+    padding: 20px;
+    max-width: 400px;
+    margin: 0 auto;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.register form, .login form {
+    display: flex;
+    flex-direction: column;
+}
+
+.register label, .login label {
+    margin-bottom: 5px;
+}
+
+.register input, .login input {
+    margin-bottom: 15px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.register input[type="submit"], .login input[type="submit"] {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.register input[type="submit"]:hover, .login input[type="submit"]:hover {
+    background-color: #555;
+}
+
+.auth-links {
+    margin-top: 10px;
+}
+
+.auth-links a {
+    margin-right: 10px;
+}
+
+/* Checkout page */
+.checkout {
+    padding: 20px;
+}
+
+.checkout h2 {
+    margin-top: 20px;
+}
+
+.checkout table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.checkout table, .checkout th, .checkout td {
+    border: 1px solid #ddd;
+}
+
+.checkout th, .checkout td {
+    padding: 10px;
+    text-align: left;
+}
+
+.checkout form {
+    margin-top: 20px;
+}
+
+.checkout form label {
+    display: block;
+    margin: 10px 0 5px;
+}
+
+.checkout form input[type="text"],
+.checkout form input[type="tel"],
+.checkout form textarea,
+.checkout form select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.checkout form input[type="submit"] {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+}
+
+.checkout form input[type="submit"]:hover {
+    background-color: #555;
+}
