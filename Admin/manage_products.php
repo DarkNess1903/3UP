@@ -79,36 +79,40 @@ $result = mysqli_query($conn, $query);
         .hidden {
             display: none;
         }
+        .form-container {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <header>
         <h1>Manage Products</h1>
-        <a href="logout.php">Logout</a>
     </header>
     <main>
         <section>
+            <div class="form-container">
+                <button id="addProductBtn">Add Product</button>
+                <form id="addProductForm" class="hidden" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="product_id" id="product_id">
+                    <label for="name">Product Name:</label>
+                    <input type="text" id="name" name="name" required>
+                    
+                    <label for="price">Price:</label>
+                    <input type="text" id="price" name="price" required>
+                    
+                    <label for="stock_quantity">Stock Quantity:</label>
+                    <input type="number" id="stock_quantity" name="stock_quantity" required>
+                    
+                    <label for="details">Details:</label>
+                    <textarea id="details" name="details" rows="4" required></textarea>
+                    
+                    <label for="image">Image:</label>
+                    <input type="file" id="image" name="image" <?php echo isset($_GET['edit_id']) ? '' : 'required'; ?>>
+                    
+                    <button type="submit">Save Product</button>
+                </form>
+            </div>
             <h2>Product List</h2>
-            <button id="addProductBtn">Add Product</button>
-            <form id="addProductForm" class="hidden" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="product_id" id="product_id">
-                <label for="name">Product Name:</label>
-                <input type="text" id="name" name="name" required>
-                
-                <label for="price">Price:</label>
-                <input type="text" id="price" name="price" required>
-                
-                <label for="stock_quantity">Stock Quantity:</label>
-                <input type="number" id="stock_quantity" name="stock_quantity" required>
-                
-                <label for="details">Details:</label>
-                <textarea id="details" name="details" rows="4" required></textarea>
-                
-                <label for="image">Image:</label>
-                <input type="file" id="image" name="image" <?php echo isset($_GET['edit_id']) ? '' : 'required'; ?>>
-                
-                <button type="submit">Save Product</button>
-            </form>
             <table>
                 <thead>
                     <tr>

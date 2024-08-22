@@ -1,0 +1,6 @@
+# .htaccess file
+
+# กำหนดค่า session cookie lifetime เป็น 0 (ทำให้ session หมดอายุเมื่อปิดเบราว์เซอร์)
+php_value session.cookie_lifetime 0
+
+# คุณสามารถเพิ่มการตั้งค่าอื่น ๆ ได้ที่นี่

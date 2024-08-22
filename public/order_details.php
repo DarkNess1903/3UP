@@ -62,7 +62,7 @@ $details_result = mysqli_stmt_get_result($stmt);
             <p><strong>Order Date:</strong> <?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($order['order_date']))); ?></p>
             <p><strong>Total Amount:</strong> $<?php echo number_format($order['total_amount'], 2); ?></p>
             <?php if ($order['payment_slip']): ?>
-                <a href="#" class="view-payment-slip" data-image="../upload/<?php echo htmlspecialchars($order['payment_slip']); ?>">View Payment Slip</a>
+                <a href="#" class="view-payment-slip" data-image="../Admin/upload/<?php echo htmlspecialchars($order['payment_slip']); ?>">View Payment Slip</a>
             <?php endif; ?>
             <p><strong>Status:</strong> <?php echo htmlspecialchars($order['status']); ?></p>
             <h3>Order Items</h3>

@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
             <p><strong>Status:</strong> <?php echo htmlspecialchars($order['status']); ?></p>
             <?php if ($order['payment_slip']): ?>
                 <p><strong>Payment Slip:</strong> 
-                    <a href="#" class="view-payment-slip" data-image="../Admin/uploads/<?php echo htmlspecialchars(basename($order['payment_slip'])); ?>">View Payment Slip</a>
+                    <a href="#" class="view-payment-slip" data-image="/upload/<?php echo htmlspecialchars(basename($order['payment_slip'])); ?>">View Payment Slip</a>
                 </p>
             <?php endif; ?>
 

@@ -96,20 +96,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
             }
         }
 
-        // ลบรายการในตะกร้า
+        // ลบข้อมูลที่เกี่ยวข้องใน cart_items
         $delete_cart_items_query = "DELETE FROM cart_items WHERE cart_id = ?";
         $stmt = mysqli_prepare($conn, $delete_cart_items_query);
         mysqli_stmt_bind_param($stmt, 'i', $cart_id);
         if (!mysqli_stmt_execute($stmt)) {
-            die("ข้อผิดพลาดในการลบรายการตะกร้า: " . mysqli_error($conn));
+            die("ข้อผิดพลาดในการลบข้อมูลใน cart_items: " . mysqli_error($conn));
         }
 
-        // ลบตะกร้า
-        $delete_cart_query = "DELETE FROM cart WHERE cart_id = ?";
-        $stmt = mysqli_prepare($conn, $delete_cart_query);
+        // ลบผลิตภัณฑ์
+        $delete_product_query = "DELETE FROM product WHERE product_id IN (SELECT product_id FROM cart_items WHERE cart_id = ?)";
+        $stmt = mysqli_prepare($conn, $delete_product_query);
         mysqli_stmt_bind_param($stmt, 'i', $cart_id);
         if (!mysqli_stmt_execute($stmt)) {
-            die("ข้อผิดพลาดในการลบตะกร้า: " . mysqli_error($conn));
+            die("ข้อผิดพลาดในการลบผลิตภัณฑ์: " . mysqli_error($conn));
         }
 
         header("Location: thank_you.php"); // เปลี่ยนเส้นทางไปที่หน้าขอบคุณ
