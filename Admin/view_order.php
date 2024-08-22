@@ -1,14 +1,14 @@
 <?php
 session_start();
 include '../connectDB.php';
+include 'topnavbar.php';
 
 // ตรวจสอบการเข้าสู่ระบบ
-if (!isset($_SESSION['customer_id'])) {
+if (!isset($_SESSION['admin_id'])) {
     header("Location: login.php");
     exit();
 }
 
-$customer_id = $_SESSION['customer_id'];
 $order_id = intval($_GET['order_id'] ?? 0);
 
 if ($order_id <= 0) {
@@ -17,12 +17,12 @@ if ($order_id <= 0) {
 
 // ดึงข้อมูลคำสั่งซื้อ
 $order_query = "
-    SELECT order_id, order_date, total_amount, payment_slip, status
+    SELECT order_id, customer_id, order_date, total_amount, payment_slip, status
     FROM orders
-    WHERE order_id = ? AND customer_id = ?
+    WHERE order_id = ?
 ";
 $stmt = mysqli_prepare($conn, $order_query);
-mysqli_stmt_bind_param($stmt, 'ii', $order_id, $customer_id);
+mysqli_stmt_bind_param($stmt, 'i', $order_id);
 mysqli_stmt_execute($stmt);
 $order_result = mysqli_stmt_get_result($stmt);
 
@@ -31,6 +31,7 @@ if (mysqli_num_rows($order_result) === 0) {
 }
 
 $order = mysqli_fetch_assoc($order_result);
+$customer_id = $order['customer_id'];
 
 // ดึงรายละเอียดสินค้า
 $details_query = "
@@ -67,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Details</title>
-    <link rel="stylesheet" href="styles.css"> <!-- ใส่ลิงก์ CSS ถ้ามี -->
+    <link rel="stylesheet" href="styles.css"> <!-- ใส่ลิงก์ CSS -->
 </head>
 <body>
     <header>
@@ -80,8 +81,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
             <p><strong>Total Amount:</strong> $<?php echo number_format($order['total_amount'], 2); ?></p>
             <p><strong>Status:</strong> <?php echo htmlspecialchars($order['status']); ?></p>
             <?php if ($order['payment_slip']): ?>
-                <p><strong>Payment Slip:</strong> <a href="<?php echo htmlspecialchars($order['payment_slip']); ?>" target="_blank">View Payment Slip</a></p>
+                <p><strong>Payment Slip:</strong> 
+                    <a href="#" class="view-payment-slip" data-image="../Admin/uploads/<?php echo htmlspecialchars(basename($order['payment_slip'])); ?>">View Payment Slip</a>
+                </p>
             <?php endif; ?>
+
+            <!-- โมดัลสำหรับแสดงภาพ -->
+            <div id="myModal" class="modal">
+                <span class="close">&times;</span>
+                <img class="modal-content" id="img01">
+                <div id="caption"></div>
+            </div>
 
             <!-- ฟอร์มสำหรับอัปเดตสถานะคำสั่งซื้อ -->
             <form action="view_order.php?order_id=<?php echo htmlspecialchars($order['order_id']); ?>" method="post">
@@ -98,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
             <ul>
                 <?php while ($detail = mysqli_fetch_assoc($details_result)): ?>
                     <li>
-                        <img src="<?php echo htmlspecialchars($detail['image']); ?>" alt="<?php echo htmlspecialchars($detail['name']); ?>" width="100">
+                        <img src="../product/<?php echo htmlspecialchars($detail['image']); ?>" alt="<?php echo htmlspecialchars($detail['name']); ?>" width="100">
                         <p><?php echo htmlspecialchars($detail['name']); ?> - Quantity: <?php echo htmlspecialchars($detail['quantity']); ?> - Price: $<?php echo number_format($detail['price'], 2); ?> - Total: $<?php echo number_format($detail['total'], 2); ?></p>
                     </li>
                 <?php endwhile; ?>
@@ -108,6 +118,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
     <footer>
         <!-- เพิ่มลิงก์หรือข้อมูลเกี่ยวกับเว็บไซต์ของคุณที่นี่ -->
     </footer>
+
+    <script src="scripts.js"></script> <!-- ลิงก์ไปยังไฟล์ JavaScript -->
 </body>
 </html>
 

@@ -89,7 +89,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $file_name = $_FILES['payment_slip']['name'];
         $file_ext = pathinfo($file_name, PATHINFO_EXTENSION);
         $new_file_name = "slip_$order_id.$file_ext";
-        $upload_dir = 'uploads/';
+        $upload_dir = '../Admin/uploads/';
         $upload_file = $upload_dir . $new_file_name;
 
         if (move_uploaded_file($file_tmp, $upload_file)) {

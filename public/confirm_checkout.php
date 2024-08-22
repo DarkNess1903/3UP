@@ -54,7 +54,7 @@ mysqli_data_seek($items_result, 0);
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
     // ประมวลผลใบเสร็จการชำระเงิน
     $payment_slip = $_FILES['payment_slip'];
-    $upload_dir = __DIR__ . '/../Admin/uploads/';
+    $upload_dir = realpath(__DIR__ . '/../Admin/uploads/') . '/';
     $upload_file = $upload_dir . basename($payment_slip['name']);
 
     if (move_uploaded_file($payment_slip['tmp_name'], $upload_file)) {
@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
                     <tbody>
                         <?php while ($item = mysqli_fetch_assoc($items_result)): ?>
                             <tr>
-                                <td><img src="path/to/uploads/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
+                                <td><img src="../product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
                                 <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?php echo htmlspecialchars($item['quantity'], ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?php echo number_format($item['price'], 2); ?></td>

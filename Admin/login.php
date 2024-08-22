@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (mysqli_num_rows($result) == 1) {
         $_SESSION['admin_id'] = mysqli_fetch_assoc($result)['admin_id'];
-        header("Location: dashboard.php");
+        header("Location: index.php");
         exit();
     } else {
         $error = "Invalid username or password";

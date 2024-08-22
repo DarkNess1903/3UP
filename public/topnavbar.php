@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Top Navbar</title>
     <link rel="stylesheet" href="topnavbar.css">
-    <link rel="stylesheet" href="css/styles.css">
-    <script src="js/script.js" defer></script>
+    <link rel="stylesheet" href="../public/css/styles.css"> <!-- ใส่ลิงก์ CSS -->
+    <script src="../public/js/scripts.js"></script> <!-- ใส่ลิงก์ JavaScript -->
 
 </head>
 <body>

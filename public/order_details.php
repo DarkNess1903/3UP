@@ -51,7 +51,6 @@ $details_result = mysqli_stmt_get_result($stmt);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Details</title>
-    <link rel="stylesheet" href="styles.css"> <!-- ใส่ลิงก์ CSS ถ้ามี -->
 </head>
 <body>
     <header>
@@ -63,14 +62,14 @@ $details_result = mysqli_stmt_get_result($stmt);
             <p><strong>Order Date:</strong> <?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($order['order_date']))); ?></p>
             <p><strong>Total Amount:</strong> $<?php echo number_format($order['total_amount'], 2); ?></p>
             <?php if ($order['payment_slip']): ?>
-                <p><strong>Payment Slip:</strong> <a href="<?php echo htmlspecialchars($order['payment_slip']); ?>" target="_blank">View Payment Slip</a></p>
+                <a href="#" class="view-payment-slip" data-image="../upload/<?php echo htmlspecialchars($order['payment_slip']); ?>">View Payment Slip</a>
+            <?php endif; ?>
             <p><strong>Status:</strong> <?php echo htmlspecialchars($order['status']); ?></p>
-                <?php endif; ?>
             <h3>Order Items</h3>
             <ul>
                 <?php while ($detail = mysqli_fetch_assoc($details_result)): ?>
                     <li>
-                        <img src="<?php echo htmlspecialchars($detail['image']); ?>" alt="<?php echo htmlspecialchars($detail['name']); ?>" width="100">
+                        <img src="../public/<?php echo htmlspecialchars($detail['image']); ?>" alt="<?php echo htmlspecialchars($detail['name']); ?>" width="100">
                         <p><?php echo htmlspecialchars($detail['name']); ?> - Quantity: <?php echo htmlspecialchars($detail['quantity']); ?> - Price: $<?php echo number_format($detail['price'], 2); ?> - Total: $<?php echo number_format($detail['total'], 2); ?></p>
                     </li>
                 <?php endwhile; ?>
@@ -80,6 +79,13 @@ $details_result = mysqli_stmt_get_result($stmt);
     <footer>
         <!-- เพิ่มลิงก์หรือข้อมูลเกี่ยวกับเว็บไซต์ของคุณที่นี่ -->
     </footer>
+
+    <!-- โมดัลสำหรับแสดงภาพ -->
+    <div id="myModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="img01">
+        <div id="caption"></div>
+    </div>
 </body>
 </html>
 

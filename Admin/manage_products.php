@@ -1,6 +1,7 @@
 <?php
 session_start();
 include '../connectDB.php';
+include 'topnavbar.php';
 
 // ตรวจสอบการเข้าสู่ระบบ
 if (!isset($_SESSION['admin_id'])) {
@@ -18,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // ตรวจสอบว่ามีการอัพโหลดรูปหรือไม่
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
         $image = $_FILES['image'];
-        $upload_dir = '../product/';
+        $upload_dir = '../Admin/product/';
         $upload_file = $upload_dir . basename($image['name']);
 
         // ย้ายไฟล์รูปไปยังโฟลเดอร์ที่กำหนด

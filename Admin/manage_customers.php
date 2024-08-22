@@ -1,6 +1,7 @@
 <?php
 session_start();
 include '../connectDB.php';
+include 'topnavbar.php';
 
 // ตรวจสอบการเข้าสู่ระบบของ Admin
 if (!isset($_SESSION['admin_id'])) {

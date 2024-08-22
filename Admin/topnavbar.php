@@ -1,13 +1,11 @@
 <?php
-session_start();
 include '../connectDB.php';
 
-// ตรวจสอบการเข้าสู่ระบบของ Admin
+// ตรวจสอบการเข้าสู่ระบบของผู้ดูแลระบบ
 if (!isset($_SESSION['admin_id'])) {
     header("Location: login.php");
     exit();
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -31,4 +29,3 @@ if (!isset($_SESSION['admin_id'])) {
     </nav>
 </body>
 </html>
-
