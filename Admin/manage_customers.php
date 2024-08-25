@@ -3,12 +3,6 @@ session_start();
 include '../connectDB.php';
 include 'topnavbar.php';
 
-// ตรวจสอบการเข้าสู่ระบบของ Admin
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: login.php");
-    exit();
-}
-
 // Fetch customers from the database
 $query = "SELECT * FROM customer";
 $result = mysqli_query($conn, $query);

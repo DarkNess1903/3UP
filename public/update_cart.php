@@ -50,6 +50,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt = mysqli_prepare($conn, $query);
                 mysqli_stmt_bind_param($stmt, 'i', $cart_item_id);
                 mysqli_stmt_execute($stmt);
+            } elseif ($current_quantity == 1) {
+                // หากจำนวนสินค้าลดลงเหลือ 1 ให้ลบรายการออกจากตะกร้า
+                $query = "DELETE FROM cart_items WHERE cart_item_id = ?";
+                $stmt = mysqli_prepare($conn, $query);
+                mysqli_stmt_bind_param($stmt, 'i', $cart_item_id);
+                mysqli_stmt_execute($stmt);
             } else {
                 echo "Cannot decrease quantity. Minimum quantity is 1.";
                 exit();

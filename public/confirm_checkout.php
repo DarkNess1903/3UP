@@ -170,16 +170,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
                 <input type="file" name="payment_slip" id="payment_slip" required>
                 <button type="submit">Submit</button>
             </form>
-            <p><a href="cart.php">Back to Cart</a></p>
+            <p><a href="cart.php" class="return-to-cart">Return to Cart <i class="fas fa-arrow-left"></i></a></p>
         </section>
     </main>
-
-    <footer>
-        <p>&copy; 2024 Meat Store. All rights reserved.</p>
-    </footer>
 </body>
 </html>
 
 <?php
+include 'footer.php';
 mysqli_close($conn);
 ?>

@@ -1,6 +1,11 @@
 <?php
 session_start();
 include '../connectDB.php';
+include 'topnavbar.php';
+if (!isset($_SESSION['customer_id'])) {
+    header("Location: login.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -13,38 +18,16 @@ include '../connectDB.php';
     <link rel="stylesheet" href="css/styles.css">
     <script src="js/scripts.js" defer></script>
 </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation</title>
+    <link rel="stylesheet" href="css/styles.css"> <!-- ลิงก์ไปยังไฟล์ CSS -->
+</head>
 <body>
-    <header class="top-navbar">
-        <nav>
-            <ul>
-                <li><a href="index.php">Home</a></li>
-                <li><a href="product.php">Products</a></li>
-                <li><a href="cart.php">Cart</a></li>
-                <li><a href="order_history.php">Order History</a></li>
-                <li><a href="profile.php">Profile</a></li>
-                <li><a href="logout.php">Logout</a></li>
-            </ul>
-        </nav>
-        <div class="auth-links">
-            <?php
-            if (isset($_SESSION['customer_id'])) {
-                $customer_id = $_SESSION['customer_id'];
-                $query = "SELECT name FROM customer WHERE customer_id = ?";
-                $stmt = mysqli_prepare($conn, $query);
-                mysqli_stmt_bind_param($stmt, 'i', $customer_id);
-                mysqli_stmt_execute($stmt);
-                $result = mysqli_stmt_get_result($stmt);
-                if ($row = mysqli_fetch_assoc($result)) {
-                    echo "Welcome, " . htmlspecialchars($row['name']);
-                }
-                echo " <a href='logout.php'>Logout</a>";
-            } else {
-                echo "<a href='login.php'>Login</a> or <a href='register.php'>Register</a>";
-            }
-            ?>
-        </div>
+    <header>
+        <h1>Product</h1>
     </header>
-
     <main>
         <section class="product-list">
             <?php
@@ -54,7 +37,7 @@ include '../connectDB.php';
             if (mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_assoc($result)) {
                     echo '<div class="product">';
-                    echo '<img src="../uploads/' . htmlspecialchars($row['image']) . '" alt="' . htmlspecialchars($row['name']) . '">';
+                    echo '<img src="../uploads/' . htmlspecialchars($row['image']) . '" alt="' . htmlspecialchars($row['name']) . '" style="width: 150px;;height:150px;">';
                     echo '<h2>' . htmlspecialchars($row['name']) . '</h2>';
                     echo '<p>Price: ฿' . number_format($row['price'], 2) . '</p>';
                     echo '<p>Stock: ' . htmlspecialchars($row['stock_quantity']) . '</p>';
@@ -68,7 +51,7 @@ include '../connectDB.php';
             ?>
         </section>
     </main>
-
+            
     <div class="cart-icon">
         <a href="cart.php">
             <i class="fas fa-shopping-cart"></i>
@@ -91,13 +74,10 @@ include '../connectDB.php';
             ?>
         </a>
     </div>
-
-    <footer>
-        <p>&copy; 2024 Meat Store. All rights reserved.</p>
-    </footer>
 </body>
 </html>
 
 <?php
+include 'footer.php';
 mysqli_close($conn);
 ?>

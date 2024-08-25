@@ -24,29 +24,36 @@ if (mysqli_num_rows($profile_result) === 0) {
 
 $profile = mysqli_fetch_assoc($profile_result);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- เพิ่มลิงก์ Font Awesome -->
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <header>
         <h1>Profile</h1>
     </header>
+
     <main>
-        <section>
+        <section class="profile-info">
+            <div class="profile-icon">
+                <i class="fas fa-user"></i> <!-- ไอคอนรูปคน -->
+            </div>
             <h2>Personal Information</h2>
             <p><strong>Name:</strong> <?php echo htmlspecialchars($profile['name']); ?></p>
             <p><strong>Email:</strong> <?php echo htmlspecialchars($profile['email']); ?></p>
             <p><strong>Phone:</strong> <?php echo htmlspecialchars($profile['phone']); ?></p>
             <p><strong>Address:</strong> <?php echo htmlspecialchars($profile['address']); ?></p>
-            <button id="editBtn">Edit Profile</button>
+            <button id="editBtn" class="btn">Edit Profile</button>
         </section>
     </main>
 
-    <!-- โมดัลสำหรับฟอร์มแก้ไขข้อมูล -->
+    <!-- Modal สำหรับฟอร์มแก้ไขข้อมูล -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -61,7 +68,7 @@ $profile = mysqli_fetch_assoc($profile_result);
                 <input type="text" id="phone" name="phone" value="<?php echo htmlspecialchars($profile['phone']); ?>" required><br><br>
                 <label for="address">Address:</label>
                 <textarea id="address" name="address" rows="4" required><?php echo htmlspecialchars($profile['address']); ?></textarea><br><br>
-                <button type="submit">Save Changes</button>
+                <button type="submit" class="btn">Save Changes</button>
             </form>
         </div>
     </div>
@@ -90,6 +97,7 @@ $profile = mysqli_fetch_assoc($profile_result);
 </html>
 
 <?php
+include 'footer.php';
 // ปิดการเชื่อมต่อฐานข้อมูล
 mysqli_close($conn);
 ?>

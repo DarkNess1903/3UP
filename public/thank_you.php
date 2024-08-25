@@ -56,31 +56,37 @@ mysqli_close($conn);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thank You</title>
-    <link rel="stylesheet" href="styles.css"> <!-- ลิงก์ไปยังไฟล์ CSS -->
-    <script src="js/scripts.js"></script> <!-- ลิงก์ไปยังไฟล์ JavaScript -->
+    <title>Order Confirmation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <header>
         <h1>Thank You for Your Order!</h1>
     </header>
     <main>
-        <section>
+        <section class="confirmation">
             <h2>Order Confirmation</h2>
             <p>Your order has been successfully placed. Here are the details:</p>
             <p><strong>Order ID:</strong> <?php echo htmlspecialchars($order_id); ?></p>
             <p><strong>Total Amount:</strong> $<?php echo number_format($total_amount, 2); ?></p>
             <?php if ($payment_slip): ?>
                 <p><strong>Payment Slip:</strong> 
-                    <a href="#" class="view-payment-slip" data-image="../Admin/uploads/<?php echo htmlspecialchars(basename($payment_slip)); ?>">View Payment Slip</a>
+                    <a href="#" class="view-payment-slip" data-image="../Admin/uploads/<?php echo htmlspecialchars(basename($payment_slip)); ?>">
+                        <i class="fas fa-file-image"></i> View Payment Slip
+                    </a>
                 </p>
             <?php endif; ?>
             <h3>Order Details</h3>
-            <ul>
+            <ul class="order-details">
                 <?php while ($detail = mysqli_fetch_assoc($order_details_result)): ?>
                     <li>
                         <img src="../product/<?php echo htmlspecialchars($detail['image']); ?>" alt="<?php echo htmlspecialchars($detail['name']); ?>" width="100">
-                        <p><?php echo htmlspecialchars($detail['name']); ?> - Quantity: <?php echo htmlspecialchars($detail['quantity']); ?> - Price: $<?php echo number_format($detail['price'], 2); ?> - Total: $<?php echo number_format($detail['total'], 2); ?></p>
+                        <p>
+                            <?php echo htmlspecialchars($detail['name']); ?> - 
+                            Quantity: <?php echo htmlspecialchars($detail['quantity']); ?> - 
+                            Price: $<?php echo number_format($detail['price'], 2); ?> - 
+                            Total: $<?php echo number_format($detail['total'], 2); ?>
+                        </p>
                     </li>
                 <?php endwhile; ?>  
             </ul>
@@ -96,5 +102,8 @@ mysqli_close($conn);
         <img class="modal-content" id="img01">
         <div id="caption"></div>
     </div>
+
+    <script src="js/scripts.js" defer></script>
 </body>
 </html>
+

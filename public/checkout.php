@@ -146,9 +146,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <p><a href="cart.php">Return to Cart</a></p>
         </section>
     </main>
-
-    <footer>
-        <p>&copy; 2024 Meat Store. All rights reserved.</p>
-    </footer>
 </body>
 </html>
+
+<?php
+include 'footer.php';
+?>

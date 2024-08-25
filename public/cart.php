@@ -3,12 +3,6 @@ session_start();
 include '../connectDB.php';
 include 'topnavbar.php';
 
-// ตรวจสอบการเข้าสู่ระบบ
-if (!isset($_SESSION['customer_id'])) {
-    header("Location: login.php");
-    exit();
-}
-
 $customer_id = $_SESSION['customer_id'];
 
 // ดึงข้อมูลตะกร้าสินค้า
@@ -56,18 +50,19 @@ if ($cart) {
     $grand_total = 0;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cart</title>
+    <script src="js/scripts.js"></script>
 </head>
 <body>
     <header>
         <h1>Your Cart</h1>
     </header>
-
     <main>
         <section class="cart">
             <h2>Cart Items</h2>
@@ -84,17 +79,34 @@ if ($cart) {
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tbody>
                     <?php while ($item = mysqli_fetch_assoc($items_result)): ?>
                         <tr>
                             <td><img src="../product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
                             <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td>
+                            <style>
+                            .quantity-controls {
+                                text-align: center; /* จัดตำแหน่งให้อยู่กลาง */
+                            }
+                            .quantity-controls button,
+                            .quantity-controls input {
+                                display: inline-block;
+                                margin: 0 5px;
+                                vertical-align: middle;
+                            }
+                            .quantity-controls input {
+                                width: 40px;
+                                text-align: center;
+                                border: none;
+                            }
+                        </style>
                                 <form action="update_cart.php" method="post">
                                     <input type="hidden" name="cart_item_id" value="<?php echo htmlspecialchars($item['cart_item_id'], ENT_QUOTES, 'UTF-8'); ?>">
-                                    <button type="submit" name="action" value="decrease">-</button>
-                                    <?php echo htmlspecialchars($item['quantity'], ENT_QUOTES, 'UTF-8'); ?>
-                                    <button type="submit" name="action" value="increase">+</button>
+                                    <div class="quantity-container">
+                                        <button type="submit" name="action" value="decrease">-</button>
+                                        <?php echo htmlspecialchars($item['quantity'], ENT_QUOTES, 'UTF-8'); ?>
+                                        <button type="submit" name="action" value="increase">+</button>
+                                    </div>
                                 </form>
                             </td>
                             <td><?php echo number_format($item['price'], 2); ?></td>
@@ -105,25 +117,21 @@ if ($cart) {
                             </td>
                         </tr>
                     <?php endwhile; ?>
-                </tbody>
             </table>
             <p><strong>Grand Total: <?php echo number_format($grand_total, 2); ?></strong></p>
             <form action="confirm_checkout.php" method="post">
-            <input type="hidden" name="cart_id" value="<?php echo htmlspecialchars($cart_id, ENT_QUOTES, 'UTF-8'); ?>">
-            <input type="submit" value="Checkout" class="checkout-btn">
-        </form>
+                <input type="hidden" name="cart_id" value="<?php echo htmlspecialchars($cart_id, ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="submit" value="Checkout" class="checkout-btn">
+            </form>
             <?php else: ?>
             <p>Your cart is empty.</p>
             <?php endif; ?>
         </section>
     </main>
-
-    <footer>
-        <p>&copy; 2024 Meat Store. All rights reserved.</p>
-    </footer>
 </body>
 </html>
 
 <?php
+include 'footer.php';
 mysqli_close($conn);
 ?>

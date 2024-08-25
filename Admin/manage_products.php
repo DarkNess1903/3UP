@@ -3,11 +3,6 @@ session_start();
 include '../connectDB.php';
 include 'topnavbar.php';
 
-// ตรวจสอบการเข้าสู่ระบบ
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: login.php");
-    exit();
-}
 
 // การจัดการการเพิ่มผลิตภัณฑ์
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -31,24 +26,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         $image_path = ''; // ถ้าไม่มีรูปให้เก็บค่าว่าง
     }
+    
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        // ตรวจสอบว่ากำลังแก้ไขหรือเพิ่มผลิตภัณฑ์ใหม่
+        if (isset($_POST['product_id']) && !empty($_POST['product_id'])) {
+            $product_id = intval($_POST['product_id']);
+            $query = "UPDATE product SET name = ?, price = ?, stock_quantity = ?, details = ?, image = ? WHERE product_id = ?";
+            $stmt = mysqli_prepare($conn, $query);
+            mysqli_stmt_bind_param($stmt, 'ssissi', $name, $price, $stock_quantity, $details, $image_path, $product_id);
+        } else {
+            $query = "INSERT INTO product (name, price, stock_quantity, details, image) VALUES (?, ?, ?, ?, ?)";
+            $stmt = mysqli_prepare($conn, $query);
+            mysqli_stmt_bind_param($stmt, 'ssiss', $name, $price, $stock_quantity, $details, $image_path);
+        }
 
-    // ตรวจสอบว่ากำลังแก้ไขหรือเพิ่มผลิตภัณฑ์ใหม่
-    if (isset($_POST['product_id']) && !empty($_POST['product_id'])) {
-        $product_id = intval($_POST['product_id']);
-        $query = "UPDATE product SET name = ?, price = ?, stock_quantity = ?, details = ?, image = ? WHERE product_id = ?";
-        $stmt = mysqli_prepare($conn, $query);
-        mysqli_stmt_bind_param($stmt, 'ssissi', $name, $price, $stock_quantity, $details, $image_path, $product_id);
-    } else {
-        $query = "INSERT INTO product (name, price, stock_quantity, details, image) VALUES (?, ?, ?, ?, ?)";
-        $stmt = mysqli_prepare($conn, $query);
-        mysqli_stmt_bind_param($stmt, 'ssiss', $name, $price, $stock_quantity, $details, $image_path);
-    }
-
-    if (mysqli_stmt_execute($stmt)) {
-        header("Location: manage_products.php");
-        exit();
-    } else {
-        die("Error executing query.");
+        if (mysqli_stmt_execute($stmt)) {
+            header("Location: manage_products.php");
+            exit();
+        } else {
+            die("Error executing query.");
+        }
     }
 }
 
@@ -130,7 +127,7 @@ $result = mysqli_query($conn, $query);
                         <tr>
                             <td><?php echo htmlspecialchars($row['product_id']); ?></td>
                             <td><?php echo htmlspecialchars($row['name']); ?></td>
-                            <td>$<?php echo number_format($row['price'], 2); ?></td>
+                            <td><?php echo number_format($row['price'], 2); ?>฿</td>
                             <td><?php echo htmlspecialchars($row['stock_quantity']); ?></td>
                             <td><?php echo htmlspecialchars($row['details']); ?></td>
                             <td><img src="<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>" width="100"></td>

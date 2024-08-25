@@ -69,13 +69,11 @@ if (mysqli_num_rows($order_result) === 0) {
             </table>
         </section>
     </main>
-    <footer>
-        <!-- เพิ่มลิงก์หรือข้อมูลเกี่ยวกับเว็บไซต์ของคุณที่นี่ -->
-    </footer>
 </body>
 </html>
 
 <?php
+include 'footer.php';
 // ปิดการเชื่อมต่อฐานข้อมูล
 mysqli_close($conn);
 ?>

@@ -21,11 +21,20 @@ $update_query = "
     WHERE customer_id = ?
 ";
 $stmt = mysqli_prepare($conn, $update_query);
-mysqli_stmt_bind_param($stmt, 'ssssi', $name, $email, $phone, $address, $customer_id);
+
+if (!$stmt) {
+    die("Prepare failed: " . mysqli_error($conn));
+}
+
+mysqli_stmt_bind_param($stmt, 'ssssi', $name, $email, $phone, $address, $customer_id);  
+
 if (mysqli_stmt_execute($stmt)) {
     header("Location: profile.php");
+    exit();
 } else {
-    die("Error updating profile: " . mysqli_error($conn));
+    // แสดงข้อความข้อผิดพลาดที่เป็นประโยชน์
+    $error = mysqli_error($conn);
+    die("Error updating profile: " . $error);
 }
 
 mysqli_close($conn);

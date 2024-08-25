@@ -3,12 +3,6 @@ session_start();
 include '../connectDB.php';
 include 'topnavbar.php';
 
-// ตรวจสอบการเข้าสู่ระบบของ Admin
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: login.php");
-    exit();
-}
-
 // ตรวจสอบการลบคำสั่งซื้อ
 if (isset($_GET['delete_order_id'])) {
     $delete_order_id = intval($_GET['delete_order_id']);
@@ -39,7 +33,7 @@ $result = mysqli_query($conn, $query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Orders</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css">    
 </head>
 <body>
     <header>
@@ -66,11 +60,11 @@ $result = mysqli_query($conn, $query);
                             <td><?php echo htmlspecialchars($row['customer_id']); ?></td>
                             <td><?php echo number_format($row['total_amount'], 2); ?></td>
                             <td><?php echo htmlspecialchars($row['order_date']); ?></td>
+                            <td><?php echo htmlspecialchars($row['status']); ?></td>
                             <td>
                                 <a href="view_order.php?order_id=<?php echo htmlspecialchars($row['order_id']); ?>">View</a> |
                                 <a href="manage_orders.php?delete_order_id=<?php echo htmlspecialchars($row['order_id']); ?>" onclick="return confirm('Are you sure you want to delete this order?');">Delete</a>
                             </td>
-                            <td><?php echo htmlspecialchars($row['status']); ?></td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>

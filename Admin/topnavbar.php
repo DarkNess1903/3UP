@@ -1,4 +1,5 @@
 <?php
+ob_start();
 include '../connectDB.php';
 
 // ตรวจสอบการเข้าสู่ระบบของ Admin
@@ -18,37 +19,11 @@ if (!isset($_SESSION['admin_id'])) {
     <meta name="author" content="">
     <title>Admin Dashboard</title>
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+    <link href="css/sb-admin-2.css" rel="stylesheet">
     <script src="js/alerts.js"></script>
-
-    <style>
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .navbar-brand {
-            flex: 1;
-        }
-        .nav-time {
-            text-align: center;
-            flex: 2;
-        }
-        .navbar .mx-auto {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px; /* เพิ่มขนาดตัวอักษร */
-            font-weight: bold;
-            color: #4e73df; /* สีที่โดดเด่น */
-        }
-
-        @media (max-width: 768px) {
-            .navbar .mx-auto {
-                font-size: 18px; /* ขนาดตัวอักษรเล็กลงสำหรับอุปกรณ์ขนาดเล็ก */
-            }
-        }
-    </style>
 </head>
 
 <body id="page-top">

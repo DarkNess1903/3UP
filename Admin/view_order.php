@@ -78,21 +78,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
         <section>
             <h2>Order ID: <?php echo htmlspecialchars($order['order_id']); ?></h2>
             <p><strong>Order Date:</strong> <?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($order['order_date']))); ?></p>
-            <p><strong>Total Amount:</strong> $<?php echo number_format($order['total_amount'], 2); ?></p>
+            <p><strong>Total Amount:</strong>฿<?php echo number_format($order['total_amount'], 2); ?></p>
             <p><strong>Status:</strong> <?php echo htmlspecialchars($order['status']); ?></p>
-            <?php if ($order['payment_slip']): ?>
-                <p><strong>Payment Slip:</strong> 
-                    <a href="#" class="view-payment-slip" data-image="/upload/<?php echo htmlspecialchars(basename($order['payment_slip'])); ?>">View Payment Slip</a>
-                </p>
-            <?php endif; ?>
 
-            <!-- โมดัลสำหรับแสดงภาพ -->
-            <div id="myModal" class="modal">
-                <span class="close">&times;</span>
-                <img class="modal-content" id="img01">
-                <div id="caption"></div>
-            </div>
-
+            <?php
+            $payment_slip = isset($order['payment_slip']) ? $order['payment_slip'] : '';
+            $image_path = "../Admin/uploads/" . htmlspecialchars(basename($payment_slip));
+            // ตรวจสอบการเข้าถึงไฟล์
+            $image_url = file_exists($image_path) && is_readable($image_path) ? $image_path : "../Admin/uploads/";
+            ?>
+            <p><strong>Payment Slip:</strong>
+                <a href="<?php echo htmlspecialchars($image_url, ENT_QUOTES, 'UTF-8'); ?>" class="view-payment-slip" data-image="<?php echo htmlspecialchars($image_url, ENT_QUOTES, 'UTF-8'); ?>">
+                    <i class="fas fa-file-image"></i> View Payment Slip
+                </a>
+            </p>
+            
             <!-- ฟอร์มสำหรับอัปเดตสถานะคำสั่งซื้อ -->
             <form action="view_order.php?order_id=<?php echo htmlspecialchars($order['order_id']); ?>" method="post">
                 <label for="status">Update Status:</label>
@@ -118,6 +118,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
     <footer>
         <!-- เพิ่มลิงก์หรือข้อมูลเกี่ยวกับเว็บไซต์ของคุณที่นี่ -->
     </footer>
+
+    <!-- โมดัลสำหรับแสดงภาพ -->
+    <div id="myModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="img01">
+        <div id="caption"></div>
+    </div>
 
     <script src="scripts.js"></script> <!-- ลิงก์ไปยังไฟล์ JavaScript -->
 </body>

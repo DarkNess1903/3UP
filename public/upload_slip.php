@@ -88,15 +88,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_FILES['payment_slip']) && $_FILES['payment_slip']['error'] == UPLOAD_ERR_OK) {
         $file_tmp = $_FILES['payment_slip']['tmp_name'];
         $file_name = $_FILES['payment_slip']['name'];
-        $upload_dir = 'uploads/';  // Directory to store uploaded files
-        
+        $upload_dir = '../uploads/';  // Directory to store uploaded files
+
         // ตรวจสอบว่ามีโฟลเดอร์ 'uploads' หรือไม่
         if (!is_dir($upload_dir)) {
             mkdir($upload_dir, 0755, true);
         }
 
         $file_path = $upload_dir . basename($file_name);
-        
+
         if (move_uploaded_file($file_tmp, $file_path)) {
             $update_order_query = "UPDATE orders SET payment_slip = ? WHERE order_id = ?";
             $stmt = mysqli_prepare($conn, $update_order_query);
@@ -121,32 +121,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 mysqli_close($conn);
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Payment Slip - Meat Store</title>
-</head>
-<body>
-    <header>
-        <h1>Upload Payment Slip</h1>
-    </header>
-
-    <main>
-        <section class="upload-slip">
-            <form action="" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="cart_id" value="<?php echo htmlspecialchars($cart_id, ENT_QUOTES, 'UTF-8'); ?>">
-                <label for="payment_slip">Upload Payment Slip:</label>
-                <input type="file" name="payment_slip" id="payment_slip" required>
-                <button type="submit">Submit</button>
-            </form>
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2024 Meat Store. All rights reserved.</p>
-    </footer>
-</body>
-</html>

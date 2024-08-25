@@ -3,12 +3,6 @@ session_start();
 include '../connectDB.php';
 include 'topnavbar.php';
 
-// ตรวจสอบการเข้าสู่ระบบของผู้ดูแลระบบ
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: login.php");
-    exit();
-}
-
 $customer_id = intval($_GET['customer_id'] ?? 0);
 
 if ($customer_id <= 0) {
