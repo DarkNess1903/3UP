@@ -339,7 +339,7 @@ if (!isset($_SESSION['admin_id'])) {
                     </script>
 
                          <!-- Area Chart -->
-                         <div class="col-xl-8 col-lg-7">
+                        <div class="col-xl-8 col-lg-7">
                             <div class="card shadow mb-4">
                                 <!-- Card Header - Dropdown -->
                                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -366,7 +366,7 @@ if (!isset($_SESSION['admin_id'])) {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                         <script>
                             fetch('admin/getEarningsOverview.php')
@@ -383,12 +383,13 @@ if (!isset($_SESSION['admin_id'])) {
                                             datasets: [{
                                                 label: "Earnings",
                                                 lineTension: 0.3,
-                                                backgroundColor: "rgba(78, 115, 223, 0.05)",
+                                                backgroundColor: "rgba(78, 115, 223, 0.1)", // Increased transparency for more readability
                                                 borderColor: "rgba(78, 115, 223, 1)",
-                                                pointRadius: 3,
+                                                borderWidth: 3, // Increased line thickness
+                                                pointRadius: 4,
                                                 pointBackgroundColor: "rgba(78, 115, 223, 1)",
                                                 pointBorderColor: "rgba(78, 115, 223, 1)",
-                                                pointHoverRadius: 3,
+                                                pointHoverRadius: 5,
                                                 pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
                                                 pointHoverBorderColor: "rgba(78, 115, 223, 1)",
                                                 pointHitRadius: 10,
@@ -409,14 +410,14 @@ if (!isset($_SESSION['admin_id'])) {
                                             scales: {
                                                 xAxes: [{
                                                     time: {
-                                                        unit: 'date'
+                                                        unit: 'month'
                                                     },
                                                     gridLines: {
                                                         display: false,
                                                         drawBorder: false
                                                     },
                                                     ticks: {
-                                                        maxTicksLimit: 7
+                                                        maxTicksLimit: 12
                                                     }
                                                 }],
                                                 yAxes: [{
@@ -425,7 +426,7 @@ if (!isset($_SESSION['admin_id'])) {
                                                         padding: 10,
                                                         // Include a dollar sign in the ticks
                                                         callback: function(value, index, values) {
-                                                            return '$' + value;
+                                                            return '$' + value.toLocaleString(); // Add commas to thousands
                                                         }
                                                     },
                                                     gridLines: {
@@ -438,7 +439,7 @@ if (!isset($_SESSION['admin_id'])) {
                                                 }],
                                             },
                                             legend: {
-                                                display: false
+                                                display: true // Show legend if you plan to add more datasets
                                             },
                                             tooltips: {
                                                 backgroundColor: "rgb(255,255,255)",
@@ -450,14 +451,14 @@ if (!isset($_SESSION['admin_id'])) {
                                                 borderWidth: 1,
                                                 xPadding: 15,
                                                 yPadding: 15,
-                                                displayColors: false,
+                                                displayColors: true, // Show the dataset colors in the tooltip
                                                 intersect: false,
                                                 mode: 'index',
                                                 caretPadding: 10,
                                                 callbacks: {
                                                     label: function(tooltipItem, chart) {
                                                         var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
-                                                        return datasetLabel + ': $' + tooltipItem.yLabel;
+                                                        return datasetLabel + ': $' + tooltipItem.yLabel.toLocaleString(); // Format numbers with commas
                                                     }
                                                 }
                                             }
@@ -466,6 +467,7 @@ if (!isset($_SESSION['admin_id'])) {
                                 })
                                 .catch(error => console.error('Error:', error));
                         </script>
+
 
                         <!-- Pie Chart -->
                         <div class="col-xl-4 col-lg-5">
