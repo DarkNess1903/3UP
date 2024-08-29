@@ -69,13 +69,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Details</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/scripts.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <header>
+    <header class="header">
         <h1>Order Details</h1>
     </header>
-    <main>
-        <section>
+    <main class="main-content">
+        <section class="order-details-section">
             <h2>Order ID: <?php echo htmlspecialchars($order['order_id']); ?></h2>
             <p><strong>Customer Name:</strong> <?php echo htmlspecialchars($order['customer_name']); ?></p>
             <p><strong>Order Date:</strong> <?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($order['order_date']))); ?></p>
@@ -85,39 +88,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
             <?php
             $payment_slip = isset($order['payment_slip']) ? $order['payment_slip'] : '';
             $image_path = "../Admin/uploads/" . htmlspecialchars(basename($payment_slip));
-            // ตรวจสอบการเข้าถึงไฟล์
             $image_url = file_exists($image_path) && is_readable($image_path) ? $image_path : "../Admin/uploads/";
             ?>
             <p><strong>Payment Slip:</strong>
-                <a href="<?php echo htmlspecialchars($image_url, ENT_QUOTES, 'UTF-8'); ?>" class="view-payment-slip" data-image="<?php echo htmlspecialchars($image_url, ENT_QUOTES, 'UTF-8'); ?>">
+                <a href="#" class="view-payment-slip" data-image="<?php echo htmlspecialchars($image_url, ENT_QUOTES, 'UTF-8'); ?>">
                     <i class="fas fa-file-image"></i> View Payment Slip
                 </a>
             </p>
             
-            <!-- ฟอร์มสำหรับอัปเดตสถานะคำสั่งซื้อ -->
-            <form action="view_order.php?order_id=<?php echo htmlspecialchars($order['order_id']); ?>" method="post">
+            <form action="view_order.php?order_id=<?php echo htmlspecialchars($order['order_id']); ?>" method="post" class="update-status-form">
                 <label for="status">Update Status:</label>
                 <select name="status" id="status" required>
                     <option value="รอรับเรื่อง" <?php if ($order['status'] == 'รอรับเรื่อง') echo 'selected'; ?>>รอรับเรื่อง (Awaiting)</option>
                     <option value="กำลังดำเนินการ" <?php if ($order['status'] == 'กำลังดำเนินการ') echo 'selected'; ?>>กำลังดำเนินการ (In Progress)</option>
                     <option value="เสร็จสมบรูณ์" <?php if ($order['status'] == 'เสร็จสมบรูณ์') echo 'selected'; ?>>เสร็จสมบรูณ์ (Completed)</option>
                 </select>
-                <button type="submit">Update Status</button>
+                <button type="submit" class="btn">Update Status</button>
             </form>
 
             <h3>Order Items</h3>
-            <ul>
+            <ul class="order-items">
                 <?php while ($detail = mysqli_fetch_assoc($details_result)): ?>
-                    <li>
-                        <img src="../product/<?php echo htmlspecialchars($detail['image']); ?>" alt="<?php echo htmlspecialchars($detail['name']); ?>" width="100">
+                    <li class="order-item">
+                        <img src="../product/<?php echo htmlspecialchars($detail['image']); ?>" alt="<?php echo htmlspecialchars($detail['name']); ?>" class="item-image">
                         <p><?php echo htmlspecialchars($detail['name']); ?> - Quantity: <?php echo htmlspecialchars($detail['quantity']); ?> - Price: ฿<?php echo number_format($detail['price'], 2); ?> - Total: ฿<?php echo number_format($detail['total'], 2); ?></p>
                     </li>
                 <?php endwhile; ?>
             </ul>
         </section>
     </main>
-    <footer>
-        <!-- เพิ่มลิงก์หรือข้อมูลเกี่ยวกับเว็บไซต์ของคุณที่นี่ -->
+    <footer class="footer">
+        <p>&copy; 2024 Your Store. All rights reserved.</p>
     </footer>
 
     <!-- โมดัลสำหรับแสดงภาพ -->
@@ -126,8 +127,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['status'])) {
         <img class="modal-content" id="img01">
         <div id="caption"></div>
     </div>
-
-    <script src="scripts.js"></script> <!-- ลิงก์ไปยังไฟล์ JavaScript -->
 </body>
 </html>
 

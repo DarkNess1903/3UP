@@ -1,94 +1,177 @@
+/* General Styles */
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fc;
     margin: 0;
     padding: 0;
-    background-color: #f8f9fa;
 }
 
-header {
+.header {
     background-color: #4e73df;
     color: #fff;
     padding: 20px;
     text-align: center;
 }
 
-main {
+.main-content {
     padding: 20px;
 }
 
-table {
+.order-list-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.order-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
 }
 
-table th, table td {
-    padding: 10px;
+.order-table th,
+.order-table td {
     border: 1px solid #ddd;
+    padding: 12px;
     text-align: center;
 }
 
-table th {
+.order-table th {
     background-color: #4e73df;
     color: #fff;
 }
 
-table tr:nth-child(even) {
+.order-table tr:nth-child(even) {
     background-color: #f2f2f2;
 }
 
-a {
-    color: #4e73df;
-    text-decoration: none;
+.order-table tr:hover {
+    background-color: #ddd;
 }
 
-a:hover {
-    text-decoration: underline;
+.btn-view {
+    background-color: #1cc88a;
+    color: #fff;
 }
 
-footer {
+.btn-view:hover {
+    background-color: #17a673;
+}
+
+.btn-delete {
+    background-color: #e74a3b;
+    color: #fff;
+}
+
+.btn-delete:hover {
+    background-color: #c0392b;
+}
+
+.footer {
     text-align: center;
     padding: 10px;
     background-color: #4e73df;
     color: #fff;
     position: fixed;
-    width: 100%;
     bottom: 0;
+    width: 100%;
 }
 
-.actions a {
-    margin: 0 5px;
-    padding: 5px 10px;
-    background-color: #28a745;
+.header {
+    background-color: #4e73df;
     color: #fff;
-    border-radius: 5px;
-    transition: background-color 0.3s;
+    padding: 20px;
+    text-align: center;
 }
 
-.actions a.delete {
-    background-color: #dc3545;
+.main-content {
+    padding: 20px;
 }
 
-.actions a:hover {
-    background-color: #218838;
+.order-details-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 0 auto;
 }
 
-.actions a.delete:hover {
-    background-color: #c82333;
+.order-details-section h2 {
+    margin-top: 0;
 }
 
-/* โมดัล */
+.order-items {
+    list-style-type: none;
+    padding: 0;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.item-image {
+    margin-right: 20px;
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.update-status-form {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.update-status-form select {
+    padding: 8px;
+    font-size: 16px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.update-status-form .btn {
+    background-color: #4e73df;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.update-status-form .btn:hover {
+    background-color: #3a5bb1;
+}
+
+.footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #4e73df;
+    color: #fff;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Modal Styles */
 .modal {
-    display: none; 
-    position: fixed; 
-    z-index: 1; 
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 100px;
     left: 0;
     top: 0;
-    width: 100%; 
-    height: 100%; 
-    overflow: auto; 
-    background-color: rgb(0,0,0); 
-    background-color: rgba(0,0,0,0.4); 
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
 }
 
 .modal-content {
@@ -98,6 +181,17 @@ footer {
     max-width: 700px;
 }
 
+#caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+    height: 150px;
+}
+
 .close {
     position: absolute;
     top: 15px;
@@ -105,6 +199,7 @@ footer {
     color: #f1f1f1;
     font-size: 40px;
     font-weight: bold;
+    transition: 0.3s;
 }
 
 .close:hover,
@@ -112,4 +207,80 @@ footer {
     color: #bbb;
     text-decoration: none;
     cursor: pointer;
+}
+
+.header {
+    background-color: #4e73df;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+}
+
+.main-content {
+    padding: 20px;
+}
+
+.product-management {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.product-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.product-table th, .product-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.product-table th {
+    background-color: #4e73df;
+    color: #fff;
+}
+
+.product-table td img.product-image {
+    width: 100px;
+    border-radius: 4px;
+}
+
+.btn {
+    background-color: #4e73df;
+    color: #fff;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #3a5bb1;
+}
+
+.btn-edit {
+    margin-right: 10px;
+}
+
+.btn-delete {
+    background-color: #e74a3b;
+}
+
+.btn-delete:hover {
+    background-color: #c43f33;
+}
+
+.form-container {
+    margin-bottom: 20px;
+}
+
+.hidden {
+    display: none;
 }

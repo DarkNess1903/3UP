@@ -46,24 +46,25 @@ $result = mysqli_query($conn, $query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Orders</title>
-    <link rel="stylesheet" href="styles.css">    
+    <link rel="stylesheet" href="css/styles.css">  
+    <script src="js/scripts.js" defer></script>  
 </head>
 <body>
-    <header>
+    <header class="header">
         <h1>Manage Orders</h1>
     </header>
-    <main>
-        <section>
+    <main class="main-content">
+        <section class="order-list-section">
             <h2>Order List</h2>
-            <table>
+            <table class="order-table">
                 <thead>
                     <tr>
                         <th>Order ID</th>
                         <th>Customer ID</th>
                         <th>Total Amount</th>
                         <th>Order Date</th>
-                        <th>Actions</th>
                         <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -75,8 +76,8 @@ $result = mysqli_query($conn, $query);
                             <td><?php echo htmlspecialchars($row['order_date']); ?></td>
                             <td><?php echo htmlspecialchars($row['status']); ?></td>
                             <td>
-                                <a href="view_order.php?order_id=<?php echo htmlspecialchars($row['order_id']); ?>">View</a> |
-                                <a href="manage_orders.php?delete_order_id=<?php echo htmlspecialchars($row['order_id']); ?>" onclick="return confirm('Are you sure you want to delete this order?');">Delete</a>
+                                <a href="view_order.php?order_id=<?php echo htmlspecialchars($row['order_id']); ?>" class="btn btn-view">View</a>
+                                <a href="manage_orders.php?delete_order_id=<?php echo htmlspecialchars($row['order_id']); ?>" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this order?');">Delete</a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -84,7 +85,7 @@ $result = mysqli_query($conn, $query);
             </table>
         </section>
     </main>
-    <footer>
+    <footer class="footer">
         <p>&copy; 2024 Your Store. All rights reserved.</p>
     </footer>
 </body>

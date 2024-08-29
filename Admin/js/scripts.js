@@ -1,34 +1,20 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const deleteLinks = document.querySelectorAll('a.delete');
+// Modal script for viewing payment slip
+document.addEventListener('DOMContentLoaded', function () {
     
-    deleteLinks.forEach(link => {
-        link.addEventListener('click', (event) => {
-            const confirmation = confirm('Are you sure you want to delete this order?');
-            if (!confirmation) {
-                event.preventDefault();
-            }
+    const modal = document.getElementById("myModal");
+    const img = document.getElementById("img01");
+    const captionText = document.getElementById("caption");
+
+    document.querySelectorAll('.view-payment-slip').forEach(item => {
+        item.addEventListener('click', function(event) {
+            event.preventDefault();
+            modal.style.display = "block";
+            img.src = this.getAttribute('data-image');
+            captionText.innerHTML = this.innerText;
         });
     });
-});
 
-// เปิดและปิดโมดัล
-document.addEventListener('DOMContentLoaded', function () {
-    var modal = document.getElementById('myModal');
-    var img = document.querySelector('.view-payment-slip');
-    var modalImg = document.getElementById('img01');
-    var captionText = document.getElementById('caption');
-
-    if (img) {
-        img.onclick = function () {
-            modal.style.display = 'block';
-            modalImg.src = this.getAttribute('data-image');
-            captionText.innerHTML = this.innerHTML;
-        };
-    }
-
-    var span = document.getElementsByClassName('close')[0];
-    span.onclick = function () {
-        modal.style.display = 'none';
+    document.querySelector('.close').onclick = function() {
+        modal.style.display = "none";
     };
 });
-

@@ -71,24 +71,17 @@ $result = mysqli_query($conn, $query);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Products</title>
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        .hidden {
-            display: none;
-        }
-        .form-container {
-            margin-bottom: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/scripts.js" defer></script>
 </head>
 <body>
-    <header>
+    <header class="header">
         <h1>Manage Products</h1>
     </header>
-    <main>
-        <section>
+    <main class="main-content">
+        <section class="product-management">
             <div class="form-container">
-                <button id="addProductBtn">Add Product</button>
+                <button id="addProductBtn" class="btn">Add Product</button>
                 <form id="addProductForm" class="hidden" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="product_id" id="product_id">
                     <label for="name">Product Name:</label>
@@ -106,11 +99,11 @@ $result = mysqli_query($conn, $query);
                     <label for="image">Image:</label>
                     <input type="file" id="image" name="image" <?php echo isset($_GET['edit_id']) ? '' : 'required'; ?>>
                     
-                    <button type="submit">Save Product</button>
+                    <button type="submit" class="btn">Save Product</button>
                 </form>
             </div>
             <h2>Product List</h2>
-            <table>
+            <table class="product-table">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -130,10 +123,10 @@ $result = mysqli_query($conn, $query);
                             <td><?php echo number_format($row['price'], 2); ?>฿</td>
                             <td><?php echo htmlspecialchars($row['stock_quantity']); ?></td>
                             <td><?php echo htmlspecialchars($row['details']); ?></td>
-                            <td><img src="<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>" width="100"></td>
+                            <td><img src="<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>" class="product-image"></td>
                             <td>
-                                <a href="manage_products.php?edit_id=<?php echo $row['product_id']; ?>">Edit</a>
-                                <a href="manage_products.php?delete_id=<?php echo $row['product_id']; ?>" onclick="return confirm('Are you sure you want to delete this product?');">Delete</a>
+                                <a href="manage_products.php?edit_id=<?php echo $row['product_id']; ?>" class="btn btn-edit">Edit</a>
+                                <a href="manage_products.php?delete_id=<?php echo $row['product_id']; ?>" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this product?');">Delete</a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
@@ -141,30 +134,35 @@ $result = mysqli_query($conn, $query);
             </table>
         </section>
     </main>
-
-    <script>
-        document.getElementById('addProductBtn').addEventListener('click', function() {
-            const form = document.getElementById('addProductForm');
-            form.classList.toggle('hidden');
-        });
-
-        <?php if (isset($_GET['edit_id'])): ?>
-            const productId = <?php echo intval($_GET['edit_id']); ?>;
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', 'get_product.php?id=' + productId, true);
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    const product = JSON.parse(xhr.responseText);
-                    document.getElementById('product_id').value = product.product_id;
-                    document.getElementById('name').value = product.name;
-                    document.getElementById('price').value = product.price;
-                    document.getElementById('stock_quantity').value = product.stock_quantity;
-                    document.getElementById('details').value = product.details;
-                    document.getElementById('addProductForm').classList.remove('hidden');
-                }
-            };
-            xhr.send();
-        <?php endif; ?>
-    </script>
 </body>
 </html>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const addProductBtn = document.getElementById('addProductBtn');
+    const addProductForm = document.getElementById('addProductForm');
+
+    addProductBtn.addEventListener('click', function() {
+        addProductForm.classList.toggle('hidden');
+    });
+
+    <?php if (isset($_GET['edit_id'])): ?>
+        const productId = <?php echo intval($_GET['edit_id']); ?>;
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', 'get_product.php?id=' + productId, true);
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                const product = JSON.parse(xhr.responseText);
+                document.getElementById('product_id').value = product.product_id;
+                document.getElementById('name').value = product.name;
+                document.getElementById('price').value = product.price;
+                document.getElementById('stock_quantity').value = product.stock_quantity;
+                document.getElementById('details').value = product.details;
+                addProductForm.classList.remove('hidden');
+            }
+        };
+        xhr.send();
+    <?php endif; ?>
+});
+
+</script>
