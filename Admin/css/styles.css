@@ -7,7 +7,7 @@ body {
 }
 
 .header {
-    background-color: #4e73df;
+    background-color: #99332a;
     color: #fff;
     padding: 20px;
     text-align: center;
@@ -283,4 +283,11 @@ body {
 
 .hidden {
     display: none;
+}
+
+.stock-input {
+    width: 60px; /* ปรับขนาดของ input */
+    padding: 5px; /* ลดขนาดของ padding */
+    font-size: 14px; /* ลดขนาดตัวอักษร */
+    text-align: center; /* จัดตัวอักษรให้อยู่กึ่งกลาง */
 }

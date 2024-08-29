@@ -116,21 +116,27 @@ $result = mysqli_query($conn, $query);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($row['product_id']); ?></td>
-                            <td><?php echo htmlspecialchars($row['name']); ?></td>
-                            <td><?php echo number_format($row['price'], 2); ?>฿</td>
-                            <td><?php echo htmlspecialchars($row['stock_quantity']); ?></td>
-                            <td><?php echo htmlspecialchars($row['details']); ?></td>
-                            <td><img src="<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>" class="product-image"></td>
-                            <td>
-                                <a href="manage_products.php?edit_id=<?php echo $row['product_id']; ?>" class="btn btn-edit">Edit</a>
-                                <a href="manage_products.php?delete_id=<?php echo $row['product_id']; ?>" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this product?');">Delete</a>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
-                </tbody>
+                <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($row['product_id']); ?></td>
+                        <td><?php echo htmlspecialchars($row['name']); ?></td>
+                        <td><?php echo number_format($row['price'], 2); ?>฿</td>
+                        <td>
+                        <form action="update_stock.php" method="post">
+                            <input type="hidden" name="product_id" value="<?php echo $row['product_id']; ?>">
+                            <input type="number" name="new_stock" class="stock-input" value="<?php echo htmlspecialchars($row['stock_quantity']); ?>" min="0">
+                            <button type="submit"class="btn btn-edi">Update Stock</button>
+                        </form>
+                        </td>
+                        <td><?php echo htmlspecialchars($row['details']); ?></td>
+                        <td><img src="<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>" class="product-image"></td>
+                        <td>
+                            <a href="manage_products.php?edit_id=<?php echo $row['product_id']; ?>" class="btn btn-edit">Edit</a>
+                            <a href="manage_products.php?delete_id=<?php echo $row['product_id']; ?>" class="btn btn-delete" onclick="return confirm('Are you sure you want to delete this product?');">Delete</a>
+                        </td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
             </table>
         </section>
     </main>

@@ -16,33 +16,55 @@ if (!isset($_SESSION['customer_id'])) {
     <title>Top Navbar</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    <script src="js/scripts.js"></script>
 </head>
 <body>
-    <header class="top-navbar">
-        <nav>
-            <ul class="nav-links">
-                <li><a href="index.php">Home</a></li>
-                <li><a href="cart.php">Cart</a></li>
-                <li><a href="order_history.php">Order History</a></li>
-                <li><a href="profile.php">Profile</a></li>
-            </ul>
-            <div class="auth-links">
-                <?php
-                if (isset($_SESSION['customer_id'])) {
-                    $customer_id = $_SESSION['customer_id'];
-                    $query = "SELECT name FROM customer WHERE customer_id = ?";
-                    $stmt = mysqli_prepare($conn, $query);
-                    mysqli_stmt_bind_param($stmt, 'i', $customer_id);
-                    mysqli_stmt_execute($stmt);
-                    $result = mysqli_stmt_get_result($stmt);
-                    if ($row = mysqli_fetch_assoc($result)) {
-                        echo "User " . htmlspecialchars($row['name']);
-                    }
-                    echo " <a href='logout.php'>Logout</a>";
-                } else {
-                    echo "<a href='login.php'>Login</a> or <a href='register.php'>Register</a>";
+<header
+ class="top-navbar">
+ <a href="index.php" class="logo-container">
+            <img src="images/logo.jpg" alt="Logo" class="logo">
+        <style>
+ /* Style for the entire top navigation bar */
+/* Style for the logo container */
+.logo-container {
+    display: flex;                /* ใช้ Flexbox เพื่อจัดตำแหน่งโลโก้ในแนวตั้ง */
+    align-items: center;          /* จัดกลางโลโก้ในแนวตั้ง */
+    margin-right: 20px;           /* ระยะห่างระหว่างโลโก้กับเมนู */
+}
+
+/* Style for the logo */
+.logo {
+    height: 100px;                /* ปรับขนาดความสูงของโลโก้ตามที่ต้องการ */
+    width: auto;                  /* ให้ความกว้างปรับอัตโนมัติตามความสูง */
+}
+
+        </style>
+        </a>
+ <nav>
+       
+        <ul class="nav-links">
+        <li><a href="index.php">Home</a></li>
+            <li><a href="cart.php">Cart</a></li>
+            <li><a href="order_history.php">Order History</a></li>
+            <li><a href="profile.php">Profile</a></li>
+        </ul>
+        <div class="auth-links">
+            <?php
+            if (isset($_SESSION['customer_id'])) {
+                $customer_id = $_SESSION['customer_id'];
+                $query = "SELECT name FROM customer WHERE customer_id = ?";
+                $stmt = mysqli_prepare($conn, $query);
+                mysqli_stmt_bind_param($stmt, 'i', $customer_id);
+                mysqli_stmt_execute($stmt);
+                $result = mysqli_stmt_get_result($stmt);
+                if ($row = mysqli_fetch_assoc($result)) {
+                    echo "User " . htmlspecialchars($row['name']);
                 }
-                ?>
-            </div>
-        </nav>
-    </header>
+                echo " <a href='logout.php'>Logout</a>";
+            } else {
+                echo "<a href='login.php'>Login</a> or <a href='register.php'>Register</a>";
+            }
+            ?>
+        </div>
+    </nav>
+</header>

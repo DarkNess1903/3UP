@@ -120,7 +120,7 @@ if (!isset($_SESSION['admin_id'])) {
                                 font-size: 18px; /* ขนาดตัวอักษรเล็กลงสำหรับอุปกรณ์ขนาดเล็ก */
                             }
                         }
-                        </style>
+                    </style>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -225,3 +225,4 @@ if (!isset($_SESSION['admin_id'])) {
 </body>
 
 </html>
+

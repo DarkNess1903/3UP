@@ -136,7 +136,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confirm Checkout - Meat Store</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/scripts.js"></script>
 </head>
 <body>
     <header>
@@ -181,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
                 <div class="payment-info">
                     <h3>Payment Information</h3>
                     <p>Please scan the QR code below to make a payment:</p>
-                    <img src="../images/qr_code.png" alt="QR Code" width="200">
+                    <img src="../Admin/images/qr_code.png" alt="QR Code" width="200">
                     <p><strong>Bank Account:</strong> 123-456-7890</p>
                     <p><strong>Bank Name:</strong> Example Bank</p>
                 </div>
