@@ -7,17 +7,30 @@ include 'topnavbar.php';
 if (isset($_GET['delete_order_id'])) {
     $delete_order_id = intval($_GET['delete_order_id']);
 
-    // ลบคำสั่งซื้อจากฐานข้อมูล
-    $delete_query = "DELETE FROM orders WHERE order_id = ?";
-    $stmt = mysqli_prepare($conn, $delete_query);
-    mysqli_stmt_bind_param($stmt, 'i', $delete_order_id);
+    // เริ่มต้นการทำธุรกรรม
+    mysqli_begin_transaction($conn);
 
-    if (mysqli_stmt_execute($stmt)) {
-        // ลบสำเร็จ
+    try {
+        // ลบข้อมูลใน orderdetails ก่อน
+        $delete_orderdetails_query = "DELETE FROM orderdetails WHERE order_id = ?";
+        $stmt = mysqli_prepare($conn, $delete_orderdetails_query);
+        mysqli_stmt_bind_param($stmt, 'i', $delete_order_id);
+        mysqli_stmt_execute($stmt);
+
+        // ลบคำสั่งซื้อจากฐานข้อมูล
+        $delete_query = "DELETE FROM orders WHERE order_id = ?";
+        $stmt = mysqli_prepare($conn, $delete_query);
+        mysqli_stmt_bind_param($stmt, 'i', $delete_order_id);
+        mysqli_stmt_execute($stmt);
+
+        // ยืนยันการทำธุรกรรม
+        mysqli_commit($conn);
         header("Location: manage_orders.php");
         exit();
-    } else {
-        echo "Error deleting order: " . mysqli_error($conn);
+    } catch (Exception $e) {
+        // ยกเลิกการทำธุรกรรมในกรณีที่เกิดข้อผิดพลาด
+        mysqli_rollback($conn);
+        echo "Error deleting order: " . $e->getMessage();
     }
 }
 

@@ -23,7 +23,10 @@ if (!isset($_SESSION['admin_id'])) {
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
     <link href="css/sb-admin-2.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
     <script src="js/alerts.js"></script>
+    <script src="js/scripts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body id="page-top">
@@ -65,13 +68,6 @@ if (!isset($_SESSION['admin_id'])) {
                     <i class="fas fa-fw fa-edit"></i>
                     <span>Edit Product</span></a>
             </li>
-
-            <!-- Nav Item - Notification of News -->
-            <li class="nav-item">
-                <a class="nav-link" href="notification-of-news.html">
-                    <i class="fas fa-fw fa-bell"></i>
-                    <span>Notification of News</span></a>
-            </li>
         </ul>
         <!-- End of Sidebar -->
 
@@ -108,36 +104,94 @@ if (!isset($_SESSION['admin_id'])) {
                         // Initial call to display time immediately
                         updateTime();
                     </script>
+                    <!-- CSS -->
+                    <style>
+                        .navbar .mx-auto {
+                            position: absolute;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            font-size: 24px; /* เพิ่มขนาดตัวอักษร */
+                            font-weight: bold;
+                            color: #4e73df; /* สีที่โดดเด่น */
+                        }
+
+                        @media (max-width: 768px) {
+                            .navbar .mx-auto {
+                                font-size: 18px; /* ขนาดตัวอักษรเล็กลงสำหรับอุปกรณ์ขนาดเล็ก */
+                            }
+                        }
+                        </style>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
 
-                        <!-- Nav Item - Alerts -->
-                        <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                         <!-- Nav Item - Alerts -->
+                         <li class="nav-item dropdown no-arrow mx-1 show">
+                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
-                                <span class="badge badge-danger badge-counter">3+</span>
+                                <span class="badge badge-danger badge-counter" id="alertCount">0</span>
                             </a>
+
                             <!-- Dropdown - Alerts -->
                             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown">
                                 <h6 class="dropdown-header">
                                     Alerts Center
                                 </h6>
-                                <a class="dropdown-item d-flex align-items-center" href="orderDetails.php">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-info">
-                                            <i class="fas fa-shopping-cart text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500"><?= date('F j, Y') ?></div>
-                                        <span class="font-weight-bold">New order received!</span>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+                                <!-- New Order Alert -->
+                                <div id="alertContent">
+                                    <!-- Alerts will be dynamically inserted here -->
+                                </div>
+                                <a class="dropdown-item text-center small text-gray-500" href="orderDetails.php">Show All Alerts</a>
                             </div>
                         </li>
+
+                        <!-- Chart.js and jQuery -->
+                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+                        <script>
+                        $(document).ready(function() {
+                            // ฟังก์ชันดึงข้อมูลออเดอร์ใหม่
+                            function updateAlerts() {
+                                $.getJSON('get_new_orders.php', function(data) {
+                                    var newOrders = data;
+
+                                    // อัพเดตจำนวนแจ้งเตือน
+                                    $('#alertCount').text(newOrders.length);
+
+                                    // สร้างเนื้อหาของการแจ้งเตือน
+                                    var alertHtml = '';
+                                    if (newOrders.length > 0) {
+                                        $.each(newOrders, function(index, order) {
+                                            alertHtml += 
+                                                '<a class="dropdown-item d-flex align-items-center" href="view_order.php?order_id=' + order.order_id + '">' +
+                                                '<div class="mr-3">' +
+                                                '<div class="icon-circle bg-info">' +
+                                                '<i class="fas fa-shopping-cart text-white"></i>' +
+                                                '</div>' +
+                                                '</div>' +
+                                                '<div>' +
+                                                '<div class="small text-gray-500">' + new Date(order.order_date).toLocaleDateString() + '</div>' +
+                                                '<span class="font-weight-bold">New order received! Order ID: ' + order.order_id + '</span>' +
+                                                '</div>' +
+                                                '</a>';
+                                        });
+                                    } else {
+                                        alertHtml = '<a class="dropdown-item text-center small text-gray-500" href="#">No new orders</a>';
+                                    }
+
+                                    $('#alertContent').html(alertHtml);
+                                });
+                            }
+
+                            // เรียกใช้ฟังก์ชันเพื่ออัพเดตแจ้งเตือนเมื่อเอกสารโหลดเสร็จ
+                            updateAlerts();
+
+                            // รีเฟรชแจ้งเตือนทุกๆ 30 วินาที
+                            setInterval(updateAlerts, 30000);
+                        });
+                        </script>
 
                         <div class="topbar-divider d-none d-sm-block"></div>
 

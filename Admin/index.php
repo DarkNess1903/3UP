@@ -81,13 +81,6 @@ if (!isset($_SESSION['admin_id'])) {
                     <i class="fas fa-fw fa-edit"></i>
                     <span>Edit Product</span></a>
             </li>
-
-            <!-- Nav Item - Notification of News -->
-            <li class="nav-item">
-                <a class="nav-link" href="notification-of-news.html">
-                    <i class="fas fa-fw fa-bell"></i>
-                    <span>Notification of News</span></a>
-            </li>
         </ul>
         <!-- End of Sidebar -->
 
@@ -172,30 +165,68 @@ if (!isset($_SESSION['admin_id'])) {
                             <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
-                                <span class="badge badge-danger badge-counter">3+</span>
+                                <span class="badge badge-danger badge-counter" id="alertCount">0</span>
                             </a>
-                            
+
                             <!-- Dropdown - Alerts -->
                             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown">
                                 <h6 class="dropdown-header">
-                                    Alerts Center   
+                                    Alerts Center
                                 </h6>
                                 <!-- New Order Alert -->
-                                <a class="dropdown-item d-flex align-items-center" href="orderDetails.php">
-                                    <div class="mr-3">
-                                        <div class="icon-circle bg-info">
-                                            <i class="fas fa-shopping-cart text-white"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div class="small text-gray-500"><?= date('F j, Y') ?></div>
-                                        <span class="font-weight-bold">New order received!</span>
-                                    </div>
-                                </a>
-
-                                <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
+                                <div id="alertContent">
+                                    <!-- Alerts will be dynamically inserted here -->
+                                </div>
+                                <a class="dropdown-item text-center small text-gray-500" href="orderDetails.php">Show All Alerts</a>
                             </div>
                         </li>
+
+                        <!-- Chart.js and jQuery -->
+                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+                        <script>
+                        $(document).ready(function() {
+                            // ฟังก์ชันดึงข้อมูลออเดอร์ใหม่
+                            function updateAlerts() {
+                                $.getJSON('get_new_orders.php', function(data) {
+                                    var newOrders = data;
+
+                                    // อัพเดตจำนวนแจ้งเตือน
+                                    $('#alertCount').text(newOrders.length);
+
+                                    // สร้างเนื้อหาของการแจ้งเตือน
+                                    var alertHtml = '';
+                                    if (newOrders.length > 0) {
+                                        $.each(newOrders, function(index, order) {
+                                            alertHtml += 
+                                                '<a class="dropdown-item d-flex align-items-center" href="view_order.php?order_id=' + order.order_id + '">' +
+                                                '<div class="mr-3">' +
+                                                '<div class="icon-circle bg-info">' +
+                                                '<i class="fas fa-shopping-cart text-white"></i>' +
+                                                '</div>' +
+                                                '</div>' +
+                                                '<div>' +
+                                                '<div class="small text-gray-500">' + new Date(order.order_date).toLocaleDateString() + '</div>' +
+                                                '<span class="font-weight-bold">New order received! Order ID: ' + order.order_id + '</span>' +
+                                                '</div>' +
+                                                '</a>';
+                                        });
+                                    } else {
+                                        alertHtml = '<a class="dropdown-item text-center small text-gray-500" href="#">No new orders</a>';
+                                    }
+
+                                    $('#alertContent').html(alertHtml);
+                                });
+                            }
+
+                            // เรียกใช้ฟังก์ชันเพื่ออัพเดตแจ้งเตือนเมื่อเอกสารโหลดเสร็จ
+                            updateAlerts();
+
+                            // รีเฟรชแจ้งเตือนทุกๆ 30 วินาที
+                            setInterval(updateAlerts, 30000);
+                        });
+                        </script>
 
                         <div class="topbar-divider d-none d-sm-block"></div>
 
@@ -371,110 +402,222 @@ if (!isset($_SESSION['admin_id'])) {
                         });
                     </script>
 
-                       <!-- Area Chart -->
-                            <div class="col-xl-8 col-lg-7">
-                                <div class="card shadow mb-4">
-                                    <!-- Card Header - Dropdown -->
-                                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                        <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
-                                        <div class="dropdown no-arrow">
-                                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                            </a>
-                                            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
-                                                <div class="dropdown-header">Dropdown Header:</div>
-                                                <a class="dropdown-item" href="#">Action</a>
-                                                <a class="dropdown-item" href="#">Another action</a>
-                                                <div class="dropdown-divider"></div>
-                                                <a class="dropdown-item" href="#">Something else here</a>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Card Body -->
-                                    <div class="card-body">
-                                        <div class="chart-area">
-                                            <canvas id="myAreaChart"></canvas>
-                                        </div>
+                    <!-- Line Chart -->
+                    <div class="col-xl-8 col-lg-7">
+                        <div class="card shadow mb-4">
+                            <!-- Card Header - Dropdown -->
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
+                                <div class="dropdown no-arrow">
+                                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                                        <div class="dropdown-header">Dropdown Header:</div>
+                                        <a class="dropdown-item" href="#">Action</a>
+                                        <a class="dropdown-item" href="#">Another action</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="#">Something else here</a>
                                     </div>
                                 </div>
                             </div>
 
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    fetch('data/earnings_data.php') // เปลี่ยนเป็นเส้นทางที่ถูกต้อง
-                                        .then(response => response.json())
-                                        .then(data => {
-                                            const labels = data.map(item => item.date);
-                                            const earnings = data.map(item => item.earnings);
-
-                                            var ctx = document.getElementById('myAreaChart').getContext('2d');
-                                            var myLineChart = new Chart(ctx, {
-                                                type: 'line',
-                                                data: {
-                                                    labels: labels,
-                                                    datasets: [{
-                                                        label: 'Earnings',
-                                                        data: earnings,
-                                                        backgroundColor: 'rgba(78, 115, 223, 0.2)',
-                                                        borderColor: 'rgba(78, 115, 223, 1)',
-                                                        borderWidth: 1,
-                                                        fill: true
-                                                    }]
-                                                },
-                                                options: {
-                                                    scales: {
-                                                        x: {
-                                                            beginAtZero: true
-                                                        },
-                                                        y: {
-                                                            beginAtZero: true
-                                                        }
-                                                    }
-                                                }
-                                            });
-                                        });
-                                });
-                            </script>
-                        <!-- Pie Chart -->
-                        <div class="col-xl-4 col-lg-5">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header - Dropdown -->
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Order Status Distribution</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">Dropdown Header:</div>
-                                            <a class="dropdown-item" href="#">Action</a>
-                                            <a class="dropdown-item" href="#">Another action</a>
-                                            <div class="dropdown-divider"></div>
-                                            <a class="dropdown-item" href="#">Something else here</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body">
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="myPieChart"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-primary"></i> Awaiting
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-success"></i> In Progress
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-info"></i> Completed
-                                        </span>
-                                    </div>
+                            <!-- Card Body -->
+                            <div class="card-body">
+                                <div class="chart-area">
+                                    <canvas id="myLineChart"></canvas>
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Chart.js Script -->
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script>
+                        // เมื่อเอกสารโหลดเสร็จ
+                        document.addEventListener('DOMContentLoaded', function() {
+                            fetch('get_data.php')
+                                .then(response => response.json())
+                                .then(data => {
+                                    var ctx = document.getElementById('myLineChart').getContext('2d');
+                                    var myLineChart = new Chart(ctx, {
+                                        type: 'line', // กราฟเส้น
+                                        data: {
+                                            labels: data.labels, // ข้อมูลแกน Y (ชื่อเดือน)
+                                            datasets: [{
+                                                label: 'Monthly Earnings', // ชื่อของกราฟ
+                                                data: data.data, // ข้อมูลที่แสดงในกราฟ
+                                                borderColor: 'rgba(78, 115, 223, 1)', // สีของเส้น
+                                                backgroundColor: 'rgba(78, 115, 223, 0.2)', // สีพื้นหลังของกราฟ
+                                                borderWidth: 2, // ขนาดของเส้น
+                                                fill: false // ไม่ให้กราฟเติมสี
+                                            }]
+                                        },
+                                        options: {
+                                            scales: {
+                                                x: {
+                                                    title: {
+                                                        display: true,
+                                                        text: 'Month' // แท็กแกน X
+                                                    }
+                                                },
+                                                y: {
+                                                    title: {
+                                                        display: true,
+                                                        text: 'Earnings (Amount)' // แท็กแกน Y
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    });
+                                })
+                                .catch(error => console.error('Error fetching data:', error));
+                        });
+                    </script>
+
+                    <!-- Pie Chart -->
+                    <div class="col-xl-4 col-lg-5">
+                        <div class="card shadow mb-4">
+                            <!-- Card Header - Dropdown -->
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Order Status Distribution</h6>
+                                <div class="dropdown no-arrow">
+                                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                                        <div class="dropdown-header">Dropdown Header:</div>
+                                        <a class="dropdown-item" href="#">Action</a>
+                                        <a class="dropdown-item" href="#">Another action</a>
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="#">Something else here</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Card Body -->
+                            <div class="card-body">
+                                <div class="chart-pie pt-4 pb-2">
+                                    <canvas id="myPieChart"></canvas>
+                                </div>
+                                <div class="mt-4 text-center small">
+                                    <span class="mr-2">
+                                        <i class="fas fa-circle text-primary"></i> Awaiting
+                                    </span>
+                                    <span class="mr-2">
+                                        <i class="fas fa-circle text-success"></i> In Progress
+                                    </span>
+                                    <span class="mr-2">
+                                        <i class="fas fa-circle text-info"></i> Completed
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart.js Script -->
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script>
+                        // เมื่อเอกสารโหลดเสร็จ
+                        document.addEventListener('DOMContentLoaded', function() {
+                            fetch('get_order_status_data.php')
+                                .then(response => response.json())
+                                .then(data => {
+                                    var ctx = document.getElementById('myPieChart').getContext('2d');
+                                    var myPieChart = new Chart(ctx, {
+                                        type: 'pie', // กราฟวงกลม
+                                        data: {
+                                            labels: data.labels, // ข้อมูลสถานะ
+                                            datasets: [{
+                                                data: data.data, // จำนวนคำสั่งซื้อในแต่ละสถานะ
+                                                backgroundColor: ['rgba(78, 115, 223, 1)', 'rgba(28, 200, 138, 1)', 'rgba(54, 185, 204, 1)'], // สีของวงกลม
+                                                hoverBackgroundColor: ['rgba(78, 115, 223, 0.8)', 'rgba(28, 200, 138, 0.8)', 'rgba(54, 185, 204, 0.8)'] // สีของวงกลมเมื่อเอาเมาส์ชี้
+                                            }]
+                                        },
+                                        options: {
+                                            responsive: true,
+                                            plugins: {
+                                                legend: {
+                                                    position: 'top',
+                                                },
+                                                tooltip: {
+                                                    callbacks: {
+                                                        label: function(tooltipItem) {
+                                                            return tooltipItem.label + ': ' + tooltipItem.raw;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    });
+                                })
+                                .catch(error => console.error('Error fetching data:', error));
+                        });
+                    </script>    
                 <!-- /.container-fluid -->
+
+                <!-- Sales Chart -->
+                <div class="col-xl-12 col-lg-12">
+                    <div class="card shadow mb-4">
+                        <!-- Card Header - Dropdown -->
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Sales by Product</h6>
+                        </div>
+                        <!-- Card Body -->
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart.js -->
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+                <script>
+                $(document).ready(function() {
+                    // ฟังก์ชันดึงข้อมูลยอดขาย
+                    function fetchSalesData() {
+                        $.getJSON('get_sales_data.php', function(data) {
+                            var labels = [];
+                            var dataSet = [];
+
+                            data.forEach(function(item) {
+                                labels.push(item.product_name);
+                                dataSet.push(item.total_sold);
+                            });
+
+                            var ctx = document.getElementById('salesChart').getContext('2d');
+                            new Chart(ctx, {
+                                type: 'bar', // เปลี่ยนเป็น 'line' สำหรับกราฟเส้น
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: 'Total Sold',
+                                        data: dataSet,
+                                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                        borderColor: 'rgba(75, 192, 192, 1)',
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    scales: {
+                                        x: {
+                                            beginAtZero: true
+                                        },
+                                        y: {
+                                            beginAtZero: true
+                                        }
+                                    }
+                                }
+                            });
+                        });
+                    }
+
+                    // เรียกใช้ฟังก์ชันเพื่อดึงข้อมูลยอดขายเมื่อเอกสารโหลดเสร็จ
+                    fetchSalesData();
+                });
+                </script>
             </div>
             <!-- End of Main Content -->
         </div>

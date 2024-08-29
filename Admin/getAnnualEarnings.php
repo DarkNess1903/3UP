@@ -1,8 +1,11 @@
 <?php
 include '../connectDB.php';
 
-// ดึงข้อมูลรายได้รายปีจากฐานข้อมูล
-$query = "SELECT DATE_FORMAT(order_date, '%Y') AS year, SUM(total_amount) AS earnings FROM orders GROUP BY DATE_FORMAT(order_date, '%Y')";
+// ดึงข้อมูลรายได้รายปีจากฐานข้อมูล โดยนับเฉพาะออเดอร์ที่เสร็จสิ้นแล้ว
+$query = "SELECT DATE_FORMAT(order_date, '%Y') AS year, SUM(total_amount) AS earnings 
+          FROM orders 
+          WHERE status = 'เสร็จสมบรูณ์'
+          GROUP BY DATE_FORMAT(order_date, '%Y')";
 $result = $conn->query($query);
 
 $annualEarnings = [];

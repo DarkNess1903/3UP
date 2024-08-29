@@ -6,8 +6,10 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// ดึงข้อมูลรายได้รายเดือนจากฐานข้อมูล
-$query = "SELECT SUM(total_amount) AS earnings FROM orders WHERE DATE_FORMAT(order_date, '%Y-%m') = DATE_FORMAT(CURRENT_DATE(), '%Y-%m')";
+// ดึงข้อมูลรายได้รายเดือนจากฐานข้อมูล โดยนับเฉพาะออเดอร์ที่เสร็จสิ้นแล้ว
+$query = "SELECT SUM(total_amount) AS earnings FROM orders 
+          WHERE DATE_FORMAT(order_date, '%Y-%m') = DATE_FORMAT(CURRENT_DATE(), '%Y-%m') 
+          AND status = 'เสร็จสมบรูณ์'";
 $result = $conn->query($query);
 
 $monthlyEarnings = 0;

@@ -16,6 +16,15 @@ if (!$cart_id) {
     die("ไม่พบ Cart ID");
 }
 
+// ดึงข้อมูลที่อยู่ของลูกค้า
+$address_query = "SELECT address FROM customer WHERE customer_id = ?";
+$stmt = mysqli_prepare($conn, $address_query);
+mysqli_stmt_bind_param($stmt, 'i', $customer_id);
+mysqli_stmt_execute($stmt);
+mysqli_stmt_bind_result($stmt, $address);
+mysqli_stmt_fetch($stmt);
+mysqli_stmt_close($stmt);
+
 // ตรวจสอบว่ามีข้อมูลในตะกร้าหรือไม่
 $cart_query = "SELECT * FROM cart WHERE cart_id = ? AND customer_id = ?";
 $stmt = mysqli_prepare($conn, $cart_query);
@@ -59,10 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
 
     if (move_uploaded_file($payment_slip['tmp_name'], $upload_file)) {
         // แทรกคำสั่งซื้อใหม่ลงในตาราง orders
-        $order_query = "INSERT INTO orders (customer_id, total_amount, payment_slip, order_date) VALUES (?, ?, ?, NOW())";
+        $order_query = "INSERT INTO orders (customer_id, total_amount, payment_slip, order_date, status, address) VALUES (?, ?, ?, NOW(), ?, ?)";
         $stmt = mysqli_prepare($conn, $order_query);
-        mysqli_stmt_bind_param($stmt, 'ids', $customer_id, $grand_total, $upload_file);
-        if (!mysqli_stmt_execute($stmt)) {
+        $status = 'รอรับเรื่อง'; // กำหนดค่าเป็นตัวแปร
+        mysqli_stmt_bind_param($stmt, 'idsss', $customer_id, $grand_total, $upload_file, $status, $address);
+        if (!mysqli_stmt_execute($stmt)) {  
             die("ข้อผิดพลาดในการแทรกคำสั่งซื้อ: " . mysqli_error($conn));
         }
 
@@ -166,8 +176,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
                 <?php else: ?>
                 <p>Your cart is empty.</p>
                 <?php endif; ?>
+
+                <!-- เพิ่ม QR Code และเลขบัญชีธนาคาร -->
+                <div class="payment-info">
+                    <h3>Payment Information</h3>
+                    <p>Please scan the QR code below to make a payment:</p>
+                    <img src="../images/qr_code.png" alt="QR Code" width="200">
+                    <p><strong>Bank Account:</strong> 123-456-7890</p>
+                    <p><strong>Bank Name:</strong> Example Bank</p>
+                </div>
+
                 <label for="payment_slip">Upload Payment Slip:</label>
                 <input type="file" name="payment_slip" id="payment_slip" required>
+                
                 <button type="submit">Submit</button>
             </form>
             <p><a href="cart.php" class="return-to-cart">Return to Cart <i class="fas fa-arrow-left"></i></a></p>
