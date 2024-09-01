@@ -41,12 +41,6 @@ header nav ul li a:hover {
     text-decoration: underline;
 }
 
-.auth-links {
-    text-align: right;
-    margin-right: 20px;
-    color: white;
-}
-
 .product-list {
     display: flex;
     flex-wrap: wrap;
@@ -359,6 +353,12 @@ textarea {
 }
 
 .auth-links {
+    text-align: right;
+    margin-right: 20px;
+    color: white;
+}
+
+.auth-links {
     color: white;
 }
 
@@ -655,4 +655,62 @@ a {
 
 a:hover {
     text-decoration: underline;
+}
+
+.navbar {
+    background-color: #343a40;
+    color: #ffffff;
+}
+
+.navbar .nav-link {
+    color: #ffffff;
+    padding: 10px;
+    transition: color 0.3s ease-in-out;
+}
+
+.navbar .nav-link:hover {
+    color: #ffc107;
+}
+
+.auth-links a {
+    color: #ffffff;
+    text-decoration: none;
+    margin-right: 10px;
+    transition: color 0.3s ease-in-out;
+}
+
+.auth-links a:hover {
+    color: #ffc107;
+}
+
+header {
+    padding: 20px 0;
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header .nav {
+    flex-grow: 1;
+    justify-content: center;
+}
+
+header .nav li {
+    list-style: none;
+    display: inline;
+    margin: 0 15px;
+}
+
+header .nav a {
+    color: #ffffff;
+    font-weight: bold;
+    text-decoration: none;
+    transition: color 0.3s ease-in-out;
+}
+
+header .nav a:hover {
+    color: #ffc107;
 }
