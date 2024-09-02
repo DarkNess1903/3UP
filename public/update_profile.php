@@ -8,13 +8,24 @@ if (!isset($_SESSION['customer_id'])) {
     exit();
 }
 
+// รับค่าจากฟอร์ม
 $customer_id = $_POST['customer_id'];
-$name = $_POST['name'];
-$email = $_POST['email'];
-$phone = $_POST['phone'];
-$address = $_POST['address'];
+$name = trim($_POST['name']);
+$email = trim($_POST['email']);
+$phone = trim($_POST['phone']);
+$address = trim($_POST['address']);
 
-// อัปเดตข้อมูลลูกค้า
+// ตรวจสอบความถูกต้องของข้อมูลที่ส่งมา
+if (empty($name) || empty($email) || empty($phone) || empty($address)) {
+    die("All fields are required.");
+}
+
+// ตรวจสอบอีเมลให้ถูกต้อง
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    die("Invalid email format.");
+}
+
+// เตรียมคำสั่ง SQL สำหรับอัปเดตข้อมูลลูกค้า
 $update_query = "
     UPDATE customer
     SET name = ?, email = ?, phone = ?, address = ?
@@ -26,16 +37,18 @@ if (!$stmt) {
     die("Prepare failed: " . mysqli_error($conn));
 }
 
+// ผูกค่าจากฟอร์มเข้ากับคำสั่ง SQL
 mysqli_stmt_bind_param($stmt, 'ssssi', $name, $email, $phone, $address, $customer_id);  
 
+// ดำเนินการอัปเดตข้อมูลลูกค้า
 if (mysqli_stmt_execute($stmt)) {
-    header("Location: profile.php");
+    header("Location: profile.php?update=success");
     exit();
 } else {
-    // แสดงข้อความข้อผิดพลาดที่เป็นประโยชน์
     $error = mysqli_error($conn);
-    die("Error updating profile: " . $error);
+    echo "Error updating profile: " . $error;
 }
 
+// ปิดการเชื่อมต่อฐานข้อมูล
 mysqli_close($conn);
 ?>

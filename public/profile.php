@@ -28,12 +28,12 @@ $profile = mysqli_fetch_assoc($profile_result);
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>Profile</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- เพิ่มลิงก์ Font Awesome -->
-    <link rel="stylesheet" href="css/styles.css">
-    <script src="js/scripts.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <header>
@@ -43,14 +43,14 @@ $profile = mysqli_fetch_assoc($profile_result);
     <main>
         <section class="profile-info">
             <div class="profile-icon">
-                <i class="fas fa-user"></i> <!-- ไอคอนรูปคน -->
+                <i class="fas fa-user"></i>
             </div>
             <h2>Personal Information</h2>
             <p><strong>Name:</strong> <?php echo htmlspecialchars($profile['name']); ?></p>
             <p><strong>Email:</strong> <?php echo htmlspecialchars($profile['email']); ?></p>
             <p><strong>Phone:</strong> <?php echo htmlspecialchars($profile['phone']); ?></p>
             <p><strong>Address:</strong> <?php echo htmlspecialchars($profile['address']); ?></p>
-            <button id="editBtn" class="btn">Edit Profile</button>
+            <button id="editBtn" class="btn btn-primary">Edit Profile</button>
         </section>
     </main>
 
@@ -61,21 +61,28 @@ $profile = mysqli_fetch_assoc($profile_result);
             <h2>Edit Profile</h2>
             <form id="editProfileForm" action="update_profile.php" method="POST">
                 <input type="hidden" name="customer_id" value="<?php echo htmlspecialchars($customer_id); ?>">
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($profile['name']); ?>" required><br><br>
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($profile['email']); ?>" required><br><br>
-                <label for="phone">Phone:</label>
-                <input type="text" id="phone" name="phone" value="<?php echo htmlspecialchars($profile['phone']); ?>" required><br><br>
-                <label for="address">Address:</label>
-                <textarea id="address" name="address" rows="4" required><?php echo htmlspecialchars($profile['address']); ?></textarea><br><br>
-                <button type="submit" class="btn">Save Changes</button>
+                <div class="mb-3">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($profile['name']); ?>" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($profile['email']); ?>" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="phone">Phone:</label>
+                    <input type="text" id="phone" name="phone" value="<?php echo htmlspecialchars($profile['phone']); ?>" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="address">Address:</label>
+                    <textarea id="address" name="address" rows="4" class="form-control" required><?php echo htmlspecialchars($profile['address']); ?></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Save Changes</button>
             </form>
         </div>
     </div>
 
     <script>
-        // JavaScript สำหรับการเปิดและปิดโมดัล
         var modal = document.getElementById("editModal");
         var btn = document.getElementById("editBtn");
         var span = document.getElementsByClassName("close")[0];
@@ -94,6 +101,11 @@ $profile = mysqli_fetch_assoc($profile_result);
             }
         }
     </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/script.js"></script>
 </body>
 </html>
 

@@ -1,7 +1,6 @@
 <?php
 session_start();
 include '../connectDB.php';
-include 'topnavbar.php';
 
 // ตรวจสอบการเข้าสู่ระบบ
 if (!isset($_SESSION['customer_id'])) {
@@ -121,23 +120,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
         if (!mysqli_stmt_execute($stmt)) {
             die("ข้อผิดพลาดในการลบผลิตภัณฑ์: " . mysqli_error($conn));
         }
-
-        header("Location: thank_you.php"); // เปลี่ยนเส้นทางไปที่หน้าขอบคุณ
+        header("Location:thank_you.php"); // เปลี่ยนเส้นทางไปที่หน้าขอบคุณ
         exit();
     } else {
         die("ข้อผิดพลาดในการอัพโหลดใบเสร็จการชำระเงิน");
     }
 }
+include 'topnavbar.php';
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>Confirm Checkout - Meat Store</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirm Checkout - Meat Store</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <script src="js/scripts.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
     <header>
