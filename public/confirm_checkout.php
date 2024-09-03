@@ -105,6 +105,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
             }
         }
 
+        // เพิ่มการแจ้งเตือนการสั่งซื้อใหม่
+        addNotification($customer_id, $order_id, "Your order has been placed.");
+
         // ลบข้อมูลที่เกี่ยวข้องใน cart_items
         $delete_cart_items_query = "DELETE FROM cart_items WHERE cart_id = ?";
         $stmt = mysqli_prepare($conn, $delete_cart_items_query);
@@ -113,19 +116,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
             die("ข้อผิดพลาดในการลบข้อมูลใน cart_items: " . mysqli_error($conn));
         }
 
-        // ลบผลิตภัณฑ์
-        $delete_product_query = "DELETE FROM product WHERE product_id IN (SELECT product_id FROM cart_items WHERE cart_id = ?)";
-        $stmt = mysqli_prepare($conn, $delete_product_query);
-        mysqli_stmt_bind_param($stmt, 'i', $cart_id);
-        if (!mysqli_stmt_execute($stmt)) {
-            die("ข้อผิดพลาดในการลบผลิตภัณฑ์: " . mysqli_error($conn));
-        }
-        header("Location:thank_you.php"); // เปลี่ยนเส้นทางไปที่หน้าขอบคุณ
+        header("Location: thank_you.php"); // เปลี่ยนเส้นทางไปที่หน้าขอบคุณ
         exit();
     } else {
         die("ข้อผิดพลาดในการอัพโหลดใบเสร็จการชำระเงิน");
     }
 }
+
+// ฟังก์ชันเพิ่มการแจ้งเตือน
+function addNotification($customer_id, $order_id, $message) {
+    global $conn;
+    $query = "INSERT INTO notifications (customer_id, order_id, message) VALUES (?, ?, ?)";
+    $stmt = mysqli_prepare($conn, $query);
+    mysqli_stmt_bind_param($stmt, 'iis', $customer_id, $order_id, $message);
+    mysqli_stmt_execute($stmt);
+}
+
 include 'topnavbar.php';
 ?>
 

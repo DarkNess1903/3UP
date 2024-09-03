@@ -40,55 +40,48 @@ if (!isset($_SESSION['customer_id'])) {
                 </ul>
             </div>
             <div class="auth-links d-flex justify-content-end ms-auto align-items-center">
-                <div class="dropdown me-3">
-                    <a href="#" class="nav-link dropdown-toggle" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-bell"></i>
-                        <span id="notificationCount" class="badge bg-danger">0</span>
-                    </a>
+                        <span class="badge bg-danger" id="notification-count"></span>
+                    </button>
                     <ul class="dropdown-menu" aria-labelledby="notificationDropdown">
-                        <li><a class="dropdown-item" href="#">No new notifications</a></li>
+                        <div id="notification-list"></div>
                     </ul>
                 </div>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                    function fetchNotifications() {
-                        fetch('fetch_notifications.php')
-                            .then(response => response.json())
-                            .then(data => {
-                                console.log(data); // ดีบักข้อมูลที่ได้รับ
-                                const notificationCount = document.getElementById('notificationCount');
-                                const dropdownMenu = document.querySelector('.dropdown-menu');
+            </div>
 
-                                if (data.count > 0) {
-                                    notificationCount.textContent = data.count;
+            <script>
+                function fetchNotifications() {
+                    fetch('get_notifications.php')
+                        .then(response => response.json())
+                        .then(data => {
+                            const notificationList = document.getElementById('notification-list');
+                            const notificationCount = document.getElementById('notification-count');
+                            
+                            // อัปเดตรายการแจ้งเตือน
+                            notificationList.innerHTML = data.notifications.map(notification => 
+                                `<li>${notification.message}</li>`).join('');
 
-                                    // Clear existing items
-                                    dropdownMenu.innerHTML = '';
+                            // อัปเดตจำนวนแจ้งเตือนที่ยังไม่ได้อ่าน
+                            notificationCount.textContent = data.unread_count;
 
-                                    data.notifications.forEach(notification => {
-                                        const listItem = document.createElement('li');
-                                        const link = document.createElement('a');
-                                        link.className = 'dropdown-item';
-                                        link.href = notification.link;
-                                        link.textContent = `Order #${notification.order_id} - $${notification.total_amount} - ${notification.status}`;
-                                        listItem.appendChild(link);
-                                        dropdownMenu.appendChild(listItem);
-                                    });
-                                } else {
-                                    notificationCount.textContent = '0';
-                                    dropdownMenu.innerHTML = '<li><a class="dropdown-item" href="#">No new notifications</a></li>';
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error fetching notifications:', error);
-                                // ดีบักข้อผิดพลาด
-                            });
-                    }
-                    // Fetch notifications every 30 seconds
-                    fetchNotifications();
-                    setInterval(fetchNotifications, 30000);
-                });
-                </script>
+                            // หากไม่มีแจ้งเตือนใหม่ ให้ซ่อนตัวเลขแจ้งเตือน
+                            if (data.unread_count === 0) {
+                                notificationCount.style.display = 'none';
+                            } else {
+                                notificationCount.style.display = 'inline-block';
+                            }
+                        });
+                }
+
+                // เรียกใช้ฟังก์ชันเพื่อดึงข้อมูลการแจ้งเตือน
+                fetchNotifications();
+
+                // ใช้ setInterval เพื่อดึงข้อมูลการแจ้งเตือนเป็นระยะๆ
+                setInterval(fetchNotifications, 30000);
+            </script>
+
                 <!-- Existing auth links -->
                 <?php
                 if (isset($_SESSION['customer_id'])) {
