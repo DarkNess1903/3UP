@@ -2,7 +2,6 @@
 session_start();
 include '../connectDB.php';
 
-// ตรวจสอบการเข้าสู่ระบบ
 if (!isset($_SESSION['customer_id'])) {
     header("Location: login.php");
     exit();
@@ -22,7 +21,7 @@ mysqli_stmt_bind_param($stmt, 'i', $customer_id);
 mysqli_stmt_execute($stmt);
 mysqli_stmt_bind_result($stmt, $address);
 mysqli_stmt_fetch($stmt);
-mysqli_stmt_close($stmt);
+mysqli_stmt_close($stmt);   
 
 // ตรวจสอบว่ามีข้อมูลในตะกร้าหรือไม่
 $cart_query = "SELECT * FROM cart WHERE cart_id = ? AND customer_id = ?";
@@ -60,16 +59,24 @@ mysqli_data_seek($items_result, 0);
 
 // การแทรกข้อมูลการสั่งซื้อและอัพเดตสต็อก
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
-    // ประมวลผลใบเสร็จการชำระเงิน
     $payment_slip = $_FILES['payment_slip'];
     $upload_dir = realpath(__DIR__ . '/../Admin/uploads/') . '/';
     $upload_file = $upload_dir . basename($payment_slip['name']);
+
+    // ตรวจสอบประเภทและขนาดไฟล์
+    $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!in_array($payment_slip['type'], $allowed_types)) {
+        die("ประเภทไฟล์ไม่ถูกต้อง");
+    }
+    if ($payment_slip['size'] > 2 * 1024 * 1024) { // 2MB
+        die("ขนาดไฟล์เกินกว่าที่กำหนด");
+    }
 
     if (move_uploaded_file($payment_slip['tmp_name'], $upload_file)) {
         // แทรกคำสั่งซื้อใหม่ลงในตาราง orders
         $order_query = "INSERT INTO orders (customer_id, total_amount, payment_slip, order_date, status, address) VALUES (?, ?, ?, NOW(), ?, ?)";
         $stmt = mysqli_prepare($conn, $order_query);
-        $status = 'รอรับเรื่อง'; // กำหนดค่าเป็นตัวแปร
+        $status = 'รอรับเรื่อง';
         mysqli_stmt_bind_param($stmt, 'idsss', $customer_id, $grand_total, $upload_file, $status, $address);
         if (!mysqli_stmt_execute($stmt)) {  
             die("ข้อผิดพลาดในการแทรกคำสั่งซื้อ: " . mysqli_error($conn));
@@ -105,9 +112,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
             }
         }
 
-        // เพิ่มการแจ้งเตือนการสั่งซื้อใหม่
-        addNotification($customer_id, $order_id, "Your order has been placed.");
-
         // ลบข้อมูลที่เกี่ยวข้องใน cart_items
         $delete_cart_items_query = "DELETE FROM cart_items WHERE cart_id = ?";
         $stmt = mysqli_prepare($conn, $delete_cart_items_query);
@@ -123,16 +127,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
     }
 }
 
-// ฟังก์ชันเพิ่มการแจ้งเตือน
+include 'topnavbar.php';
+
 function addNotification($customer_id, $order_id, $message) {
     global $conn;
-    $query = "INSERT INTO notifications (customer_id, order_id, message) VALUES (?, ?, ?)";
-    $stmt = mysqli_prepare($conn, $query);
+    
+    // เพิ่มการแจ้งเตือน
+    $notification_query = "INSERT INTO notifications (customer_id, order_id, message, status) VALUES (?, ?, ?, 'unread')";
+    $stmt = mysqli_prepare($conn, $notification_query);
     mysqli_stmt_bind_param($stmt, 'iis', $customer_id, $order_id, $message);
-    mysqli_stmt_execute($stmt);
+    if (!mysqli_stmt_execute($stmt)) {
+        die("ข้อผิดพลาดในการเพิ่มการแจ้งเตือน: " . mysqli_error($conn));
+    }
 }
 
-include 'topnavbar.php';
+include 'footer.php';
+mysqli_close($conn);
 ?>
 
 <!DOCTYPE html>
@@ -210,5 +220,4 @@ include 'topnavbar.php';
 
 <?php
 include 'footer.php';
-mysqli_close($conn);
 ?>
