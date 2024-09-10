@@ -67,7 +67,9 @@ if (mysqli_num_rows($order_result) === 0) {
                             <td><?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($order['order_date']))); ?></td>
                             <td>$<?php echo number_format($order['total_amount'], 2); ?></td>
                             <td>
-                                <a href="order_details.php?order_id=<?php echo htmlspecialchars($order['order_id']); ?>">View Details</a>
+                                <a href="order_details.php?order_id=<?php echo htmlspecialchars($order['order_id']); ?>" class="btn btn-primary">
+                                    ดูรายละเอียด
+                                </a>
                             </td>
                         </tr>
                     <?php endwhile; ?>

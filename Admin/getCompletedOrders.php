@@ -2,7 +2,7 @@
 include '../connectDB.php';
 
 // ดึงจำนวนคำสั่งซื้อที่เสร็จสมบูรณ์จากฐานข้อมูล
-$query = "SELECT COUNT(*) AS completed_orders FROM orders WHERE status = 'เสร็จสมบรูณ์'";
+$query = "SELECT COUNT(*) AS completed_orders FROM orders WHERE status = 'เสร็จสิ้น'";
 $result = $conn->query($query);
 
 $completedOrders = [];

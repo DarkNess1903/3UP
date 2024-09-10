@@ -2,7 +2,7 @@
 include '../connectDB.php';
 
 // ดึงจำนวนคำขอที่รออยู่จากฐานข้อมูล
-$query = "SELECT COUNT(*) AS pending_count FROM orders WHERE status = 'รอรับเรื่อง'";
+$query = "SELECT COUNT(*) AS pending_count FROM orders WHERE status = 'รอตรวจสอบ'";
 $result = $conn->query($query);
 
 $pendingRequests = [];

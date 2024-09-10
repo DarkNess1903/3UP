@@ -10,7 +10,7 @@ if (!$conn) {
 }
 
 // ดึงข้อมูลออเดอร์ที่ยังไม่ถูกตรวจสอบ
-$query = "SELECT order_id, order_date FROM orders WHERE status = 'รอรับเรื่อง'";
+$query = "SELECT order_id, order_date FROM orders WHERE status = 'รอตรวจสอบ'";
 $result = mysqli_query($conn, $query);
 
 $new_orders = [];
