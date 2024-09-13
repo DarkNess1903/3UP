@@ -1,51 +1,38 @@
 <?php
-header('Content-Type: application/json');
-session_start();
 include '../connectDB.php';
 
+// ตรวจสอบการเชื่อมต่อ
 if (!$conn) {
-    echo json_encode(['success' => false, 'message' => 'Database connection failed']);
-    exit();
+    die("Connection failed: " . mysqli_connect_error());
 }
 
-if (!isset($_POST['order_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Order ID is required']);
-    exit();
+// รับ order_id จากการร้องขอ
+$order_id = $_POST['order_id'];
+
+// ตรวจสอบว่า order_id ถูกส่งมา
+if (isset($order_id)) {
+    // ลบคำสั่งซื้อจากตาราง orders และ orderdetails
+    $query = "DELETE FROM orders WHERE order_id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $order_id);
+
+    if ($stmt->execute()) {
+        // ลบรายการคำสั่งซื้อจาก orderdetails
+        $query_details = "DELETE FROM orderdetails WHERE order_id = ?";
+        $stmt_details = $conn->prepare($query_details);
+        $stmt_details->bind_param("i", $order_id);
+        $stmt_details->execute();
+
+        // ส่งผลลัพธ์กลับไปยัง Ajax
+        echo json_encode(array('success' => true));
+    } else {
+        // ส่งข้อความผิดพลาด
+        echo json_encode(array('success' => false, 'message' => 'ไม่สามารถลบคำสั่งซื้อได้'));
+    }
+} else {
+    echo json_encode(array('success' => false, 'message' => 'ไม่พบหมายเลขคำสั่งซื้อ'));
 }
 
-$order_id = intval($_POST['order_id']);
-if ($order_id <= 0) {
-    echo json_encode(['success' => false, 'message' => 'Invalid Order ID']);
-    exit();
-}
-// ลบรายการสินค้าในคำสั่งซื้อ
-$sql = "DELETE FROM order_details WHERE order_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $order_id);
-$stmt->execute();
-if ($stmt->affected_rows <= 0) {
-    echo json_encode(['success' => false, 'message' => 'Failed to delete order details']);
-    $stmt->close();
-    $conn->close();
-    exit();
-}
-$stmt->close();
-
-// ลบคำสั่งซื้อ
-$sql = "DELETE FROM orders WHERE order_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $order_id);
-$stmt->execute();
-if ($stmt->affected_rows <= 0) {
-    echo json_encode(['success' => false, 'message' => 'Failed to delete order']);
-    $stmt->close();
-    $conn->close();
-    exit();
-}
-$stmt->close();
-
-// ตรวจสอบผลลัพธ์
-echo json_encode(['success' => true]);
-
-$conn->close();
+// ปิดการเชื่อมต่อ
+mysqli_close($conn);
 ?>

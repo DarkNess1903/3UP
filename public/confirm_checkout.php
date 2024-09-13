@@ -60,8 +60,8 @@ mysqli_data_seek($items_result, 0);
 // การแทรกข้อมูลการสั่งซื้อและอัพเดตสต็อก
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
     $payment_slip = $_FILES['payment_slip'];
-    $upload_dir = realpath(__DIR__ . '/../Admin/uploads/') . '/';
-    $upload_file = $upload_dir . basename($payment_slip['name']);
+    $upload_dir = realpath(__DIR__ . '/../Admin/uploads/');
+    $upload_file = $upload_dir . '/' . basename($payment_slip['name']);
 
     // ตรวจสอบประเภทและขนาดไฟล์
     $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
         // แทรกคำสั่งซื้อใหม่ลงในตาราง orders
         $order_query = "INSERT INTO orders (customer_id, total_amount, payment_slip, order_date, status, address) VALUES (?, ?, ?, NOW(), ?, ?)";
         $stmt = mysqli_prepare($conn, $order_query);
-        $status = 'รอรับเรื่อง';
+        $status = 'รอตรวจสอบ';
         mysqli_stmt_bind_param($stmt, 'idsss', $customer_id, $grand_total, $upload_file, $status, $address);
         if (!mysqli_stmt_execute($stmt)) {  
             die("ข้อผิดพลาดในการแทรกคำสั่งซื้อ: " . mysqli_error($conn));

@@ -9,8 +9,11 @@ if (!$conn) {
 }
 
 // ดึงข้อมูลคำสั่งซื้อทั้งหมด
-$query = "SELECT * FROM orders";
+$query = "SELECT orders.order_id, orders.total_amount, orders.status, customer.name, customer.email 
+          FROM orders 
+          JOIN customer ON orders.customer_id = customer.customer_id";
 $result = mysqli_query($conn, $query);
+
 
 ?>
 
@@ -76,14 +79,14 @@ $result = mysqli_query($conn, $query);
                 <?php while ($order = mysqli_fetch_assoc($result)): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($order['order_id']); ?></td>
-                        <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
-                        <td><?php echo htmlspecialchars($order['customer_email']); ?></td>
+                        <td><?php echo htmlspecialchars($order['name']); ?></td>
+                        <td><?php echo htmlspecialchars($order['email']); ?></td>
                         <td><?php echo number_format($order['total_amount'], 2); ?> บาท</td>
                         <td><?php echo htmlspecialchars($order['status']); ?></td>
                         <td>
                             <a href="view_order.php?order_id=<?php echo $order['order_id']; ?>" class="btn btn-view">ดูรายละเอียด</a>
                             <?php if ($order['status'] === 'Completed checking of slip'): ?>
-                                <button class="btn btn-update" data-order-id="<?php echo $order['order_id']; ?>" onclick="updateOrderStatus(this)">อัปเดตสถานะ</button>
+                                <button class="btn btn-danger deleteOrderBtn" data-order-id="<?php echo $order['order_id']; ?>">ลบ</button>
                             <?php endif; ?>
                             <!-- ปุ่มลบออเดอร์ -->
                         <button class="btn btn-danger deleteOrderBtn" data-order-id="<?php echo $order['order_id']; ?>">ลบ</button>

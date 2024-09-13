@@ -11,7 +11,10 @@ if (!isset($_GET['order_id'])) {
 $order_id = intval($_GET['order_id']);
 
 // ดึงข้อมูลคำสั่งซื้อ
-$sql = "SELECT * FROM orders WHERE order_id = ?";
+$sql = "SELECT orders.*, customer.name AS customer_name, customer.email AS customer_email, orders.payment_slip
+        FROM orders
+        JOIN customer ON orders.customer_id = customer.customer_id
+        WHERE orders.order_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('i', $order_id);
 $stmt->execute();
@@ -24,19 +27,14 @@ if (!$order) {
 }
 
 // ดึงข้อมูลรายการสินค้าที่สั่งซื้อ
-$sql = "SELECT * FROM order_details JOIN Products ON order_details.product_id = Products.product_id WHERE order_details.order_id = ?";
+$sql = "SELECT orderdetails.*, product.name, product.price, product.image
+        FROM orderdetails
+        JOIN product ON orderdetails.product_id = product.product_id
+        WHERE orderdetails.order_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('i', $order_id);
 $stmt->execute();
 $items = $stmt->get_result();
-$stmt->close();
-
-// ดึงข้อมูลการชำระเงินเพื่อแสดงสลิป
-$sql = "SELECT * FROM payments WHERE order_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $order_id);
-$stmt->execute();
-$payment = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 $conn->close();
@@ -47,7 +45,7 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css"> <!-- ลิงก์ไปยังไฟล์ CSS ของคุณ -->
     <title>รายละเอียดคำสั่งซื้อ</title>
@@ -116,8 +114,6 @@ $conn->close();
         <p>หมายเลขคำสั่งซื้อ: <?php echo htmlspecialchars($order_id); ?></p>
         <p>ชื่อ: <?php echo htmlspecialchars($order['customer_name']); ?></p>
         <p>อีเมล: <?php echo htmlspecialchars($order['customer_email']); ?></p>
-        <p>โทรศัพท์: <?php echo htmlspecialchars($order['customer_phone']); ?></p>
-        <p>ที่อยู่: <?php echo htmlspecialchars($order['customer_address']); ?></p>
         <p>ยอดรวมที่ต้องชำระ: <?php echo number_format($order['total_amount'], 2); ?> บาท</p>
         <p>สถานะคำสั่งซื้อ: <?php echo htmlspecialchars($order['status']); ?></p>
 
@@ -125,8 +121,8 @@ $conn->close();
         <ul class="product-list">
             <?php while ($item = $items->fetch_assoc()): ?>
                 <li>
-                    <img src="../Admin/product/<?php echo htmlspecialchars($item['image']); ?>" alt="Product Image" width="50px" height="50px">
-                    <span><?php echo htmlspecialchars($item['product_name']); ?></span> -
+                 <img src="../Admin/product/<?php echo htmlspecialchars($item['image']); ?>" alt="Product Image" width="50px" height="50px">
+                    <span><?php echo htmlspecialchars($item['name']); ?></span> -
                     <span><?php echo number_format($item['price'], 2); ?> บาท</span> -
                     <span><?php echo htmlspecialchars($item['quantity']); ?> ชิ้น</span> -
                     <span>ราคารวม: <?php echo number_format($item['price'] * $item['quantity'], 2); ?> บาท</span>
@@ -135,12 +131,12 @@ $conn->close();
         </ul>
 
         <h2>สลิปการชำระเงิน</h2>
-        <?php if ($payment && $payment['slip_image']): ?>
+        <?php if ($order['payment_slip']): ?>
             <button id="viewSlipBtn">ดูสลิป</button>
             <div id="slipModal" class="modal">
                 <div class="modal-content">
                     <span class="close">&times;</span>
-                    <img src="../admin/uploads/<?php echo htmlspecialchars($payment['slip_image']); ?>" alt="Slip Image">
+                    <img src="../Admin/uploads/<?php echo htmlspecialchars($order['payment_slip']); ?>" alt="Slip Image">
                 </div>
             </div>
             <button id="verifySlipBtn">ตรวจสอบสลิปเรียบร้อย</button>
