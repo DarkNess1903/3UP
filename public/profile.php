@@ -29,15 +29,23 @@ $profile = mysqli_fetch_assoc($profile_result);
 <html lang="en">
 <head>
     <title>Profile</title>
+    <!-- Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS Links -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+
+    <!-- JavaScript Links -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/script.js"></script>
 </head>
 <body>
     <header>
-        <h1>Profile</h1>
+        <h1>โปรไฟล์</h1>
     </header>
 
     <main>
@@ -45,12 +53,12 @@ $profile = mysqli_fetch_assoc($profile_result);
             <div class="profile-icon">
                 <i class="fas fa-user"></i>
             </div>
-            <h2>Personal Information</h2>
-            <p><strong>Name:</strong> <?php echo htmlspecialchars($profile['name']); ?></p>
-            <p><strong>Email:</strong> <?php echo htmlspecialchars($profile['email']); ?></p>
-            <p><strong>Phone:</strong> <?php echo htmlspecialchars($profile['phone']); ?></p>
-            <p><strong>Address:</strong> <?php echo htmlspecialchars($profile['address']); ?></p>
-            <button id="editBtn" class="btn btn-primary">Edit Profile</button>
+            <h2>ข้อมูลส่วนตัว</h2>
+            <p><strong>ชื่อ:</strong> <?php echo htmlspecialchars($profile['name']); ?></p>
+            <p><strong>อีเมล:</strong> <?php echo htmlspecialchars($profile['email']); ?></p>
+            <p><strong>เบอร์โทรศัพท์:</strong> <?php echo htmlspecialchars($profile['phone']); ?></p>
+            <p><strong>ที่อยู่:</strong> <?php echo htmlspecialchars($profile['address']); ?></p>
+            <button id="editBtn" class="btn btn-primary">แก้ไขโปรไฟล์</button>
         </section>
     </main>
 
@@ -58,26 +66,26 @@ $profile = mysqli_fetch_assoc($profile_result);
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2>Edit Profile</h2>
+            <h2>แก้ไขโปรไฟล์</h2>
             <form id="editProfileForm" action="update_profile.php" method="POST">
                 <input type="hidden" name="customer_id" value="<?php echo htmlspecialchars($customer_id); ?>">
                 <div class="mb-3">
-                    <label for="name">Name:</label>
+                    <label for="name">ชื่อ:</label>
                     <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($profile['name']); ?>" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label for="email">Email:</label>
+                    <label for="email">อีเมล:</label>
                     <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($profile['email']); ?>" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label for="phone">Phone:</label>
+                    <label for="phone">เบอร์โทรศัพท์:</label>
                     <input type="text" id="phone" name="phone" value="<?php echo htmlspecialchars($profile['phone']); ?>" class="form-control" required>
                 </div>
                 <div class="mb-3">
-                    <label for="address">Address:</label>
+                    <label for="address">ที่อยู่:</label>
                     <textarea id="address" name="address" rows="4" class="form-control" required><?php echo htmlspecialchars($profile['address']); ?></textarea>
                 </div>
-                <button type="submit" class="btn btn-success">Save Changes</button>
+                <button type="submit" class="btn btn-success">บันทึกการเปลี่ยนแปลง</button>
             </form>
         </div>
     </div>

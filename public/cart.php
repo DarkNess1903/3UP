@@ -67,27 +67,27 @@ if ($cart) {
 </head>
 <body>
     <header>
-        <h1>Your Cart</h1>
+        <h1>ตะกร้าสินค้าของคุณ</h1>
     </header>
     <main>
         <section class="cart">
-            <h2>Cart Items</h2>
+            <h2>รายการสินค้าในตะกร้า</h2>
             <?php if ($cart): ?>
             <table>
                 <thead>
                     <tr>
-                        <th>Image</th>
-                        <th>Product</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Total</th>
-                        <th>Stock</th>
-                        <th>Action</th>
+                        <th>รูปภาพ</th>
+                        <th>สินค้า</th>
+                        <th>จำนวน</th>
+                        <th>ราคา</th>
+                        <th>รวมทั้งหมด</th>
+                        <th>สต็อก</th>
+                        <th>การจัดการ</th>
                     </tr>
                 </thead>
                     <?php while ($item = mysqli_fetch_assoc($items_result)): ?>
                         <tr>
-                            <td><img src="../product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
+                            <td><img src="../Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
                             <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td>
                             <style>
@@ -119,18 +119,20 @@ if ($cart) {
                             <td><?php echo number_format($item['total'], 2); ?></td>
                             <td><?php echo htmlspecialchars($item['stock_quantity'], ENT_QUOTES, 'UTF-8'); ?></td> 
                             <td>
-                                <a href="remove_from_cart.php?cart_item_id=<?php echo htmlspecialchars($item['cart_item_id'], ENT_QUOTES, 'UTF-8'); ?>" onclick="return confirm('Are you sure you want to remove this item?')">Remove</a>
+                                <a href="remove_from_cart.php?cart_item_id=<?php echo htmlspecialchars($item['cart_item_id'], ENT_QUOTES, 'UTF-8'); ?>" onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?')">
+                                    <i class="fas fa-trash-alt" title="ลบ"></i>
+                                </a>
                             </td>
                         </tr>
                     <?php endwhile; ?>
             </table>
-            <p><strong>Grand Total: <?php echo number_format($grand_total, 2); ?></strong></p>
+            <p><strong>รวมทั้งหมด: <?php echo number_format($grand_total, 2); ?></strong></p>
             <!-- ปุ่ม Checkout ที่เปิดโมดัลยืนยัน -->
             <button type="button" class="checkout-btn btn btn-primary" data-bs-toggle="modal" data-bs-target="#checkoutModal">
-                Checkout
+                ชำระเงิน
             </button>
             <?php else: ?>
-            <p>Your cart is empty.</p>
+            <p>ตะกร้าสินค้าของคุณว่างเปล่า</p>
             <?php endif; ?>
         </section>
     </main>
@@ -140,17 +142,17 @@ if ($cart) {
         <div class="modal-dialog modal-lg"> <!-- Changed to modal-lg for a larger size -->
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="checkoutModalLabel">Confirm Checkout</h5>
+                    <h5 class="modal-title" id="checkoutModalLabel">ยืนยันการสั่งซื้อ</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to place this order?
+                    คุณแน่ใจหรือไม่ว่าต้องการสั่งซื้อรายการนี้?
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
                     <form action="confirm_checkout.php" method="post">
                         <input type="hidden" name="cart_id" value="<?php echo htmlspecialchars($cart_id, ENT_QUOTES, 'UTF-8'); ?>">
-                        <button type="submit" class="btn btn-primary">Confirm</button>
+                        <button type="submit" class="btn btn-primary">ยืนยัน</button>
                     </form>
                 </div>
             </div>

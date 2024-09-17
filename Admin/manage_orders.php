@@ -9,12 +9,15 @@ if (!$conn) {
 }
 
 // ดึงข้อมูลคำสั่งซื้อทั้งหมด
-$query = "SELECT orders.order_id, orders.total_amount, orders.status, customer.name, customer.email 
+$query = "SELECT orders.order_id, orders.total_amount, orders.status, orders.order_date, customer.name, customer.email 
           FROM orders 
           JOIN customer ON orders.customer_id = customer.customer_id";
 $result = mysqli_query($conn, $query);
 
-
+// ตรวจสอบข้อผิดพลาดในการดำเนินการคำสั่ง SQL
+if (!$result) {
+    die("Error executing query: " . mysqli_error($conn));
+}
 ?>
 
 <!DOCTYPE html>
@@ -72,6 +75,7 @@ $result = mysqli_query($conn, $query);
                     <th>อีเมล</th>
                     <th>ยอดรวม</th>
                     <th>สถานะ</th>
+                    <th>วันที่/เวลา</th>
                     <th>จัดการ</th>
                 </tr>
             </thead>
@@ -83,13 +87,14 @@ $result = mysqli_query($conn, $query);
                         <td><?php echo htmlspecialchars($order['email']); ?></td>
                         <td><?php echo number_format($order['total_amount'], 2); ?> บาท</td>
                         <td><?php echo htmlspecialchars($order['status']); ?></td>
+                        <td><?php echo date('d-m-Y H:i:s', strtotime($order['order_date'])); ?></td>
                         <td>
-                            <a href="view_order.php?order_id=<?php echo $order['order_id']; ?>" class="btn btn-view">ดูรายละเอียด</a>
-                            <?php if ($order['status'] === 'Completed checking of slip'): ?>
-                                <button class="btn btn-danger deleteOrderBtn" data-order-id="<?php echo $order['order_id']; ?>">ลบ</button>
+                            <a href="view_order.php?order_id=<?php echo $order['order_id']; ?>" class="btn btn-view">รายละเอียด</a>
+                            <?php if ($order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ'): ?>
+                                <button class="btn btn-success completeOrderBtn" data-order-id="<?php echo $order['order_id']; ?>">เสร็จสิ้น</button>
                             <?php endif; ?>
                             <!-- ปุ่มลบออเดอร์ -->
-                        <button class="btn btn-danger deleteOrderBtn" data-order-id="<?php echo $order['order_id']; ?>">ลบ</button>
+                            <button class="btn btn-danger deleteOrderBtn" data-order-id="<?php echo $order['order_id']; ?>">ลบ</button>
                         </td>
                     </tr>
                 <?php endwhile; ?>
@@ -103,61 +108,63 @@ $result = mysqli_query($conn, $query);
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-    function updateOrderStatus(button) {
-        var orderId = $(button).data('order-id');
-        $.ajax({
-            url: 'update_order_status1.php',
-            method: 'POST',
-            data: {
-                order_id: orderId
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert('สถานะคำสั่งซื้อได้รับการอัปเดต');
-                    location.reload(); // รีเฟรชหน้าเพื่ออัปเดตข้อมูล
-                } else {
-                    alert('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
-                }
-            },
-            error: function() {
-                alert('เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์');
+    $(document).ready(function() {
+        $('.deleteOrderBtn').on('click', function() {
+            var orderId = $(this).data('order-id');
+            if (confirm('คุณแน่ใจว่าต้องการลบคำสั่งซื้อนี้?')) {
+                $.ajax({
+                    url: 'delete_order.php',
+                    method: 'POST',
+                    data: { order_id: orderId },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            alert('คำสั่งซื้อลบเรียบร้อยแล้ว');
+                            window.location.reload(); // รีเฟรชหน้าเพื่ออัปเดตข้อมูล
+                        } else {
+                            alert('เกิดข้อผิดพลาด: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์');
+                    }
+                });
             }
         });
-    }
+
+        $('.completeOrderBtn').on('click', function() {
+            var orderId = $(this).data('order-id');
+            if (confirm('คุณแน่ใจว่าต้องการทำเครื่องหมายว่าออเดอร์เสร็จสิ้น?')) {
+                $.ajax({
+                    url: 'update_status.php',
+                    method: 'POST',
+                    data: {
+                        order_id: orderId,
+                        status: 'Order completed'
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log(response); // ตรวจสอบข้อมูลที่ได้รับจากเซิร์ฟเวอร์
+                        if (response.success) {
+                            alert('สถานะคำสั่งซื้อลงวันที่เรียบร้อยแล้ว');
+                            window.location.reload(); // รีเฟรชหน้าเพื่ออัปเดตข้อมูล
+                        } else {
+                            alert('เกิดข้อผิดพลาด: ' + response.message);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error details:', textStatus, errorThrown); // ตรวจสอบรายละเอียดข้อผิดพลาด
+                        alert('เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์');
+                    }
+                });
+            }
+        });
+    });
     </script>
 </body>
 </html>
-
-<script>
-$(document).ready(function() {
-    $('.deleteOrderBtn').on('click', function() {
-        var orderId = $(this).data('order-id');
-        if (confirm('คุณแน่ใจว่าต้องการลบคำสั่งซื้อนี้?')) {
-            $.ajax({
-                url: 'delete_order.php',
-                method: 'POST',
-                data: { order_id: orderId },
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        alert('คำสั่งซื้อลบเรียบร้อยแล้ว');
-                        window.location.reload(); // รีเฟรชหน้าเพื่ออัปเดตข้อมูล
-                    } else {
-                        alert('เกิดข้อผิดพลาด: ' + response.message);
-                    }
-                },
-                error: function() {
-                    alert('เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์');
-                }
-            });
-        }
-    });
-});
-</script>
 
 <?php
 // ปิดการเชื่อมต่อ
 mysqli_close($conn);
 ?>
-
-

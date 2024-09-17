@@ -61,7 +61,8 @@ mysqli_data_seek($items_result, 0);
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
     $payment_slip = $_FILES['payment_slip'];
     $upload_dir = realpath(__DIR__ . '/../Admin/uploads/');
-    $upload_file = $upload_dir . '/' . basename($payment_slip['name']);
+    $file_name = basename($payment_slip['name']); // รับชื่อไฟล์
+    $upload_file = $upload_dir . '/' . $file_name;
 
     // ตรวจสอบประเภทและขนาดไฟล์
     $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
@@ -77,11 +78,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
         $order_query = "INSERT INTO orders (customer_id, total_amount, payment_slip, order_date, status, address) VALUES (?, ?, ?, NOW(), ?, ?)";
         $stmt = mysqli_prepare($conn, $order_query);
         $status = 'รอตรวจสอบ';
-        mysqli_stmt_bind_param($stmt, 'idsss', $customer_id, $grand_total, $upload_file, $status, $address);
+        mysqli_stmt_bind_param($stmt, 'idsss', $customer_id, $grand_total, $file_name, $status, $address); // ใช้ชื่อไฟล์
         if (!mysqli_stmt_execute($stmt)) {  
             die("ข้อผิดพลาดในการแทรกคำสั่งซื้อ: " . mysqli_error($conn));
         }
-
+        
         $order_id = mysqli_insert_id($conn);
 
         // แทรกข้อมูลการสั่งซื้อและอัพเดตสต็อก
@@ -184,7 +185,7 @@ mysqli_close($conn);
                     <tbody>
                         <?php while ($item = mysqli_fetch_assoc($items_result)): ?>
                             <tr>
-                                <td><img src="../product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
+                                <td><img src="../Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
                                 <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?php echo htmlspecialchars($item['quantity'], ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?php echo number_format($item['price'], 2); ?></td>

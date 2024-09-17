@@ -19,7 +19,7 @@ if (!isset($_POST['order_id'])) {
 $order_id = intval($_POST['order_id']);
 
 // อัปเดตสถานะคำสั่งซื้อเป็น 'ตรวจสอบสลิปแล้วและกำลังดำเนินการ'
-$query = "UPDATE orders SET status = 'Completed checking of slip' WHERE order_id = ?";
+$query = "UPDATE orders SET status = 'ตรวจสอบแล้วกำลังดำเนินการ' WHERE order_id = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param('i', $order_id);
 

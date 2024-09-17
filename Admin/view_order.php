@@ -50,7 +50,6 @@ $conn->close();
     <link rel="stylesheet" href="css/style.css"> <!-- ลิงก์ไปยังไฟล์ CSS ของคุณ -->
     <title>รายละเอียดคำสั่งซื้อ</title>
     <style>
-        /* CSS สำหรับโมดัล */
         .modal {
             display: none;
             position: fixed;
@@ -96,11 +95,11 @@ $conn->close();
         }
 
         #verifySlipBtn {
-            display: <?php echo $order['status'] === 'Completed checking of slip' ? 'none' : 'inline-block'; ?>;
+            display: <?php echo $order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ' ? 'none' : 'inline-block'; ?>;
         }
 
         #statusMessage {
-            display: <?php echo $order['status'] === 'Completed checking of slip' ? 'inline-block' : 'none'; ?>;
+            display: <?php echo $order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ' ? 'inline-block' : 'none'; ?>;
         }
     </style>
 </head>
@@ -121,7 +120,7 @@ $conn->close();
         <ul class="product-list">
             <?php while ($item = $items->fetch_assoc()): ?>
                 <li>
-                 <img src="../Admin/product/<?php echo htmlspecialchars($item['image']); ?>" alt="Product Image" width="50px" height="50px">
+                    <img src="../Admin/product/<?php echo htmlspecialchars($item['image']); ?>" alt="Product Image" width="50px" height="50px">
                     <span><?php echo htmlspecialchars($item['name']); ?></span> -
                     <span><?php echo number_format($item['price'], 2); ?> บาท</span> -
                     <span><?php echo htmlspecialchars($item['quantity']); ?> ชิ้น</span> -
@@ -141,7 +140,7 @@ $conn->close();
             </div>
             <button id="verifySlipBtn">ตรวจสอบสลิปเรียบร้อย</button>
             <p id="statusMessage">
-              <?php echo $order['status'] === 'Pending' ? 'กรุณาตรวจสอบสลิป' : 'สลิปได้รับการตรวจสอบเรียบร้อยแล้ว'; ?>
+              <?php echo $order['status'] === 'รอตรวจ' ? 'กรุณาตรวจสอบสลิป' : 'ตรวจสอบแล้วกำลังดำเนินการ'; ?>
             </p>
         <?php else: ?>
             <p>ไม่มีสลิปการชำระเงิน</p>
@@ -158,7 +157,6 @@ $conn->close();
             var modal = $('#slipModal');
             var btn = $('#viewSlipBtn');
             var span = $('.close');
-            var statusMessage = $('#statusMessage');
 
             // แสดงโมดัลเมื่อคลิกปุ่มดูสลิป
             btn.on('click', function() {
@@ -181,12 +179,15 @@ $conn->close();
                 $.ajax({
                     url: 'update_order_status.php',
                     method: 'POST',
-                    data: { order_id: <?php echo $order_id; ?> },
+                    data: { order_id: <?php echo $order_id; ?>, status: 'ตรวจสอบแล้วกำลังดำเนินการ' },
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
                             $('#verifySlipBtn').hide();
-                            statusMessage.text('สลิปได้รับการตรวจสอบเรียบร้อยแล้ว').show();
+                            $('#statusMessage').text('สลิปได้รับการตรวจสอบเรียบร้อยแล้ว').show();
+                            setTimeout(function() {
+                                location.reload(); // รีเฟรชหน้า
+                            }, 1000); // หน่วงเวลา 1 วินาทีเพื่อให้เห็นข้อความ
                         } else {
                             alert('เกิดข้อผิดพลาด: ' + response.message);
                         }
@@ -197,6 +198,16 @@ $conn->close();
                 });
             });
         });
-    </script>
+</script>
 </body>
 </html>
+<style>
+    #verifySlipBtn {
+        display: <?php echo ($order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ' || $order['status'] === 'เสร็จสิ้น') ? 'none' : 'inline-block'; ?>;
+    }
+
+    #statusMessage {
+        display: <?php echo $order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ' ? 'inline-block' : 'none'; ?>;
+    }
+</style>
+

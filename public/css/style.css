@@ -15,10 +15,6 @@ header {
     text-align: center;
 }
 
-header h1 {
-    margin: 0;
-}
-
 header nav ul {
     list-style: none;
     padding: 0;
@@ -770,7 +766,7 @@ a:hover {
     position: fixed; /* ทำให้ navbar อยู่ชิดแถบบน */
     top: 0; /* ตั้งตำแหน่งเป็น 0 จากขอบบนของหน้าจอ */
     width: 100%; /* กำหนดให้ navbar ยืดเต็มหน้าจอ */
-    z-index: 1000; /* กำหนดให้ navbar อยู่เหนือส่วนอื่น ๆ ของหน้าเว็บ */
+    z-index: 100; /* กำหนดให้ navbar อยู่เหนือส่วนอื่น ๆ ของหน้าเว็บ */
     padding: 10px 0;
 }
 
@@ -784,38 +780,23 @@ a:hover {
     color: #ffc107;
 }
 
-header {
-    padding: 20px 0;
-}
-
-header .container {
+.navbar-nav {
+    margin: 0 auto;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-header .nav {
-    flex-grow: 1;
     justify-content: center;
-}
-
-header .nav li {
-    list-style: none;
-    display: inline;
-    margin: 0 px;
-}
-
-header .nav a {
-    color: #ffffff;
-    font-weight: bold;
-    text-decoration: none;
-    transition: color 0.3s ease-in-out;
-}
-
-header .nav a:hover {
-    color: #ffc107;
+    flex-grow: 1; /* ทำให้ `.navbar-nav` ขยายเต็มที่ */
 }
 
 .checkout-btn {
     float: right;
+}
+
+.fa-trash-alt {
+    color: #dc3545; /* สีแดง */
+    font-size: 1.2em; /* ขนาดไอคอน */
+    text-decoration: none; /* ลบขีดเส้นใต้ */
+}
+
+.fa-trash-alt:hover {
+    color: #c82333; /* สีแดงเข้มเมื่อเอาเมาส์ไปวาง */
 }

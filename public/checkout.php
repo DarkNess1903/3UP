@@ -27,7 +27,7 @@ if (!$cart_result || mysqli_num_rows($cart_result) == 0) {
 }
 
 // ดึงข้อมูลสินค้าจากตะกร้า
-$items_query = "SELECT ci.cart_item_id, p.name, p.image, ci.quantity, ci.price, (ci.quantity * ci.price) AS total
+$items_query = "SELECT ci.cart_item_id, p.product_id, p.name, p.image, ci.quantity, ci.price, (ci.quantity * ci.price) AS total
                 FROM cart_items ci
                 JOIN product p ON ci.product_id = p.product_id
                 WHERE ci.cart_id = ?";
@@ -51,8 +51,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $total_amount_row = mysqli_fetch_assoc($total_amount_result);
     $total_amount = $total_amount_row['total_amount'];
 
-    $insert_order_query = "INSERT INTO orders (customer_id, order_date, total_amount, status, customer_address, payment_method)
-                           VALUES (?, ?, ?, 'Pending', 'Address Here', 'Bank Transfer')";
+    $insert_order_query = "INSERT INTO orders (customer_id, order_date, total_amount, status, address)
+                           VALUES (?, ?, ?, 'Pending', 'Address Here')";
     $stmt = mysqli_prepare($conn, $insert_order_query);
     mysqli_stmt_bind_param($stmt, 'isd', $customer_id, $order_date, $total_amount);
     if (!mysqli_stmt_execute($stmt)) {
@@ -83,19 +83,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("Error deleting cart: " . mysqli_error($conn));
     }
 
-    // จัดเก็บข้อมูลสลิปโอนเงิน
-    if (isset($_FILES['payment_slip']) && $_FILES['payment_slip']['error'] == UPLOAD_ERR_OK) {
-        $file_tmp = $_FILES['payment_slip']['tmp_name'];
-        $file_name = $_FILES['payment_slip']['name'];
-        $file_ext = pathinfo($file_name, PATHINFO_EXTENSION);
-        $new_file_name = "slip_$order_id.$file_ext";
-        $upload_dir = '../Admin/uploads/';
-        $upload_file = $upload_dir . $new_file_name;
-
-        if (move_uploaded_file($file_tmp, $upload_file)) {
+    // อัปเดตฐานข้อมูลให้เก็บเฉพาะชื่อไฟล์
+    if (isset($_FILES['payment_slip']) && $_FILES['payment_slip']['error'] == 0) {
+        $uploadDir = '../Admin/uploads/';
+        $file_name = basename($_FILES['payment_slip']['name']); // รับชื่อไฟล์
+        $uploadFile = $uploadDir . $file_name;
+    
+        if (move_uploaded_file($_FILES['payment_slip']['tmp_name'], $uploadFile)) {
+            // อัปเดตชื่อไฟล์สลิปการชำระเงินในฐานข้อมูล
             $update_order_query = "UPDATE orders SET payment_slip = ? WHERE order_id = ?";
             $stmt = mysqli_prepare($conn, $update_order_query);
-            mysqli_stmt_bind_param($stmt, 'si', $new_file_name, $order_id);
+            mysqli_stmt_bind_param($stmt, 'si', $file_name, $order_id);
             if (!mysqli_stmt_execute($stmt)) {
                 die("Error updating order with payment slip: " . mysqli_error($conn));
             }
@@ -103,13 +101,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: confirmation.php");
             exit();
         } else {
-            die("Error uploading payment slip.");
+            echo 'การอัปโหลดสลิปล้มเหลว';
+            exit();
         }
     } else {
-        die("No payment slip uploaded.");
-    }
+        echo 'กรุณาอัปโหลดสลิปการชำระเงิน';
+        exit();
+    }    
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -132,7 +133,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <main>
         <section class="checkout">
             <h2>Review Your Order</h2>
-            <table>
+            <table class="table">
                 <thead>
                     <tr>
                         <th>Product</th>
@@ -153,9 +154,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </tbody>
             </table>
             <form action="checkout.php" method="post" enctype="multipart/form-data">
-                <label for="payment_slip">Upload Payment Slip:</label>
-                <input type="file" name="payment_slip" id="payment_slip" required>
-                <button type="submit">Place Order</button>
+                <div class="mb-3">
+                    <label for="payment_slip" class="form-label">Upload Payment Slip:</label>
+                    <input type="file" name="payment_slip" id="payment_slip" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Place Order</button>
             </form>
             <p><a href="cart.php">Return to Cart</a></p>
         </section>

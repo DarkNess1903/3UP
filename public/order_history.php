@@ -35,53 +35,59 @@ if (mysqli_num_rows($order_result) === 0) {
 <html lang="en">
 <head>
     <title>Order History</title>
+    <!-- Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS Links -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/script.js"></script>
+
+    <!-- JavaScript Links -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/script.js"></script>
 </head>
 <body>
     <header>
-        <h1>Order History</h1>
+        <h1>ประวัติการสั่งซื้อ</h1>
     </header>
     <main>
         <section>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Order ID</th>
-                        <th>Order Date</th>
-                        <th>Total Amount</th>
-                        <th>Details</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while ($order = mysqli_fetch_assoc($order_result)): ?>
+            <div class="container mt-4">
+                <table class="table table-bordered">
+                    <thead>
                         <tr>
-                            <td><?php echo htmlspecialchars($order['order_id']); ?></td>
-                            <td><?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($order['order_date']))); ?></td>
-                            <td>$<?php echo number_format($order['total_amount'], 2); ?></td>
-                            <td>
-                                <a href="order_details.php?order_id=<?php echo htmlspecialchars($order['order_id']); ?>" class="btn btn-primary">
-                                    ดูรายละเอียด
-                                </a>
-                            </td>
+                            <th>รหัสคำสั่งซื้อ</th>
+                            <th>วันที่สั่งซื้อ</th>
+                            <th>ยอดรวมทั้งหมด</th>
+                            <th>รายละเอียด</th>
                         </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php while ($order = mysqli_fetch_assoc($order_result)): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($order['order_id']); ?></td>
+                                <td><?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($order['order_date']))); ?></td>
+                                <td>฿<?php echo number_format($order['total_amount'], 2); ?></td>
+                                <td>
+                                    <a href="order_details.php?order_id=<?php echo htmlspecialchars($order['order_id']); ?>" class="btn btn-primary">
+                                        ดูรายละเอียด
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
         </section>
     </main>
+    <?php include 'footer.php'; ?>
 </body>
 </html>
 
 <?php
-include 'footer.php';
 // ปิดการเชื่อมต่อฐานข้อมูล
 mysqli_close($conn);
 ?>

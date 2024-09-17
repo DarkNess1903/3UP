@@ -9,22 +9,26 @@ if (!isset($_SESSION['customer_id'])) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <title>หน้าสินค้า - เว็บไซต์ขายเนื้อ</title>
+    <!-- Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS Links -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/script.js"></script>
+
+    <!-- JavaScript Links -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/script.js"></script>
 </head>
 <body>
     <header>
-        <h1>Product</h1>
+        <h1>สินค้า</h1>
     </header>
     <main>
         <section class="product-list">
@@ -35,16 +39,16 @@ if (!isset($_SESSION['customer_id'])) {
             if (mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_assoc($result)) {
                     echo '<div class="product">';
-                    echo '<img src="../uploads/' . htmlspecialchars($row['image']) . '" alt="' . htmlspecialchars($row['name']) . '" style="width: 150px;;height:150px;">';
+                    echo '<img src="../Admin/product/' . htmlspecialchars($row['image']) . '" alt="' . htmlspecialchars($row['name']) . '" style="width: 150px;;height:150px;">';
                     echo '<h2>' . htmlspecialchars($row['name']) . '</h2>';
-                    echo '<p>Price: ฿' . number_format($row['price'], 2) . '</p>';
-                    echo '<p>Stock: ' . htmlspecialchars($row['stock_quantity']) . '</p>';
+                    echo '<p>ราคา: ฿' . number_format($row['price'], 2) . '</p>';
+                    echo '<p>สต็อก: ' . htmlspecialchars($row['stock_quantity']) . '</p>';
                     echo '<p>' . htmlspecialchars($row['details']) . '</p>';
-                    echo '<a href="add_to_cart.php?product_id=' . $row['product_id'] . '" class="btn">Add to Cart</a>';
+                    echo '<a href="add_to_cart.php?product_id=' . $row['product_id'] . '" class="btn">เพิ่มในตะกร้า</a>';
                     echo '</div>';
                 }
             } else {
-                echo '<p>No products found.</p>';
+                echo '<p>ไม่พบสินค้า</p>';
             }
             ?>
         </section>
