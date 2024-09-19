@@ -23,7 +23,6 @@ if (!isset($_SESSION['admin_id'])) {
         href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
     <link href="css/sb-admin-2.css" rel="stylesheet">
-    <link href="css/styles.css" rel="stylesheet">
     <script src="js/alerts.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -56,7 +55,7 @@ if (!isset($_SESSION['admin_id'])) {
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">Admin</div>
+                <div class="sidebar-brand-text mx-3">ผู้ดูแลระบบ</div>
             </a>
 
             <!-- Divider -->
@@ -66,21 +65,32 @@ if (!isset($_SESSION['admin_id'])) {
             <li class="nav-item active">
                 <a class="nav-link" href="index.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Graph -->
+            <li class="nav-item">
+                <a class="nav-link" href="graph.php">
+                    <i class="fas fa-fw fa-chart-line"></i>
+                    <span>กราฟสรุป</span>
+                </a>
             </li>
 
             <!-- Nav Item - Ordering Information -->
             <li class="nav-item">
                 <a class="nav-link" href="manage_orders.php">
-                    <i class="fas fa-fw fa-info-circle"></i>
-                    <span>Ordering Information</span></a>
+                    <i class="fas fa-fw fa-box"></i>
+                    <span>ข้อมูลการสั่งซื้อ</span>
+                </a>
             </li>
 
             <!-- Nav Item - Edit Product -->
             <li class="nav-item">
                 <a class="nav-link" href="manage_products.php">
-                    <i class="fas fa-fw fa-edit"></i>
-                    <span>Edit Product</span></a>
+                    <i class="fas fa-fw fa-cogs"></i>
+                    <span>แก้ไขสินค้า</span>
+                </a>
             </li>
         </ul>
         <!-- End of Sidebar -->
@@ -233,18 +243,15 @@ if (!isset($_SESSION['admin_id'])) {
 
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Admin</span>
-                                <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">ผู้ดูแลระบบ</span>
+                                <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
                             </a>
                             <!-- Dropdown - User Information -->
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="logout.php" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Logout
+                                    ออกจากระบบ
                                 </a>
                             </div>
                         </li>
@@ -255,371 +262,212 @@ if (!isset($_SESSION['admin_id'])) {
 
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
-
                     <!-- Content Row -->
                     <div class="row">
-
-                    <!-- Earnings (Monthly) Card Example -->
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-primary shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                            Earnings (Monthly)
+                        <!-- Total Sales Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                ยอดขายรวม
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalSales">฿0</div>
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="monthlyEarnings">฿0</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Include jQuery library -->
-                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                    <script>
-                        $(document).ready(function() {
-                            $.ajax({
-                                url: 'getMonthlyEarnings.php',
-                                method: 'GET',
-                                success: function(data) {
-                                    $('#monthlyEarnings').text('฿' + data);
-                                },
-                                error: function() {
-                                    $('#monthlyEarnings').text('Error retrieving data');
-                                }
-                            });
-                        });
-                    </script>
-
-                    <!-- Earnings (Annual) Card Example -->
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-success shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                            Earnings (Annual)
+                                        <div class="col-auto">
+                                            <i class="fas fa-dollar-sign fa-2x text-success"></i>
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="annualEarnings">฿0</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-calendar-year fa-2x text-gray-300"></i>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Include jQuery library -->
-                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                    <script>
-                        $(document).ready(function() {
-                            $.ajax({
-                                url: 'getAnnualEarnings.php',
-                                method: 'GET',
-                                dataType: 'json',
-                                success: function(data) {
-                                    let totalEarnings = 0;
-                                    if (Array.isArray(data)) {
-                                        data.forEach(function(item) {
-                                            totalEarnings += parseFloat(item.earnings);
-                                        });
-                                    } else if (data.error) {
-                                        $('#annualEarnings').text('Error: ' + data.error);
-                                        return;
-                                    }
-                                    $('#annualEarnings').text('฿' + totalEarnings.toFixed(2));
-                                },
-                                error: function() {
-                                    $('#annualEarnings').text('Error retrieving data');
-                                }
-                            });
-                        });
-                    </script>
-
-                    <!-- Pending Requests Card Example -->
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-warning shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                            Pending Requests
+                        
+                        <!-- Sold Products Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                สินค้าขายออกไปแล้ว
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalSoldProducts">0</div>
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="pendingRequests">0</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-comments fa-2x text-gray-300"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Completed Orders Card Example -->
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-warning shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                            Completed Orders
+                                        <div class="col-auto">
+                                            <i class="fas fa-boxes fa-2x text-info"></i>
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="completedOrdersCount">0</div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <script>
-                        // Function to fetch data and update UI
-                        function fetchData(url, elementId, processData) {
-                            fetch(url)
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (data) {
-                                        document.getElementById(elementId).innerText = processData(data);
-                                    }
-                                })
-                                .catch(error => console.error('Error fetching data:', error));
-                        }
-
-                        // Fetch and display pending requests
-                        fetchData('getPendingRequests.php', 'pendingRequests', data => {
-                            return data.pending_count;
-                        });
-
-                        // Fetch and display completed orders
-                        fetchData('getCompletedOrders.php', 'completedOrdersCount', data => {
-                            return data.completed_orders;
-                        });
-                    </script>
-
-                    <!-- Line Chart -->
-                    <div class="col-xl-8 col-lg-7">
-                        <div class="card shadow mb-4">
-                            <!-- Card Header - Dropdown -->
-                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
-                                <div class="dropdown no-arrow">
-                                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
-                                        <div class="dropdown-header">Dropdown Header:</div>
-                                        <a class="dropdown-item" href="#">Action</a>
-                                        <a class="dropdown-item" href="#">Another action</a>
-                                        <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="#">Something else here</a>
+                        
+                        <!-- Monthly Earnings Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                รายได้รายเดือน
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="monthlyEarnings">฿0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-calendar fa-2x text-primary"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Card Body -->
-                            <div class="card-body">
-                                <div class="chart-area">
-                                    <canvas id="myLineChart"></canvas>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-
-                    <!-- Chart.js Script -->
-                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                    <script>
-                        // เมื่อเอกสารโหลดเสร็จ
-                        document.addEventListener('DOMContentLoaded', function() {
-                            fetch('get_data.php')
-                                .then(response => response.json())
-                                .then(data => {
-                                    var ctx = document.getElementById('myLineChart').getContext('2d');
-                                    var myLineChart = new Chart(ctx, {
-                                        type: 'line', // กราฟเส้น
-                                        data: {
-                                            labels: data.labels, // ข้อมูลแกน Y (ชื่อเดือน)
-                                            datasets: [{
-                                                label: 'Monthly Earnings', // ชื่อของกราฟ
-                                                data: data.data, // ข้อมูลที่แสดงในกราฟ
-                                                borderColor: 'rgba(78, 115, 223, 1)', // สีของเส้น
-                                                backgroundColor: 'rgba(78, 115, 223, 0.2)', // สีพื้นหลังของกราฟ
-                                                borderWidth: 2, // ขนาดของเส้น
-                                                fill: false // ไม่ให้กราฟเติมสี
-                                            }]
-                                        },
-                                        options: {
-                                            scales: {
-                                                x: {
-                                                    title: {
-                                                        display: true,
-                                                        text: 'Month' // แท็กแกน X
-                                                    }
-                                                },
-                                                y: {
-                                                    title: {
-                                                        display: true,
-                                                        text: 'Earnings (Amount)' // แท็กแกน Y
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    });
-                                })
-                                .catch(error => console.error('Error fetching data:', error));
-                        });
-                    </script>
-
-                    <!-- Pie Chart -->
-                    <div class="col-xl-4 col-lg-5">
-                        <div class="card shadow mb-4">
-                            <!-- Card Header - Dropdown -->
-                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-primary">Order Status Distribution</h6>
-                                <div class="dropdown no-arrow">
-                                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
-                                        <div class="dropdown-header">Dropdown Header:</div>
-                                        <a class="dropdown-item" href="#">Action</a>
-                                        <a class="dropdown-item" href="#">Another action</a>
-                                        <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="#">Something else here</a>
+                        
+                        <!-- Annual Earnings Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                รายได้ประจำปี
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="annualEarnings">฿0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-calendar-year fa-2x text-success"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <!-- Card Body -->
-                            <div class="card-body">
-                                <div class="chart-pie pt-4 pb-2">
-                                    <canvas id="myPieChart"></canvas>
-                                </div>
-                                <div class="mt-4 text-center small">
-                                    <span class="mr-2">
-                                        <i class="fas fa-circle text-primary"></i> Awaiting
-                                    </span>
-                                    <span class="mr-2">
-                                        <i class="fas fa-circle text-success"></i> In Progress
-                                    </span>
-                                    <span class="mr-2">
-                                        <i class="fas fa-circle text-info"></i> Completed
-                                    </span>
+                        </div>
+
+                        <!-- Pending Requests Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                คำขอที่รอดำเนินการ
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="pendingRequests">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-comments fa-2x text-warning"></i>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Chart.js Script -->
-                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                    <script>
-                        // เมื่อเอกสารโหลดเสร็จ
-                        document.addEventListener('DOMContentLoaded', function() {
-                            fetch('get_order_status_data.php')
-                                .then(response => response.json())
-                                .then(data => {
-                                    var ctx = document.getElementById('myPieChart').getContext('2d');
-                                    var myPieChart = new Chart(ctx, {
-                                        type: 'pie', // กราฟวงกลม
-                                        data: {
-                                            labels: data.labels, // ข้อมูลสถานะ
-                                            datasets: [{
-                                                data: data.data, // จำนวนคำสั่งซื้อในแต่ละสถานะ
-                                                backgroundColor: ['rgba(78, 115, 223, 1)', 'rgba(28, 200, 138, 1)', 'rgba(54, 185, 204, 1)'], // สีของวงกลม
-                                                hoverBackgroundColor: ['rgba(78, 115, 223, 0.8)', 'rgba(28, 200, 138, 0.8)', 'rgba(54, 185, 204, 0.8)'] // สีของวงกลมเมื่อเอาเมาส์ชี้
-                                            }]
-                                        },
-                                        options: {
-                                            responsive: true,
-                                            plugins: {
-                                                legend: {
-                                                    position: 'top',
-                                                },
-                                                tooltip: {
-                                                    callbacks: {
-                                                        label: function(tooltipItem) {
-                                                            return tooltipItem.label + ': ' + tooltipItem.raw;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    });
-                                })
-                                .catch(error => console.error('Error fetching data:', error));
-                        });
-                    </script>    
-                <!-- /.container-fluid -->
-
-                <!-- Sales Chart -->
-                <div class="col-xl-12 col-lg-12">
-                    <div class="card shadow mb-4">
-                        <!-- Card Header - Dropdown -->
-                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-primary">Sales by Product</h6>
-                        </div>
-                        <!-- Card Body -->
-                        <div class="card-body">
-                            <div class="chart-container">
-                                <canvas id="salesChart"></canvas>
+                        <!-- Order Status (In Progress) Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                สถานะคำสั่งซื้อ (กำลังดำเนินการ)
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="orderInProgress">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-hourglass-half fa-2x text-warning"></i>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        
+                        <!-- Completed Orders Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                คำสั่งซื้อที่เสร็จสิ้น
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="completedOrdersCount">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                     </div>
                 </div>
+                <!-- End of Page Content -->
 
-                <!-- Chart.js -->
-                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+                <!-- JavaScript to fetch and display data -->
                 <script>
-                $(document).ready(function() {
-                    // ฟังก์ชันดึงข้อมูลยอดขาย
-                    function fetchSalesData() {
-                        $.getJSON('get_sales_data.php', function(data) {
-                            var labels = [];
-                            var dataSet = [];
-
-                            data.forEach(function(item) {
-                                labels.push(item.product_name);
-                                dataSet.push(item.total_sold);
-                            });
-
-                            var ctx = document.getElementById('salesChart').getContext('2d');
-                            new Chart(ctx, {
-                                type: 'bar', // เปลี่ยนเป็น 'line' สำหรับกราฟเส้น
-                                data: {
-                                    labels: labels,
-                                    datasets: [{
-                                        label: 'Total Sold',
-                                        data: dataSet,
-                                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                        borderColor: 'rgba(75, 192, 192, 1)',
-                                        borderWidth: 1
-                                    }]
-                                },
-                                options: {
-                                    scales: {
-                                        x: {
-                                            beginAtZero: true
-                                        },
-                                        y: {
-                                            beginAtZero: true
-                                        }
-                                    }
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Total Sales
+                        fetch('get_total_sales.php')
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('totalSales').textContent = `฿${data.totalSales || '0'}`;
+                            })
+                            .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูลยอดขายรวม:', error));
+                        
+                        // Sold Products
+                        fetch('get_sold_products_data.php')
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('totalSoldProducts').textContent = data.totalSold || '0';
+                            })
+                            .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูลสินค้าที่ขายออกไป:', error));
+                        
+                        // Monthly Earnings
+                        fetch('getMonthlyEarnings.php')
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('monthlyEarnings').textContent = `฿${data || '0'}`;
+                            })
+                            .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูลรายได้รายเดือน:', error));
+                        
+                        // Annual Earnings
+                        fetch('getAnnualEarnings.php')
+                            .then(response => response.json())
+                            .then(data => {
+                                let totalEarnings = 0;
+                                if (Array.isArray(data)) {
+                                    data.forEach(item => totalEarnings += parseFloat(item.earnings) || 0);
+                                } else if (data.error) {
+                                    document.getElementById('annualEarnings').textContent = `Error: ${data.error}`;
+                                    return;
                                 }
-                            });
-                        });
-                    }
-
-                    // เรียกใช้ฟังก์ชันเพื่อดึงข้อมูลยอดขายเมื่อเอกสารโหลดเสร็จ
-                    fetchSalesData();
-                });
+                                document.getElementById('annualEarnings').textContent = `฿${totalEarnings.toFixed(2)}`;
+                            })
+                            .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูลรายได้ประจำปี:', error));
+                        
+                        // Pending Requests
+                        fetch('getPendingRequests.php')
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('pendingRequests').textContent = data.pending_count || '0';
+                            })
+                            .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูลคำขอที่รอดำเนินการ:', error));
+                        
+                        // Order In Progress
+                        fetch('getOrdersInProgress.php')
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('orderInProgress').textContent = data.inProgress || '0';
+                            })
+                            .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูลสถานะคำสั่งซื้อที่กำลังดำเนินการ:', error));
+                        
+                        // Completed Orders
+                        fetch('getCompletedOrders.php')
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('completedOrdersCount').textContent = data.completed_count || '0';
+                            })
+                            .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูลคำสั่งซื้อที่เสร็จสิ้น:', error));
+                    });
                 </script>
-            </div>
             <!-- End of Main Content -->
         </div>
         <!-- End of Content Wrapper -->

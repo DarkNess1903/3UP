@@ -1,11 +1,5 @@
 <?php
 include '../connectDB.php'; // เชื่อมต่อฐานข้อมูล
-
-// ตรวจสอบการเข้าสู่ระบบ
-if (!isset($_SESSION['customer_id'])) {
-    header("Location: login.php");
-    exit();
-}
 ?>
 
 <!DOCTYPE html>
@@ -55,7 +49,7 @@ if (!isset($_SESSION['customer_id'])) {
                         if ($row = mysqli_fetch_assoc($result)) {
                             echo "<span class='navbar-text me-3 user-name text-white'>" . htmlspecialchars($row['name']) . "</span>";
                         }
-                        echo "<a class='btn btn-outline-danger ms-2' href='.logoutphp'>ออกจากระบบ</a>";
+                        echo "<a class='btn btn-outline-danger ms-2' href='logout.php'>ออกจากระบบ</a>";
                     } else {
                         echo "<a class='btn btn-outline-primary me-2' href='login.php'>เข้าสู่ระบบ</a>";
                         echo "<a class='btn btn-outline-success' href='register.php'>สมัครสมาชิก</a>";

@@ -2,7 +2,7 @@
 ob_start();
 include '../connectDB.php';
 
-// ตรวจสอบการเข้าสู่ระบบของ Admin
+// ตรวจสอบการเข้าสู่ระบบของผู้ดูแลระบบ
 if (!isset($_SESSION['admin_id'])) {
     header("Location: login.php");
     exit();
@@ -10,23 +10,34 @@ if (!isset($_SESSION['admin_id'])) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Admin Dashboard</title>
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
     <link href="css/sb-admin-2.css" rel="stylesheet">
-    <link href="css/styles.css" rel="stylesheet">
     <script src="js/alerts.js"></script>
-    <script src="js/scripts.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .navbar .mx-auto {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px; /* เพิ่มขนาดตัวอักษร */
+            font-weight: bold;
+            color: #4e73df; /* สีที่โดดเด่น */
+        }
+
+        @media (max-width: 768px) {
+            .navbar .mx-auto {
+                font-size: 18px; /* ขนาดตัวอักษรเล็กลงสำหรับอุปกรณ์ขนาดเล็ก */
+            }
+        }
+    </style>
 </head>
 
 <body id="page-top">
@@ -42,31 +53,42 @@ if (!isset($_SESSION['admin_id'])) {
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">Admin</div>
+                <div class="sidebar-brand-text mx-3">ผู้ดูแลระบบ</div>
             </a>
 
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" href="index.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Graph -->
+            <li class="nav-item">
+                <a class="nav-link" href="graph.php">
+                    <i class="fas fa-fw fa-chart-line"></i>
+                    <span>กราฟสรุป</span>
+                </a>
             </li>
 
             <!-- Nav Item - Ordering Information -->
             <li class="nav-item">
                 <a class="nav-link" href="manage_orders.php">
-                    <i class="fas fa-fw fa-info-circle"></i>
-                    <span>Ordering Information</span></a>
+                    <i class="fas fa-fw fa-box"></i>
+                    <span>ข้อมูลการสั่งซื้อ</span>
+                </a>
             </li>
 
             <!-- Nav Item - Edit Product -->
             <li class="nav-item">
                 <a class="nav-link" href="manage_products.php">
-                    <i class="fas fa-fw fa-edit"></i>
-                    <span>Edit Product</span></a>
+                    <i class="fas fa-fw fa-cogs"></i>
+                    <span>แก้ไขสินค้า</span>
+                </a>
             </li>
         </ul>
         <!-- End of Sidebar -->
@@ -88,7 +110,7 @@ if (!isset($_SESSION['admin_id'])) {
                     <!-- Time display in the center -->
                     <div class="mx-auto" id="current-time"></div>
 
-                    <!-- JavaScript -->
+                    <!-- JavaScript for Time Update -->
                     <script>
                         function updateTime() {
                             const now = new Date();
@@ -101,32 +123,15 @@ if (!isset($_SESSION['admin_id'])) {
 
                         // Update every second
                         setInterval(updateTime, 1000);
-                        // Initial call to display time immediately
+                        // Initial call
                         updateTime();
                     </script>
-                    <!-- CSS -->
-                    <style>
-                        .navbar .mx-auto {
-                            position: absolute;
-                            left: 50%;
-                            transform: translateX(-50%);
-                            font-size: 24px; /* เพิ่มขนาดตัวอักษร */
-                            font-weight: bold;
-                            color: #4e73df; /* สีที่โดดเด่น */
-                        }
-
-                        @media (max-width: 768px) {
-                            .navbar .mx-auto {
-                                font-size: 18px; /* ขนาดตัวอักษรเล็กลงสำหรับอุปกรณ์ขนาดเล็ก */
-                            }
-                        }
-                    </style>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
 
-                         <!-- Nav Item - Alerts -->
-                         <li class="nav-item dropdown no-arrow mx-1 show">
+                        <!-- Dropdown - Alerts -->
+                        <li class="nav-item dropdown no-arrow mx-1 show">
                             <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <!-- Counter - Alerts -->
@@ -152,15 +157,15 @@ if (!isset($_SESSION['admin_id'])) {
 
                         <script>
                         $(document).ready(function() {
-                            // ฟังก์ชันดึงข้อมูลออเดอร์ใหม่
+                            // Function to fetch new orders
                             function updateAlerts() {
                                 $.getJSON('get_new_orders.php', function(data) {
                                     var newOrders = data;
 
-                                    // อัพเดตจำนวนแจ้งเตือน
+                                    // Update alert count
                                     $('#alertCount').text(newOrders.length);
 
-                                    // สร้างเนื้อหาของการแจ้งเตือน
+                                    // Create alert content
                                     var alertHtml = '';
                                     if (newOrders.length > 0) {
                                         $.each(newOrders, function(index, order) {
@@ -185,10 +190,8 @@ if (!isset($_SESSION['admin_id'])) {
                                 });
                             }
 
-                            // เรียกใช้ฟังก์ชันเพื่ออัพเดตแจ้งเตือนเมื่อเอกสารโหลดเสร็จ
+                            // Initial call and refresh every 30 seconds
                             updateAlerts();
-
-                            // รีเฟรชแจ้งเตือนทุกๆ 30 วินาที
                             setInterval(updateAlerts, 30000);
                         });
                         </script>
@@ -198,31 +201,30 @@ if (!isset($_SESSION['admin_id'])) {
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Admin</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">ผู้ดูแลระบบ</span>
                                 <img class="img-profile rounded-circle" src="img/undraw_profile.svg">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="logout.php" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Logout
+                                    ออกจากระบบ
                                 </a>
                             </div>
                         </li>
                     </ul>
+
                 </nav>
-                
-    <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+                <!-- End of Topbar -->
 
-    <!-- Core plugin JavaScript-->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+                <!-- Bootstrap core JavaScript-->
+                <script src="vendor/jquery/jquery.min.js"></script>
+                <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Custom scripts for all pages-->
-    <script src="js/sb-admin-2.min.js"></script>
+                <!-- Core plugin JavaScript-->
+                <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
 
+                <!-- Custom scripts for all pages-->
+                <script src="js/sb-admin-2.min.js"></script>    
 </body>
-
 </html>
-
