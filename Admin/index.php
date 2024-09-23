@@ -283,25 +283,6 @@ if (!isset($_SESSION['admin_id'])) {
                             </div>
                         </div>
                         
-                        <!-- Sold Products Card Example -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-info shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                                สินค้าขายออกไปแล้ว
-                                            </div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalSoldProducts">0</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-boxes fa-2x text-info"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
                         <!-- Monthly Earnings Card Example -->
                         <div class="col-xl-3 col-md-6 mb-4">
                             <div class="card border-left-primary shadow h-100 py-2">
@@ -334,6 +315,44 @@ if (!isset($_SESSION['admin_id'])) {
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-calendar-year fa-2x text-success"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Daily Sales Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                ยอดขายประจำวัน
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="dailySales">฿0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-calendar-day fa-2x text-info"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sold Products Card Example -->
+                            <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                สินค้าขายออกไปแล้ว
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalSoldProducts">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-boxes fa-2x text-info"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -397,8 +416,22 @@ if (!isset($_SESSION['admin_id'])) {
                             </div>
                         </div>
                         
+                        <!-- Daily Sales Chart Example -->
+                        <div class="col-xl-6 col-lg-6 mb-4">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header -->
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-info">ยอดขายประจำวัน (7 วันล่าสุด)</h6>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <canvas id="dailySalesChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
                 <!-- End of Page Content -->
 
                 <!-- JavaScript to fetch and display data -->
@@ -463,9 +496,81 @@ if (!isset($_SESSION['admin_id'])) {
                         fetch('getCompletedOrders.php')
                             .then(response => response.json())
                             .then(data => {
-                                document.getElementById('completedOrdersCount').textContent = data.completed_count || '0';
+                                if (data.completedOrders !== undefined) {
+                                    document.getElementById('completedOrdersCount').textContent = data.completedOrders || '0';
+                                } else {
+                                    console.error('เกิดข้อผิดพลาดในการดึงข้อมูลคำสั่งซื้อที่เสร็จสิ้น:', data.error);
+                                    document.getElementById('completedOrdersCount').textContent = '0';
+                                }
                             })
                             .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูลคำสั่งซื้อที่เสร็จสิ้น:', error));
+
+                        // Daily Sales
+                        fetch('getDailySales.php')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.dailySales !== undefined) {
+                                    document.getElementById('dailySales').textContent = `฿${data.dailySales.toFixed(2)}`;
+                                } else {
+                                    console.error('เกิดข้อผิดพลาดในการดึงข้อมูลยอดขายประจำวัน:', data.error);
+                                    document.getElementById('dailySales').textContent = '฿0';
+                                }
+                            })
+                            .catch(error => {
+                                console.error('เกิดข้อผิดพลาดในการดึงข้อมูลยอดขายประจำวัน:', error);
+                                document.getElementById('dailySales').textContent = '฿0';
+                            });
+                        
+                        // Daily Sales Chart
+                        fetch('getDailySales.php')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.labels && data.dailySales) {
+                                    const ctx = document.getElementById('dailySalesChart').getContext('2d');
+                                    const dailySalesChart = new Chart(ctx, {
+                                        type: 'line',
+                                        data: {
+                                            labels: data.labels,
+                                            datasets: [{
+                                                label: 'ยอดขาย',
+                                                data: data.dailySales,
+                                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                                borderColor: 'rgba(75, 192, 192, 1)',
+                                                borderWidth: 1,
+                                                fill: true,
+                                                tension: 0.4
+                                            }]
+                                        },
+                                        options: {
+                                            scales: {
+                                                y: {
+                                                    beginAtZero: true,
+                                                    title: {
+                                                        display: true,
+                                                        text: 'ยอดขาย (฿)'
+                                                    }
+                                                },
+                                                x: {
+                                                    title: {
+                                                        display: true,
+                                                        text: 'วันที่'
+                                                    }
+                                                }
+                                            },
+                                            plugins: {
+                                                legend: {
+                                                    display: false
+                                                }
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    console.error('เกิดข้อผิดพลาดในการดึงข้อมูลยอดขายประจำวัน:', data.error);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('เกิดข้อผิดพลาดในการดึงข้อมูลยอดขายประจำวัน:', error);
+                            });
                     });
                 </script>
             <!-- End of Main Content -->
@@ -518,5 +623,4 @@ if (!isset($_SESSION['admin_id'])) {
     <script src="js/demo/chart-pie-demo.js"></script>
 
 </body>
-
 </html>

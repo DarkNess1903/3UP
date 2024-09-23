@@ -10,7 +10,7 @@ $sql = "
     SELECT SUM(orderdetails.quantity) AS totalSold
     FROM orderdetails
     INNER JOIN orders ON orderdetails.order_id = orders.order_id
-    WHERE orders.status = 'Completed'
+    WHERE orders.status = 'เสร็จสิ้น'
 ";
 
 $result = mysqli_query($conn, $sql);
