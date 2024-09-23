@@ -116,4 +116,3 @@ mysqli_close($conn);
     <script src="js/scripts.js" defer></script>
 </body>
 </html>
-

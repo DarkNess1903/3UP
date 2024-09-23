@@ -47,12 +47,12 @@ mysqli_close($conn);
 
     <main>
         <section class="login">
-            <h2>Login</h2>
+            <h2>เข้าสู่ระบบ</h2>
             <form action="login.php" method="post">
-                <label for="phone">Phone Number:</label>
+                <label for="phone">เบอร์มือถือ:</label>
                 <input type="text" id="phone" name="phone" required>
 
-                <label for="password">Password:</label>
+                <label for="password">รหัสเข้าสู่ระบบ:</label>
                 <input type="password" id="password" name="password" required>
 
                 <?php if (isset($error)): ?>
@@ -61,7 +61,7 @@ mysqli_close($conn);
 
                 <input type="submit" value="Login">
             </form>
-            <p>Don't have an account? <a href="register.php">Register here</a></p>
+            <p>ยังไม่มีสมาชิกใช่มั้ย? <a href="register.php">สมัครสมาชิก</a></p>
         </section>
     </main>
 </body>
