@@ -36,6 +36,9 @@ if (!$result) {
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <style>
         table {
             width: 100%;
@@ -74,7 +77,7 @@ if (!$result) {
 
     <div class="container">
         <h1>จัดการคำสั่งซื้อ</h1>
-        <table>
+        <table class="table table-bordered table-striped">
             <thead>
                 <tr>
                     <th>หมายเลขคำสั่งซื้อ</th>
@@ -96,11 +99,10 @@ if (!$result) {
                         <td><?php echo htmlspecialchars($order['status']); ?></td>
                         <td><?php echo date('d-m-Y H:i:s', strtotime($order['order_date'])); ?></td>
                         <td>
-                            <a href="view_order.php?order_id=<?php echo $order['order_id']; ?>" class="btn btn-view">รายละเอียด</a>
+                            <a href="view_order.php?order_id=<?php echo $order['order_id']; ?>" class="btn btn-info">รายละเอียด</a>
                             <?php if ($order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ'): ?>
                                 <button class="btn btn-success completeOrderBtn" data-order-id="<?php echo $order['order_id']; ?>">เสร็จสิ้น</button>
                             <?php endif; ?>
-                            <!-- ปุ่มลบออเดอร์ -->
                             <button class="btn btn-danger deleteOrderBtn" data-order-id="<?php echo $order['order_id']; ?>">ลบ</button>
                         </td>
                     </tr>
@@ -114,6 +116,7 @@ if (!$result) {
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <script>
     $(document).ready(function() {
         $('.deleteOrderBtn').on('click', function() {
@@ -151,7 +154,6 @@ if (!$result) {
                     },
                     dataType: 'json',
                     success: function(response) {
-                        console.log(response); // ตรวจสอบข้อมูลที่ได้รับจากเซิร์ฟเวอร์
                         if (response.success) {
                             alert('สถานะคำสั่งซื้อลงวันที่เรียบร้อยแล้ว');
                             window.location.reload(); // รีเฟรชหน้าเพื่ออัปเดตข้อมูล
@@ -160,7 +162,6 @@ if (!$result) {
                         }
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
-                        console.error('Error details:', textStatus, errorThrown); // ตรวจสอบรายละเอียดข้อผิดพลาด
                         alert('เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์');
                     }
                 });
