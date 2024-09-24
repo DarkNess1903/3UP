@@ -80,9 +80,8 @@ if (!$result) {
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
-                    <th>หมายเลขคำสั่งซื้อ</th>
+                    <th>เลขคำสั่งซื้อ</th>
                     <th>ชื่อผู้สั่งซื้อ</th>
-                    <th>อีเมล</th>
                     <th>ยอดรวม</th>
                     <th>สถานะ</th>
                     <th>วันที่/เวลา</th>
@@ -94,7 +93,6 @@ if (!$result) {
                     <tr>
                         <td><?php echo htmlspecialchars($order['order_id']); ?></td>
                         <td><?php echo htmlspecialchars($order['name']); ?></td>
-                        <td><?php echo htmlspecialchars($order['email']); ?></td>
                         <td><?php echo number_format($order['total_amount'], 2); ?> บาท</td>
                         <td><?php echo htmlspecialchars($order['status']); ?></td>
                         <td><?php echo date('d-m-Y H:i:s', strtotime($order['order_date'])); ?></td>
