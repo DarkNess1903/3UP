@@ -17,12 +17,14 @@ $address = trim($_POST['address']);
 
 // ตรวจสอบความถูกต้องของข้อมูลที่ส่งมา
 if (empty($name) || empty($email) || empty($phone) || empty($address)) {
-    die("All fields are required.");
+    header("Location: profile.php?update_error=1");
+    exit();
 }
 
 // ตรวจสอบอีเมลให้ถูกต้อง
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    die("Invalid email format.");
+    header("Location: profile.php?update_error=2");
+    exit();
 }
 
 // เตรียมคำสั่ง SQL สำหรับอัปเดตข้อมูลลูกค้า
@@ -34,7 +36,8 @@ $update_query = "
 $stmt = mysqli_prepare($conn, $update_query);
 
 if (!$stmt) {
-    die("Prepare failed: " . mysqli_error($conn));
+    header("Location: profile.php?update_error=3");
+    exit();
 }
 
 // ผูกค่าจากฟอร์มเข้ากับคำสั่ง SQL
@@ -45,10 +48,13 @@ if (mysqli_stmt_execute($stmt)) {
     header("Location: profile.php?update=success");
     exit();
 } else {
-    $error = mysqli_error($conn);
-    echo "Error updating profile: " . $error;
+    // เพิ่มการ log ข้อผิดพลาดเพื่อการตรวจสอบเพิ่มเติม
+    error_log("Error updating profile: " . mysqli_error($conn));
+    header("Location: profile.php?update_error=4");
+    exit();
 }
 
 // ปิดการเชื่อมต่อฐานข้อมูล
+mysqli_stmt_close($stmt);
 mysqli_close($conn);
 ?>

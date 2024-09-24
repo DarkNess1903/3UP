@@ -21,8 +21,8 @@ include '../connectDB.php'; // เชื่อมต่อฐานข้อม�
 </head>
 <body>
 <header>
-    <nav class="navbar navbar-expand-md bg-dark-custom">
-        <div class="container">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark-custom">
+        <div class="container-fluid">
             <a href="index.php" class="navbar-brand d-flex align-items-center">
                 <img src="../public/images/logo.jpg" alt="Logo" width="100" height="100" class="me-2">
             </a>
@@ -30,32 +30,29 @@ include '../connectDB.php'; // เชื่อมต่อฐานข้อม�
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link text-white" href="index.php">สินค้า</a></li>
                     <li class="nav-item"><a class="nav-link text-white" href="order_history.php">ประวัติการสั่งซื้อ</a></li>
                     <li class="nav-item"><a class="nav-link text-white" href="contact_us.php">ติดต่อเรา</a></li>
                     <li class="nav-item"><a class="nav-link text-white" href="profile.php">ตั้งค่าบัญชี</a></li>
                 </ul>
-                
-                    </div>
-                    <?php
-                    if (isset($_SESSION['customer_id'])) {
-                        $customer_id = $_SESSION['customer_id'];
-                        $query = "SELECT name FROM customer WHERE customer_id = ?";
-                        $stmt = mysqli_prepare($conn, $query);
-                        mysqli_stmt_bind_param($stmt, 'i', $customer_id);
-                        mysqli_stmt_execute($stmt);
-                        $result = mysqli_stmt_get_result($stmt);
-                        if ($row = mysqli_fetch_assoc($result)) {
-                            echo "<span class='navbar-text me-3 user-name text-white'>" . htmlspecialchars($row['name']) . "</span>";
-                        }
-                        echo "<a class='btn btn-outline-danger ms-2' href='logout.php'>ออกจากระบบ</a>";
-                    } else {
-                        echo "<a class='btn btn-outline-primary me-2' href='login.php'>เข้าสู่ระบบ</a>";
-                        echo "<a class='btn btn-outline-success' href='register.php'>สมัครสมาชิก</a>";
+                <?php
+                if (isset($_SESSION['customer_id'])) {
+                    $customer_id = $_SESSION['customer_id'];
+                    $query = "SELECT name FROM customer WHERE customer_id = ?";
+                    $stmt = mysqli_prepare($conn, $query);
+                    mysqli_stmt_bind_param($stmt, 'i', $customer_id);
+                    mysqli_stmt_execute($stmt);
+                    $result = mysqli_stmt_get_result($stmt);
+                    if ($row = mysqli_fetch_assoc($result)) {
+                        echo "<span class='navbar-text me-3 user-name text-white'>" . htmlspecialchars($row['name']) . "</span>";
                     }
-                    ?>
-                </div>
+                    echo "<a class='btn btn-outline-danger ms-2' href='logout.php'>ออกจากระบบ</a>";
+                } else {
+                    echo "<a class='btn btn-outline-primary me-2' href='login.php'>เข้าสู่ระบบ</a>";
+                    echo "<a class='btn btn-outline-success' href='register.php'>สมัครสมาชิก</a>";
+                }
+                ?>
             </div>
         </div>
     </nav>

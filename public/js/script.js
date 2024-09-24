@@ -5,15 +5,18 @@ document.addEventListener('DOMContentLoaded', function () {
     var captionText = document.getElementById("caption");
     var closeBtn = document.getElementsByClassName("close")[0];
 
-    document.querySelectorAll('.view-payment-slip').forEach(function (link) {
-        link.onclick = function (event) {
-            event.preventDefault(); // ป้องกันการรีเฟรชหน้า
-            var imageUrl = this.getAttribute('data-image');
-            modal.style.display = "block";
-            modalImg.src = imageUrl;
-            captionText.innerHTML = "Payment Slip";
-        };
-    });
+    document.querySelectorAll('.quantity-controls button').forEach(button => {
+        button.addEventListener('click', function(e) {
+            let input = this.closest('form').querySelector('input[type="hidden"]');
+            let currentValue = parseInt(input.value);
+    
+            if (this.value === 'decrease' && currentValue > 1) {
+                input.value = currentValue - 1;
+            } else if (this.value === 'increase') {
+                input.value = currentValue + 1;
+            }
+        });
+    });    
 
     closeBtn.onclick = function () {
         modal.style.display = "none";

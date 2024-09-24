@@ -13,6 +13,7 @@ header {
     color: white;
     padding: 18px 0;
     text-align: center;
+    margin-top: 35px;
 }
 
 header nav ul {
@@ -61,22 +62,63 @@ footer {
     padding: 15px;
     margin: 10px;
     width: 300px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s; /* เพิ่มการเปลี่ยนแปลงเมื่อมีการ hover */
+}
+
+.product:hover {
+    transform: translateY(-5px); /* เลื่อนขึ้นเมื่อ hover */
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2); /* เพิ่มเงาเมื่อ hover */
 }
 
 .product img {
     width: 100%;
     border-radius: 8px;
+    transition: transform 0.3s; /* เพิ่มการเปลี่ยนแปลงให้กับภาพ */
+}
+
+.product img:hover {
+    transform: scale(1.05); /* ขยายภาพเมื่อ hover */
 }
 
 .product h2 {
     color: #8b0000;
+    font-size: 1.5rem; /* เพิ่มขนาดตัวอักษร */
+    margin-bottom: 10px; /* เพิ่มระยะห่างด้านล่าง */
 }
 
 .product p {
     font-size: 16px;
     margin: 10px 0;
+    color: #555; /* เปลี่ยนสีตัวอักษรเพื่อให้ดูน่าสนใจมากขึ้น */
+}
+
+.modal {
+    display: none; 
+    position: fixed;
+    z-index: 1050; /* เพิ่ม z-index */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto; /* ปรับระยะห่างขอบบน */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 60%; /* ปรับความกว้าง */
+    border-radius: 8px; /* เพิ่มมุมโค้ง */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s; /* เพิ่มการเปลี่ยนแปลงให้กับ modal */
+}
+
+.modal-content:hover {
+    transform: scale(1.02); /* ขยาย modal เมื่อ hover */
 }
 
 .btn {
@@ -104,24 +146,32 @@ footer {
 
 .cart-icon {
     position: fixed;
-    top: 150px; /* ย้ายไปด้านบน */
+    bottom: 20px; /* ตำแหน่งของไอคอน */
     right: 15px;
-    background-color: #ffffff;
+    background-color: #ffffff; /* เปลี่ยนสีพื้นหลังให้โดดเด่น */
     border-radius: 50%;
     padding: 15px;
     color: white;
     font-size: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* เพิ่มเงาให้ดูน่าสนใจ */
+    transition: background-color 0.3s, transform 0.3s; /* เพิ่มการเปลี่ยนแปลง */
+}
+
+.cart-icon:hover {
+    background-color: #000000; /* เปลี่ยนสีเมื่อ hover */
+    transform: scale(1.1); /* ขยายขนาดเมื่อ hover */
 }
 
 .cart-icon .cart-count {
     position: absolute;
     top: -10px;
     right: -10px;
-    background-color: #ff0000;
+    background-color: #ff0000; /* สีพื้นหลังของจำนวนสินค้า */
     color: white;
     padding: 5px 10px;
     border-radius: 50%;
+    font-weight: bold; /* ทำให้จำนวนสินค้าชัดเจนมากขึ้น */
+    font-size: 14px; /* ขนาดตัวอักษรของจำนวนสินค้า */
 }
 
 .fly-to-cart {
@@ -317,26 +367,6 @@ input[type="file"] {
 
 .profile-info .btn:hover {
     background-color: #e0a800;
-}
-
-.modal {
-    display: none; 
-    position: fixed;
-    z-index: 1050; /* เพิ่ม z-index */
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: 10% auto; /* เปลี่ยนขอบบนเป็น 10% */
-    padding: 20px;
-    border: 1px solid #888;
-    width: 50%; /* ลดความกว้างลงเพื่อให้พอดี */
 }
 
 .close {
@@ -764,10 +794,11 @@ a:hover {
     background-color: #18181a;
     color: #ffffff;
     position: fixed; /* ทำให้ navbar อยู่ชิดแถบบน */
-    top: 0; /* ตั้งตำแหน่งเป็น 0 จากขอบบนของหน้าจอ */
-    width: 100%; /* กำหนดให้ navbar ยืดเต็มหน้าจอ */
-    z-index: 100; /* กำหนดให้ navbar อยู่เหนือส่วนอื่น ๆ ของหน้าเว็บ */
-    padding: 10px 0;
+    top: 0;
+    width: 100%; /* ยืดเต็มหน้าจอ */
+    z-index: 100; /* อยู่เหนือส่วนอื่นของเว็บ */
+    padding: 10px 15px; /* เพิ่ม padding ให้พอดีในหน้าจอเล็กและใหญ่ */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* เพิ่มเงาให้ดูมีมิติ */
 }
 
 .navbar .nav-link {
@@ -784,7 +815,13 @@ a:hover {
     margin: 0 auto;
     display: flex;
     justify-content: center;
-    flex-grow: 1; /* ทำให้ `.navbar-nav` ขยายเต็มที่ */
+    flex-grow: 1; /* ทำให้ .navbar-nav ขยายเต็มที่ */
+    gap: 15px; /* เพิ่มช่องว่างระหว่าง link */
+}
+
+.navbar-brand img {
+    width: 65px; /* ปรับขนาดรูปให้เล็กลงเพื่อความพอดี */
+    height: auto;
 }
 
 .checkout-btn {
@@ -799,4 +836,12 @@ a:hover {
 
 .fa-trash-alt:hover {
     color: #c82333; /* สีแดงเข้มเมื่อเอาเมาส์ไปวาง */
+}
+
+.navbar {
+    padding: 1rem; /* เพิ่ม padding เพื่อให้ navbar กว้างขึ้น */
+}
+
+input.form-control {
+    width: 100%; /* ทำให้ช่องแก้ไขเต็มความกว้าง */
 }

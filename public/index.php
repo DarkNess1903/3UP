@@ -26,7 +26,7 @@ include 'topnavbar.php';
     <header>
         <h1>สินค้า</h1>
     </header>
-    <main>
+    <main>  
         <section class="product-list">
             <?php
             $query = "SELECT * FROM product";

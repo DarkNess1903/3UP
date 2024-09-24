@@ -26,8 +26,9 @@ if (!isset($_SESSION['customer_id'])) {
     <script src="js/script.js"></script>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2>Contact Us</h2>
+    <header>
+        <h1>Contact</h1>
+    </header>
         
         <!-- Contact Information -->
         <div class="contact-info">
@@ -56,28 +57,3 @@ if (!isset($_SESSION['customer_id'])) {
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
-
-<style>
-.contact-info {
-    background: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.contact-info h3 {
-    margin-bottom: 20px;
-}
-
-.contact-info p {
-    margin-bottom: 10px;
-}
-
-.contact-info a {
-    color: #007bff;
-    text-decoration: none;
-}
-
-.contact-info a:hover {
-    text-decoration: underline;
-}</style>
