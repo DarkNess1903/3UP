@@ -3,7 +3,6 @@ session_start();
 include '../connectDB.php';
 include 'topnavbar.php';
 ?>
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -21,11 +20,13 @@ include 'topnavbar.php';
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/script.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <header>
         <h1>สินค้า</h1>
     </header>
+    
     <main>  
         <section class="product-list">
             <?php
@@ -39,7 +40,6 @@ include 'topnavbar.php';
                     echo '<h2>' . htmlspecialchars($row['name']) . '</h2>';
                     echo '<p>ราคา: ฿' . number_format($row['price'], 2) . '</p>';
                     echo '<p>สต็อก: ' . htmlspecialchars($row['stock_quantity']) . '</p>';
-                    echo '<p>' . htmlspecialchars($row['details']) . '</p>';
                     echo '<a href="add_to_cart.php?product_id=' . $row['product_id'] . '" class="btn">เพิ่มในตะกร้า</a>';
                     echo '</div>';
                 }
@@ -76,6 +76,6 @@ include 'topnavbar.php';
 </html>
 
 <?php
-include 'footer.php';
 mysqli_close($conn);
+include 'footer.php';
 ?>

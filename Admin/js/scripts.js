@@ -53,3 +53,15 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+document.querySelectorAll('.dropdown-item').forEach(item => {
+    item.addEventListener('click', function(event) {
+        event.preventDefault(); // ป้องกันการ reload หน้าเมื่อคลิก
+        const period = this.getAttribute('data-period');
+
+        // อัปเดตกราฟ
+        fetchEarnings(period);
+
+        // เปลี่ยนชื่อรายการที่ถูกเลือกใน dropdown
+        document.querySelector('#dropdownMenuLink').innerText = `เลือกช่วงเวลา: ${this.innerText}`;
+    });
+});

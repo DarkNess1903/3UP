@@ -83,11 +83,10 @@ if (mysqli_num_rows($order_result) === 0) {
             </div>
         </section>
     </main>
-    <?php include 'footer.php'; ?>
 </body>
 </html>
 
 <?php
-// ปิดการเชื่อมต่อฐานข้อมูล
 mysqli_close($conn);
+include 'footer.php';
 ?>

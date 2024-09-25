@@ -13,7 +13,7 @@ header {
     color: white;
     padding: 18px 0;
     text-align: center;
-    margin-top: 35px;
+    margin-top: 25px;
 }
 
 header nav ul {
@@ -22,6 +22,7 @@ header nav ul {
     margin: 0;
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 header nav ul li {
@@ -43,7 +44,6 @@ footer {
     color: white;
     text-align: center;
     padding: 15px 0;
-    /* position: fixed; */
     width: 100%;
     bottom: 0;
 }
@@ -64,40 +64,40 @@ footer {
     width: 300px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     text-align: center;
-    transition: transform 0.3s, box-shadow 0.3s; /* เพิ่มการเปลี่ยนแปลงเมื่อมีการ hover */
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .product:hover {
-    transform: translateY(-5px); /* เลื่อนขึ้นเมื่อ hover */
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2); /* เพิ่มเงาเมื่อ hover */
+    transform: translateY(-5px);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
 }
 
 .product img {
     width: 100%;
     border-radius: 8px;
-    transition: transform 0.3s; /* เพิ่มการเปลี่ยนแปลงให้กับภาพ */
+    transition: transform 0.3s;
 }
 
 .product img:hover {
-    transform: scale(1.05); /* ขยายภาพเมื่อ hover */
+    transform: scale(1.05);
 }
 
 .product h2 {
     color: #8b0000;
-    font-size: 1.5rem; /* เพิ่มขนาดตัวอักษร */
-    margin-bottom: 10px; /* เพิ่มระยะห่างด้านล่าง */
+    font-size: 1.5rem;
+    margin-bottom: 10px;
 }
 
 .product p {
     font-size: 16px;
     margin: 10px 0;
-    color: #555; /* เปลี่ยนสีตัวอักษรเพื่อให้ดูน่าสนใจมากขึ้น */
+    color: #555;
 }
 
 .modal {
-    display: none; 
+    display: none;
     position: fixed;
-    z-index: 1050; /* เพิ่ม z-index */
+    z-index: 1050;
     left: 0;
     top: 0;
     width: 100%;
@@ -108,17 +108,60 @@ footer {
 
 .modal-content {
     background-color: #fefefe;
-    margin: 5% auto; /* ปรับระยะห่างขอบบน */
+    margin: 5% auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 60%; /* ปรับความกว้าง */
-    border-radius: 8px; /* เพิ่มมุมโค้ง */
+    width: 60%;
+    border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s; /* เพิ่มการเปลี่ยนแปลงให้กับ modal */
+    transition: transform 0.3s;
 }
 
 .modal-content:hover {
-    transform: scale(1.02); /* ขยาย modal เมื่อ hover */
+    transform: scale(1.02);
+}
+
+/* Responsive Design */
+
+/* จัดการหน้าจอขนาดเล็ก เช่น โทรศัพท์มือถือ */
+@media (max-width: 600px) {
+    header nav ul {
+        flex-direction: column;
+    }
+
+    header nav ul li {
+        margin: 10px 0;
+    }
+
+    .product {
+        width: 100%; /* ให้สินค้าใช้ความกว้างเต็มหน้าจอ */
+    }
+
+    .modal-content {
+        width: 90%; /* ลดความกว้างของ modal บนหน้าจอขนาดเล็ก */
+    }
+}
+
+/* จัดการหน้าจอขนาดกลาง เช่น แท็บเล็ต */
+@media (max-width: 992px) {
+    .product {
+        width: 45%; /* ให้สินค้ามีขนาดใหญ่ขึ้นในหน้าจอแท็บเล็ต */
+    }
+
+    .modal-content {
+        width: 75%; /* ลดความกว้างของ modal บนแท็บเล็ต */
+    }
+}
+
+/* จัดการหน้าจอขนาดใหญ่ เช่น เดสก์ท็อป */
+@media (min-width: 1200px) {
+    .product {
+        width: 30%; /* ให้สินค้าเล็กลงในหน้าจอใหญ่ */
+    }
+
+    .modal-content {
+        width: 50%; /* ให้ modal มีขนาดเหมาะสมบนหน้าจอใหญ่ */
+    }
 }
 
 .btn {

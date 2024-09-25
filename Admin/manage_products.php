@@ -12,23 +12,23 @@ if (!$conn) {
 if (isset($_POST['add_product'])) {
     $product_name = $_POST['product_name'];
     $price = $_POST['price'];
+    $cost = $_POST['cost'];
     $stock = $_POST['stock'];
     $image = $_FILES['image']['name'];
     $image_tmp = $_FILES['image']['tmp_name'];
 
-    // อัปโหลดรูปภาพ
     if ($image) {
         move_uploaded_file($image_tmp, '../admin/uploads/' . $image);
     }
 
-    $query = "INSERT INTO product (name, price, stock_quantity, image) VALUES (?, ?, ?, ?)";
+    $query = "INSERT INTO product (name, price, cost, stock_quantity, image) VALUES (?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param('sdis', $product_name, $price, $stock, $image);
+    $stmt->bind_param('sdids', $product_name, $price, $cost, $stock, $image);
 
     if ($stmt->execute()) {
-        echo '<div class="alert alert-success">Product added successfully</div>';
+        echo '<div class="alert alert-success">เพิ่มสินค้าสำเร็จ</div>';
     } else {
-        echo '<div class="alert alert-danger">Error adding product: ' . $stmt->error . '</div>';
+        echo '<div class="alert alert-danger">เกิดข้อผิดพลาดในการเพิ่มสินค้า: ' . $stmt->error . '</div>';
     }
     $stmt->close();
 }
@@ -38,26 +38,26 @@ if (isset($_POST['edit_product'])) {
     $product_id = $_POST['product_id'];
     $product_name = $_POST['product_name'];
     $price = $_POST['price'];
+    $cost = $_POST['cost'];
     $stock = $_POST['stock'];
     $image = $_FILES['image']['name'];
     $image_tmp = $_FILES['image']['tmp_name'];
 
-    // อัปโหลดรูปภาพถ้ามีการเปลี่ยนแปลง
     if ($image) {
         move_uploaded_file($image_tmp, '../admin/uploads/' . $image);
-        $query = "UPDATE product SET name = ?, price = ?, stock_quantity = ?, image = ? WHERE product_id = ?";
+        $query = "UPDATE product SET name = ?, price = ?, cost = ?, stock_quantity = ?, image = ? WHERE product_id = ?";
         $stmt = $conn->prepare($query);
-        $stmt->bind_param('sdisi', $product_name, $price, $stock, $image, $product_id);
+        $stmt->bind_param('sdidsi', $product_name, $price, $cost, $stock, $image, $product_id);
     } else {
-        $query = "UPDATE product SET name = ?, price = ?, stock_quantity = ? WHERE product_id = ?";
+        $query = "UPDATE product SET name = ?, price = ?, cost = ?, stock_quantity = ? WHERE product_id = ?";
         $stmt = $conn->prepare($query);
-        $stmt->bind_param('sidi', $product_name, $price, $stock, $product_id);
+        $stmt->bind_param('sdidi', $product_name, $price, $cost, $stock, $product_id);
     }
 
     if ($stmt->execute()) {
-        echo '<div class="alert alert-success">Product updated successfully</div>';
+        echo '<div class="alert alert-success">อัพเดทสินค้าสำเร็จ</div>';
     } else {
-        echo '<div class="alert alert-danger">Error updating product: ' . $stmt->error . '</div>';
+        echo '<div class="alert alert-danger">เกิดข้อผิดพลาดในการอัพเดทสินค้า: ' . $stmt->error . '</div>';
     }
     $stmt->close();
 }
@@ -92,9 +92,16 @@ if (isset($_GET['delete'])) {
     $product = $result->fetch_assoc();
     $stmt->close();
 
-    // ลบรูปภาพจากโฟลเดอร์
-    if ($product['image']) {
-        unlink('../admin/uploads/' . $product['image']);
+    // ตรวจสอบว่ามีรูปภาพและไม่ว่างเปล่า
+    if (!empty($product['image'])) {
+        $file_path = '../admin/uploads/' . $product['image'];
+        
+        // ลบรูปภาพจากโฟลเดอร์ (ถ้าไฟล์มีอยู่จริง)
+        if (file_exists($file_path) && is_file($file_path)) {
+            unlink($file_path);
+        } else {
+            echo "ไม่พบไฟล์ที่ต้องการลบ";
+        }
     }
 
     // ลบข้อมูลสินค้า
@@ -103,9 +110,9 @@ if (isset($_GET['delete'])) {
     $stmt->bind_param('i', $product_id);
 
     if ($stmt->execute()) {
-        echo '<div class="alert alert-success">Product deleted successfully</div>';
+        echo '<div class="alert alert-success">ลบสินค้าสำเร็จ</div>';
     } else {
-        echo '<div class="alert alert-danger">Error deleting product: ' . $stmt->error . '</div>';
+        echo '<div class="alert alert-danger">เกิดข้อผิดพลาดในการลบสินค้า: ' . $stmt->error . '</div>';
     }
     $stmt->close();
 }
@@ -177,6 +184,10 @@ mysqli_close($conn);
                                 <input type="number" id="price" name="price" class="form-control" step="0.01" required>
                             </div>
                             <div class="form-group">
+                                <label for="cost">ต้นทุน:</label>
+                                <input type="number" id="cost" name="cost" class="form-control" step="0.01" required>
+                            </div>
+                            <div class="form-group">
                                 <label for="stock">จำนวนในสต็อก:</label>
                                 <input type="number" id="stock" name="stock" class="form-control" required>
                             </div>
@@ -211,6 +222,10 @@ mysqli_close($conn);
                             <div class="form-group">
                                 <label for="edit_price">ราคา:</label>
                                 <input type="number" id="edit_price" name="price" class="form-control" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit_cost">ต้นทุน:</label>
+                                <input type="number" id="edit_cost" name="cost" class="form-control" step="0.01" required>
                             </div>
                             <div class="form-group">
                                 <label for="edit_stock">จำนวนในสต็อก:</label>
@@ -254,20 +269,30 @@ mysqli_close($conn);
         <!-- ตารางสินค้า -->
         <table class="table table-striped mt-4">
             <thead>
-                <tr>
-                    <th>ชื่อสินค้า</th>
-                    <th>ราคา</th>
-                    <th>จำนวนในสต็อก</th>
-                    <th>รูปภาพ</th>
-                    <th>การกระทำ</th>
-                </tr>
+            <tr>
+                <th>ชื่อสินค้า</th>
+                <th>ราคา</th>
+                <th>ต้นทุน</th>
+                <th>กำไรต่อชิ้น</th>
+                <th>จำนวนในสต็อก</th>
+                <th>กำไรทั้งหมด</th> <!-- คอลัมน์ใหม่สำหรับกำไรทั้งหมด -->
+                <th>รูปภาพสินค้า</th>
+                <th>การกระทำ</th>
+            </tr>
             </thead>
             <tbody>
-                <?php while ($row = mysqli_fetch_assoc($result)) { ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($row['name']); ?></td>
-                    <td><?php echo htmlspecialchars($row['price']); ?></td>
-                    <td><?php echo htmlspecialchars($row['stock_quantity']); ?></td>
+                <?php while ($row = mysqli_fetch_assoc($result)) { 
+                // คำนวณกำไรต่อชิ้นและกำไรทั้งหมด
+                $profit_per_item = $row['price'] - $row['cost'];
+                $total_profit = $profit_per_item * $row['stock_quantity'];
+                ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($row['name']); ?></td>
+                        <td><?php echo htmlspecialchars($row['price']); ?></td>
+                        <td><?php echo htmlspecialchars($row['cost']); ?></td>
+                        <td><?php echo number_format($profit_per_item, 2); ?></td> <!-- กำไรต่อชิ้น -->
+                        <td><?php echo htmlspecialchars($row['stock_quantity']); ?></td>
+                        <td><?php echo number_format($total_profit, 2); ?></td> <!-- กำไรทั้งหมด -->
                     <td>
                         <?php if ($row['image']) { ?>
                         <img src="../admin/uploads/<?php echo htmlspecialchars($row['image']); ?>" alt="Product Image" style="max-width: 100px;">
@@ -279,6 +304,7 @@ mysqli_close($conn);
                                 data-id="<?php echo $row['product_id']; ?>"
                                 data-name="<?php echo htmlspecialchars($row['name']); ?>"
                                 data-price="<?php echo htmlspecialchars($row['price']); ?>"
+                                data-cost="<?php echo htmlspecialchars($row['cost']); ?>"
                                 data-stock="<?php echo htmlspecialchars($row['stock_quantity']); ?>"
                                 data-image="<?php echo htmlspecialchars($row['image']); ?>">
                             แก้ไข

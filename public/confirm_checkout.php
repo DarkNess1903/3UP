@@ -121,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
             die("ข้อผิดพลาดในการลบข้อมูลใน cart_items: " . mysqli_error($conn));
         }
 
-        header("Location: thank_you.php"); // เปลี่ยนเส้นทางไปที่หน้าขอบคุณ
+        header("Location: order_history.php"); // เปลี่ยนเส้นทางไปที่หน้าขอบคุณ
         exit();
     } else {
         die("ข้อผิดพลาดในการอัพโหลดใบเสร็จการชำระเงิน");
@@ -141,15 +141,12 @@ function addNotification($customer_id, $order_id, $message) {
         die("ข้อผิดพลาดในการเพิ่มการแจ้งเตือน: " . mysqli_error($conn));
     }
 }
-
-include 'footer.php';
-mysqli_close($conn);
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-    <title>Confirm Checkout - Meat Store</title>
+    <title>ยืนยันการสั่งซื้อ - Meat Store</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -162,24 +159,24 @@ mysqli_close($conn);
 </head>
 <body>
     <header>
-        <h1>Confirm Your Order</h1>
+        <h1>ยืนยันคำสั่งซื้อของคุณ</h1>
     </header>
 
     <main>
         <section class="confirm-checkout">
-            <h2>Confirm Order</h2>
+            <h2>ยืนยันคำสั่งซื้อ</h2>
             <form action="confirm_checkout.php" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="cart_id" value="<?php echo htmlspecialchars($cart_id, ENT_QUOTES, 'UTF-8'); ?>">
-                <h3>Your Cart Items:</h3>
+                <h3>รายการสินค้าในตะกร้าของคุณ:</h3>
                 <?php if (mysqli_num_rows($items_result) > 0): ?>
                 <table>
                     <thead>
                         <tr>
-                            <th>Image</th>
-                            <th>Product</th>
-                            <th>Quantity</th>
-                            <th>Price</th>
-                            <th>Total</th>
+                            <th>รูปภาพ</th>
+                            <th>สินค้า</th>
+                            <th>จำนวน</th>
+                            <th>ราคา</th>
+                            <th>รวม</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -188,17 +185,16 @@ mysqli_close($conn);
                                 <td><img src="../Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
                                 <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?php echo htmlspecialchars($item['quantity'], ENT_QUOTES, 'UTF-8'); ?></td>
-                                <td><?php echo number_format($item['price'], 2); ?></td>
-                                <td><?php echo number_format($item['total'], 2); ?></td>
+                                <td><?php echo number_format($item['price'], 2); ?> บาท</td>
+                                <td><?php echo number_format($item['total'], 2); ?> บาท</td>
                             </tr>
                         <?php endwhile; ?>
                     </tbody>
                 </table>
-                <p><strong>Grand Total: <?php echo number_format($grand_total, 2); ?></strong></p>
-                <?php else: ?>
-                <p>Your cart is empty.</p>
-                <?php endif; ?>
-
+                <h3>ยอดรวมทั้งหมด: <?php echo number_format($grand_total, 2); ?> บาท</h3>
+                <h3>ที่อยู่สำหรับจัดส่ง:</h3>
+                <p><?php echo htmlspecialchars($address, ENT_QUOTES, 'UTF-8'); ?></p>
+                
                 <!-- เพิ่ม QR Code และเลขบัญชีธนาคาร -->
                 <div class="payment-info">
                     <h3>Payment Information</h3>
@@ -208,17 +204,18 @@ mysqli_close($conn);
                     <p><strong>Bank Name:</strong> Example Bank</p>
                 </div>
 
-                <label for="payment_slip">Upload Payment Slip:</label>
-                <input type="file" name="payment_slip" id="payment_slip" required>
-                
-                <button type="submit">Submit</button>
+                <h3>อัปโหลดสลิปการชำระเงิน:</h3>
+                <input type="file" name="payment_slip" required>
+                <button type="submit">ยืนยันการสั่งซื้อ</button>
+                <?php else: ?>
+                    <p>ตะกร้าของคุณว่างเปล่า</p>
+                <?php endif; ?>
             </form>
-            <p><a href="cart.php" class="return-to-cart">Return to Cart <i class="fas fa-arrow-left"></i></a></p>
         </section>
     </main>
+
+    <footer>
+        <p>© 2024 Meat Store. สงวนสิทธิ์.</p>
+    </footer>
 </body>
 </html>
-
-<?php
-include 'footer.php';
-?>

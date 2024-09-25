@@ -1,34 +1,44 @@
 <?php
-header('Content-Type: application/json');
-
-// เชื่อมต่อฐานข้อมูล
 include '../connectDB.php';
 
-// ตรวจสอบการเชื่อมต่อ
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+$period = $_GET['period'] ?? 'monthly'; // ค่าเริ่มต้นเป็น 'monthly'
+$data = [];
+
+switch ($period) {
+    case 'daily':
+        // ดึงข้อมูลรายได้จากฐานข้อมูลรายวัน
+        $sql = "SELECT DATE(order_date) as order_date, SUM(total_amount) as total 
+                FROM orders 
+                WHERE status = 'เสร็จสิ้น' 
+                GROUP BY DATE(order_date)";
+        break;
+    case 'monthly':
+        // ดึงข้อมูลรายได้จากฐานข้อมูลรายเดือน
+        $sql = "SELECT MONTH(order_date) as order_month, SUM(total_amount) as total 
+                FROM orders 
+                WHERE status = 'เสร็จสิ้น' 
+                GROUP BY MONTH(order_date)";
+        break;
+    case 'yearly':
+        // ดึงข้อมูลรายได้จากฐานข้อมูลรายปี
+        $sql = "SELECT YEAR(order_date) as order_year, SUM(total_amount) as total 
+                FROM orders 
+                WHERE status = 'เสร็จสิ้น' 
+                GROUP BY YEAR(order_date)";
+        break;
 }
 
-// ดึงข้อมูลยอดขายรายเดือน
-$query = "SELECT MONTHNAME(order_date) AS month, SUM(total_amount) AS total
-          FROM orders
-          WHERE status = 'เสร็จสมบรูณ์'
-          GROUP BY MONTH(order_date)
-          ORDER BY MONTH(order_date)";
-$result = mysqli_query($conn, $query);
-
-$data = array();
-$labels = array();
-$values = array();
-
+$result = mysqli_query($conn, $sql);
 while ($row = mysqli_fetch_assoc($result)) {
-    $labels[] = $row['month']; // เดือน
-    $values[] = $row['total']; // จำนวนเงิน
+    if ($period == 'daily') {
+        $data['labels'][] = $row['order_date'];
+    } elseif ($period == 'monthly') {
+        $data['labels'][] = $row['order_month'];
+    } elseif ($period == 'yearly') {
+        $data['labels'][] = $row['order_year'];
+    }
+    $data['data'][] = (float)$row['total'];
 }
 
-// ปิดการเชื่อมต่อ
-mysqli_close($conn);
-
-// ส่งข้อมูลเป็น JSON
-echo json_encode(array('labels' => $labels, 'data' => $values));
-?>
+header('Content-Type: application/json');
+echo json_encode($data);

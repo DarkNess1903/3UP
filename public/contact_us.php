@@ -57,3 +57,8 @@ if (!isset($_SESSION['customer_id'])) {
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
+
+<?php
+mysqli_close($conn);
+include 'footer.php';
+?>
