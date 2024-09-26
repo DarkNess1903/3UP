@@ -62,3 +62,13 @@ include '../connectDB.php'; // เชื่อมต่อฐานข้อม�
         </div>
     </nav>
 </header>
+
+<script>document.querySelectorAll('.navbar-nav .nav-link').forEach(item => {
+    item.addEventListener('click', () => {
+        const navbarCollapse = document.getElementById('navbarNav');
+        if (navbarCollapse.classList.contains('show')) {
+            navbarCollapse.classList.remove('show');
+        }
+    });
+});
+</script>

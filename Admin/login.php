@@ -70,7 +70,7 @@ body {
 
 /* Header Styles */
 header {
-    background-color: #333;
+    background-color: #18181a;
     color: white;
     padding: 20px 0;
     text-align: center;
@@ -122,7 +122,7 @@ input[type="password"] {
 button {
     margin-top: 20px;
     padding: 10px;
-    background-color: #333;
+    background-color: #18181a;
     color: white;
     border: none;
     border-radius: 3px;
@@ -145,7 +145,7 @@ p {
 
 /* Footer Styles */
 footer {
-    background-color: #333;
+    background-color: #18181a;
     color: white;
     text-align: center;
     padding: 10px 0;

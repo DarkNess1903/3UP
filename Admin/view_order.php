@@ -11,7 +11,7 @@ if (!isset($_GET['order_id'])) {
 $order_id = intval($_GET['order_id']);
 
 // ดึงข้อมูลคำสั่งซื้อ
-$sql = "SELECT orders.*, customer.name AS customer_name, customer.email AS customer_email, orders.payment_slip
+$sql = "SELECT orders.*, customer.name AS customer_name, customer.address AS customer_address, orders.payment_slip
         FROM orders
         JOIN customer ON orders.customer_id = customer.customer_id
         WHERE orders.order_id = ?";
@@ -20,6 +20,7 @@ $stmt->bind_param('i', $order_id);
 $stmt->execute();
 $order = $stmt->get_result()->fetch_assoc();
 $stmt->close();
+
 
 if (!$order) {
     echo 'ไม่พบคำสั่งซื้อ';
@@ -44,18 +45,6 @@ $conn->close();
 <html lang="th">
 <head>
     <title>รายละเอียดคำสั่งซื้อ</title>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
-    <link href="css/sb-admin-2.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <style>
         .modal {
             display: none;
@@ -221,38 +210,38 @@ $conn->close();
         <!-- ใส่ Navbar ของคุณที่นี่ -->
     </header>
 
-    <div class="order-details-container">
+    <div class="container mt-4 order-details-container">
         <h1>รายละเอียดคำสั่งซื้อ</h1>
         <p>หมายเลขคำสั่งซื้อ: <?php echo htmlspecialchars($order_id); ?></p>
         <p>ชื่อ: <?php echo htmlspecialchars($order['customer_name']); ?></p>
-        <p>อีเมล: <?php echo htmlspecialchars($order['customer_email']); ?></p>
+        <p>ที่อยู่: <?php echo htmlspecialchars($order['customer_address']); ?></p> <!-- เปลี่ยนจากอีเมลเป็นที่อยู่ -->
         <p>ยอดรวมที่ต้องชำระ: <?php echo number_format($order['total_amount'], 2); ?> บาท</p>
         <p>สถานะคำสั่งซื้อ: <?php echo htmlspecialchars($order['status']); ?></p>
 
         <h2>รายการสินค้าที่สั่งซื้อ</h2>
-        <ul class="product-list">
+        <ul class="list-group product-list">
             <?php while ($item = $items->fetch_assoc()): ?>
-                <li>
-                    <img src="../Admin/product/<?php echo htmlspecialchars($item['image']); ?>" alt="Product Image" width="50px" height="50px">
-                    <span><?php echo htmlspecialchars($item['name']); ?></span> -
-                    <span><?php echo number_format($item['price'], 2); ?> บาท</span> -
-                    <span><?php echo htmlspecialchars($item['quantity']); ?> ชิ้น</span> -
-                    <span>ราคารวม: <?php echo number_format($item['price'] * $item['quantity'], 2); ?> บาท</span>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <img src="../Admin/product/<?php echo htmlspecialchars($item['image']); ?>" alt="Product Image" width="50px" height="50px" class="mr-2">
+                    <span><?php echo htmlspecialchars($item['name']); ?></span>
+                    <span><?php echo number_format($item['price'], 2); ?> บาท</span>
+                    <span><?php echo htmlspecialchars($item['quantity']); ?> ชิ้น</span>
+                    <span>รวม: <?php echo number_format($item['price'] * $item['quantity'], 2); ?> บาท</span>
                 </li>
             <?php endwhile; ?>
         </ul>
 
         <h2>สลิปการชำระเงิน</h2>
         <?php if ($order['payment_slip']): ?>
-            <button id="viewSlipBtn">ดูสลิป</button>
-            <div id="slipModal" class="modal">
+            <button id="viewSlipBtn" class="btn btn-info">ดูสลิป</button>
+            <div id="slipModal" class="modal" style="display:none;">
                 <div class="modal-content">
                     <span class="close">&times;</span>
-                    <img src="../Admin/uploads/<?php echo htmlspecialchars($order['payment_slip']); ?>" alt="Slip Image">
+                    <img src="../Admin/uploads/<?php echo htmlspecialchars($order['payment_slip']); ?>" alt="Slip Image" class="img-fluid">
                 </div>
             </div>
-            <button id="verifySlipBtn">ตรวจสอบสลิปเรียบร้อย</button>
-            <p id="statusMessage">
+            <button id="verifySlipBtn" class="btn btn-success">ตรวจสอบสลิปเรียบร้อย</button>
+            <p id="statusMessage" class="mt-2">
               <?php echo $order['status'] === 'รอตรวจ' ? 'กรุณาตรวจสอบสลิป' : 'ตรวจสอบแล้วกำลังดำเนินการ'; ?>
             </p>
         <?php else: ?>
@@ -311,7 +300,7 @@ $conn->close();
                 });
             });
         });
-</script>
+    </script>
 </body>
 </html>
 <style>

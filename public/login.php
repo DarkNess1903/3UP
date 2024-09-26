@@ -16,10 +16,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['customer_id'] = $user['customer_id'];
 
         // ใส่โค้ดสำหรับการแจ้งเตือนหรือการเปลี่ยนหน้าเมื่อเข้าสู่ระบบสำเร็จ
-        echo "<script>alert('Login successful!'); window.location.href='index.php';</script>";
+        echo "<script>window.location.href='index.php';</script>";
         exit();
     } else {
-        $error = "Invalid phone number or password.";
+        $error = "เบอร์มือถือหรือรหัสผ่านไม่ถูกต้องกรุณาลองอีกครั้ง";
     }
 }
 
@@ -37,8 +37,19 @@ mysqli_close($conn);
     <link rel="stylesheet" href="css/style.css">
     <script src="js/script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .password-container {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -52,23 +63,40 @@ mysqli_close($conn);
                 <label for="phone">เบอร์มือถือ:</label>
                 <input type="text" id="phone" name="phone" required>
 
-                <label for="password">รหัสเข้าสู่ระบบ:</label>
-                <input type="password" id="password" name="password" required>
+                <label for="password">รหัสผ่าน:</label>
+                <div class="password-container">
+                    <input type="password" id="password" name="password" required>
+                    <i class="fas fa-eye toggle-password" id="toggle-password" onclick="togglePasswordVisibility('password')"></i>
+                </div>
 
                 <?php if (isset($error)): ?>
                     <p class="error"><?php echo htmlspecialchars($error); ?></p>
-                <?php endif; ?>
+                <?php endif; ?><br>
 
-                <input type="submit" value="Login">
+                <input type="submit" class="btn btn-primary" value="Login">
             </form>
-            <p>ยังไม่มีสมาชิกใช่มั้ย? <a href="register.php">สมัครสมาชิก</a></p>
+            <p>ยังไม่มีสมาชิก? <a href="register.php">สมัครสมาชิก</a></p>
         </section>
     </main>
 </body>
 </html>
 
+<script>
+function togglePasswordVisibility(inputId) {
+    var input = document.getElementById(inputId);
+    var toggleIcon = document.getElementById('toggle-password');
+    if (input.type === "password") {
+        input.type = "text";
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        input.type = "password";
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+</script>
+
 <?php
 include 'footer.php';
 ?>
-
-

@@ -13,6 +13,7 @@ if (!isset($_SESSION['admin_id'])) {
 <html lang="th">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
@@ -27,6 +28,7 @@ if (!isset($_SESSION['admin_id'])) {
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         .navbar .mx-auto {
             position: absolute;
@@ -42,6 +44,20 @@ if (!isset($_SESSION['admin_id'])) {
                 font-size: 18px; /* ขนาดตัวอักษรเล็กลงสำหรับอุปกรณ์ขนาดเล็ก */
             }
         }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-brand {
+            flex: 1;
+        }
+        .nav-time {
+            text-align: center;
+            flex: 2;
+        }
+        
     </style>
 </head>
 
@@ -51,7 +67,7 @@ if (!isset($_SESSION['admin_id'])) {
     <div id="wrapper">
 
         <!-- Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+        <ul class="navbar-nav bg-dark sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
             <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
@@ -65,7 +81,7 @@ if (!isset($_SESSION['admin_id'])) {
             <hr class="sidebar-divider my-0">
 
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item">
+            <li class="nav-item active">
                 <a class="nav-link" href="index.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span>
@@ -113,29 +129,68 @@ if (!isset($_SESSION['admin_id'])) {
                     </button>
 
                     <!-- Time display in the center -->
-                    <div class="mx-auto" id="current-time"></div>
+                        <div class="mx-auto" id="current-time"></div>
 
-                    <!-- JavaScript for Time Update -->
-                    <script>
+                        <!-- JavaScript -->
+                        <script>
                         function updateTime() {
                             const now = new Date();
                             const hours = now.getHours().toString().padStart(2, '0');
                             const minutes = now.getMinutes().toString().padStart(2, '0');
                             const seconds = now.getSeconds().toString().padStart(2, '0');
                             const currentTime = `${hours}:${minutes}:${seconds}`;
+                            
                             document.getElementById('current-time').textContent = currentTime;
                         }
 
                         // Update every second
                         setInterval(updateTime, 1000);
-                        // Initial call
+
+                        // Initial call to display time immediately
                         updateTime();
-                    </script>
+                        </script>
+
+                        <!-- CSS -->
+                        <style>
+                        .navbar .mx-auto {
+                            position: absolute;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            font-size: 24px; /* เพิ่มขนาดตัวอักษร */
+                            font-weight: bold;
+                            color: #4e73df; /* สีที่โดดเด่น */
+                        }
+
+                        @media (max-width: 768px) {
+                            .navbar .mx-auto {
+                                font-size: 18px; /* ขนาดตัวอักษรเล็กลงสำหรับอุปกรณ์ขนาดเล็ก */
+                            }
+                        }
+                        </style>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
 
-                        <!-- Dropdown - Alerts -->
+                        <!-- (Visible Only XS) -->
+                            <!-- Dropdown - Messages -->
+                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+                                aria-labelledby="searchDropdown">
+                                <form class="form-inline mr-auto w-100 navbar-search">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control bg-light border-0 small"
+                                            placeholder="Search for..." aria-label="Search"
+                                            aria-describedby="basic-addon2">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" type="button">
+                                                <i class="fas fa-search fa-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </li>
+
+                        <!-- Nav Item - Alerts -->
                         <li class="nav-item dropdown no-arrow mx-1 show">
                             <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                                 <i class="fas fa-bell fa-fw"></i>
@@ -162,15 +217,15 @@ if (!isset($_SESSION['admin_id'])) {
 
                         <script>
                         $(document).ready(function() {
-                            // Function to fetch new orders
+                            // ฟังก์ชันดึงข้อมูลออเดอร์ใหม่
                             function updateAlerts() {
                                 $.getJSON('get_new_orders.php', function(data) {
                                     var newOrders = data;
 
-                                    // Update alert count
+                                    // อัพเดตจำนวนแจ้งเตือน
                                     $('#alertCount').text(newOrders.length);
 
-                                    // Create alert content
+                                    // สร้างเนื้อหาของการแจ้งเตือน
                                     var alertHtml = '';
                                     if (newOrders.length > 0) {
                                         $.each(newOrders, function(index, order) {
@@ -195,8 +250,10 @@ if (!isset($_SESSION['admin_id'])) {
                                 });
                             }
 
-                            // Initial call and refresh every 30 seconds
+                            // เรียกใช้ฟังก์ชันเพื่ออัพเดตแจ้งเตือนเมื่อเอกสารโหลดเสร็จ
                             updateAlerts();
+
+                            // รีเฟรชแจ้งเตือนทุกๆ 30 วินาที
                             setInterval(updateAlerts, 30000);
                         });
                         </script>

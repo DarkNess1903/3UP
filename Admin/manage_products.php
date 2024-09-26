@@ -128,40 +128,55 @@ mysqli_close($conn);
 <html lang="th">
 <head>
     <title>จัดการสินค้า</title>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
-    <link href="css/sb-admin-2.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <style>
         .modal-body img {
             max-width: 100%;
             height: auto;
         }
+
+        @media (max-width: 768px) {
+        h1 {
+            font-size: 24px;
+        }
+
+        table th, table td {
+            font-size: 12px;
+        }
+
+        .btn {
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+
+        img {
+            max-width: 80px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        h1 {
+            font-size: 20px;
+        }
+
+        table th, table td {
+            font-size: 10px;
+        }
+
+        .btn {
+            font-size: 10px;
+            padding: 4px 8px;
+        }
+
+        img {
+            max-width: 60px;
+        }
+    }
     </style>
 </head>
 <body>
     <header>
         <!-- ใส่ Navbar ของคุณที่นี่ -->
     </header>
-
-    <div class="container mt-4">
-        <h1>จัดการสินค้า</h1>
-
-        <!-- ปุ่มเพิ่มสินค้า -->
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addProductModal">
-            เพิ่มสินค้า
-        </button>
 
         <!-- โมดัลฟอร์มเพิ่มสินค้า -->
         <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-labelledby="addProductModalLabel" aria-hidden="true">
@@ -266,8 +281,18 @@ mysqli_close($conn);
             </div>
         </div>
 
-        <!-- ตารางสินค้า -->
-        <table class="table table-striped mt-4">
+    <!-- ตารางสินค้า -->
+    <div class="container mt-4">
+    <h1>จัดการสินค้า</h1>
+
+    <!-- ปุ่มเพิ่มสินค้า -->
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addProductModal">
+        เพิ่มสินค้า
+    </button>
+
+    <!-- ตารางสินค้า -->
+    <div class="table-responsive mt-4">
+        <table class="table table-striped">
             <thead>
             <tr>
                 <th>ชื่อสินค้า</th>
@@ -293,35 +318,41 @@ mysqli_close($conn);
                         <td><?php echo number_format($profit_per_item, 2); ?></td> <!-- กำไรต่อชิ้น -->
                         <td><?php echo htmlspecialchars($row['stock_quantity']); ?></td>
                         <td><?php echo number_format($total_profit, 2); ?></td> <!-- กำไรทั้งหมด -->
-                    <td>
-                        <?php if ($row['image']) { ?>
-                        <img src="../admin/uploads/<?php echo htmlspecialchars($row['image']); ?>" alt="Product Image" style="max-width: 100px;">
-                        <?php } ?>
-                    </td>
-                    <td>
-                        <!-- ปุ่มแก้ไข -->
-                        <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editProductModal"
-                                data-id="<?php echo $row['product_id']; ?>"
-                                data-name="<?php echo htmlspecialchars($row['name']); ?>"
-                                data-price="<?php echo htmlspecialchars($row['price']); ?>"
-                                data-cost="<?php echo htmlspecialchars($row['cost']); ?>"
-                                data-stock="<?php echo htmlspecialchars($row['stock_quantity']); ?>"
-                                data-image="<?php echo htmlspecialchars($row['image']); ?>">
-                            แก้ไข
-                        </button>
-                        <!-- ปุ่มเติมสต็อก -->
-                        <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#restockModal"
-                                data-id="<?php echo $row['product_id']; ?>">
-                            เติมสต็อก
-                        </button>
-                        <!-- ปุ่มลบ -->
-                        <a href="manage_products.php?delete=<?php echo $row['product_id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบสินค้า?');">ลบ</a>
-                    </td>
-                </tr>
+                        <td>
+                            <?php if ($row['image']) { ?>
+                            <img src="../admin/uploads/<?php echo htmlspecialchars($row['image']); ?>" alt="Product Image" style="max-width: 100px;">
+                            <?php } ?>
+                        </td>
+                        <td>
+                            <!-- ปุ่มแก้ไข -->
+                            <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editProductModal"
+                                    data-id="<?php echo $row['product_id']; ?>"
+                                    data-name="<?php echo htmlspecialchars($row['name']); ?>"
+                                    data-price="<?php echo htmlspecialchars($row['price']); ?>"
+                                    data-cost="<?php echo htmlspecialchars($row['cost']); ?>"
+                                    data-stock="<?php echo htmlspecialchars($row['stock_quantity']); ?>"
+                                    data-image="<?php echo htmlspecialchars($row['image']); ?>">
+                                <i class="fas fa-edit"></i> <!-- ไอคอนแก้ไข -->
+                            </button> 
+
+                            <!-- ปุ่มเติมสต็อก -->
+                            <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#restockModal"
+                                    data-id="<?php echo $row['product_id']; ?>">
+                                <i class="fas fa-box-open"></i> <!-- ไอคอนเติมสต็อก -->
+                            </button>
+
+                            <!-- ปุ่มลบ -->
+                            <a href="manage_products.php?delete=<?php echo $row['product_id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบสินค้า?');">
+                                <i class="fas fa-trash-alt"></i> <!-- ไอคอนลบ -->
+                            </a>
+                        </td>
+                    </tr>
                 <?php } ?>
             </tbody>
         </table>
     </div>
+</div>
+
 
     <!-- JavaScript -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -333,6 +364,7 @@ mysqli_close($conn);
             var productId = button.data('id');
             var productName = button.data('name');
             var price = button.data('price');
+            var cost = button.data('cost');
             var stock = button.data('stock');
             var image = button.data('image');
 
@@ -340,6 +372,7 @@ mysqli_close($conn);
             modal.find('#edit_product_id').val(productId);
             modal.find('#edit_product_name').val(productName);
             modal.find('#edit_price').val(price);
+            modal.find('#edit_cost').val(cost);
             modal.find('#edit_stock').val(stock);
             if (image) {
                 modal.find('#edit_image').val(image);
