@@ -18,7 +18,7 @@ if ($order_id <= 0) {
 
 // ดึงข้อมูลคำสั่งซื้อ
 $order_query = "
-    SELECT order_id, order_date, total_amount, payment_slip, status
+    SELECT order_id, order_date, total_amount, payment_slip, status,tracking_number
     FROM orders
     WHERE order_id = ? AND customer_id = ?";
 $stmt = mysqli_prepare($conn, $order_query);
@@ -82,6 +82,7 @@ $details_result = mysqli_stmt_get_result($stmt);
                 </a>
             </p>
             <p><strong>สถานะ:</strong> <?php echo htmlspecialchars($order['status']); ?></p>
+            <p><strong>เลขพัสดุ:</strong> <?php echo htmlspecialchars($order['tracking_number']); ?></p>
             <h3>รายการสินค้า</h3>
             <ul class="list-group">
                 <?php while ($detail = mysqli_fetch_assoc($details_result)): ?>

@@ -116,7 +116,7 @@ if (!$result) {
                                 <a href="view_order.php?order_id=<?php echo $order['order_id']; ?>" class="btn btn-info">
                                     <i class="fas fa-eye"></i> <!-- ไอคอนรายละเอียด -->
                                 </a>
-                                <?php if ($order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ'): ?>
+                                <?php if ($order['status'] === 'กำลังจัดส่ง'): ?>
                                     <button class="btn btn-success completeOrderBtn" data-order-id="<?php echo $order['order_id']; ?>">
                                         <i class="fas fa-check"></i> <!-- ไอคอนเสร็จสิ้น -->
                                     </button>

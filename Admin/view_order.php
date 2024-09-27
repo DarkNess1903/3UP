@@ -10,17 +10,21 @@ if (!isset($_GET['order_id'])) {
 
 $order_id = intval($_GET['order_id']);
 
-// ดึงข้อมูลคำสั่งซื้อ
-$sql = "SELECT orders.*, customer.name AS customer_name, customer.address AS customer_address, orders.payment_slip
+// ดึงข้อมูลคำสั่งซื้อพร้อมข้อมูลอำเภอและจังหวัด
+$sql = "SELECT orders.*, customer.name AS customer_name, customer.address AS customer_address, 
+               customer.province_id, customer.amphur_id, 
+               amphur.amphurName, province.provinceName, 
+               orders.payment_slip
         FROM orders
         JOIN customer ON orders.customer_id = customer.customer_id
+        LEFT JOIN amphur ON customer.amphur_id = amphur.amphurID
+        LEFT JOIN province ON customer.province_id = province.provinceID
         WHERE orders.order_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('i', $order_id);
 $stmt->execute();
 $order = $stmt->get_result()->fetch_assoc();
 $stmt->close();
-
 
 if (!$order) {
     echo 'ไม่พบคำสั่งซื้อ';
@@ -214,9 +218,12 @@ $conn->close();
         <h1>รายละเอียดคำสั่งซื้อ</h1>
         <p>หมายเลขคำสั่งซื้อ: <?php echo htmlspecialchars($order_id); ?></p>
         <p>ชื่อ: <?php echo htmlspecialchars($order['customer_name']); ?></p>
-        <p>ที่อยู่: <?php echo htmlspecialchars($order['customer_address']); ?></p> <!-- เปลี่ยนจากอีเมลเป็นที่อยู่ -->
+        <p>ที่อยู่: <?php echo htmlspecialchars($order['customer_address']); ?></p>
+        <p>อำเภอ: <?php echo htmlspecialchars($order['amphurName']); ?></p> <!-- แสดงชื่ออำเภอ -->
+        <p>จังหวัด: <?php echo htmlspecialchars($order['provinceName']); ?></p> <!-- แสดงชื่อจังหวัด -->
         <p>ยอดรวมที่ต้องชำระ: <?php echo number_format($order['total_amount'], 2); ?> บาท</p>
         <p>สถานะคำสั่งซื้อ: <?php echo htmlspecialchars($order['status']); ?></p>
+        <p>เลขพัสดุ: <?php echo htmlspecialchars($order['tracking_number']); ?></p>
 
         <h2>รายการสินค้าที่สั่งซื้อ</h2>
         <ul class="list-group product-list">
@@ -240,76 +247,115 @@ $conn->close();
                     <img src="../Admin/uploads/<?php echo htmlspecialchars($order['payment_slip']); ?>" alt="Slip Image" class="img-fluid">
                 </div>
             </div>
-            <button id="verifySlipBtn" class="btn btn-success">ตรวจสอบสลิปเรียบร้อย</button>
+            <button id="verifySlipBtn" class="btn btn-success" style="display: <?php echo ($order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ' || $order['status'] === 'เสร็จสิ้น' || $order['status'] === 'กำลังจัดส่ง') ? 'none' : 'inline-block'; ?>;">
+                ตรวจสอบสลิปเรียบร้อย
+            </button>
             <p id="statusMessage" class="mt-2">
-              <?php echo $order['status'] === 'รอตรวจ' ? 'กรุณาตรวจสอบสลิป' : 'ตรวจสอบแล้วกำลังดำเนินการ'; ?>
+                <?php echo $order['status'] === 'รอตรวจ' ? 'กรุณาตรวจสอบสลิป' : 'ตรวจสอบแล้วกำลังดำเนินการ'; ?>
             </p>
-        <?php else: ?>
-            <p>ไม่มีสลิปการชำระเงิน</p>
-        <?php endif; ?>
-    </div>
 
-    <footer>
-        <!-- ใส่ Footer ของคุณที่นี่ -->
-    </footer>
+            <!-- ปุ่มกำลังการจัดส่ง -->
+            <div id="shippingSection" style="display: <?php echo ($order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ') ? 'block' : 'none'; ?>;">
+                <h3>จัดการการจัดส่ง</h3>
+                <input type="text" id="trackingNumber" placeholder="กรอกหมายเลขติดตามการจัดส่ง" class="form-control">
+                <button id="updateShippingBtn" class="btn btn-primary mt-2">อัปเดตสถานะการจัดส่ง</button>
+                <p id="shippingMessage" class="mt-2" style="display: none;"></p>
+            </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            var modal = $('#slipModal');
-            var btn = $('#viewSlipBtn');
-            var span = $('.close');
+            <?php else: ?>
+                <p>ไม่มีสลิปการชำระเงิน</p>
+            <?php endif; ?>
+            </div>
 
-            // แสดงโมดัลเมื่อคลิกปุ่มดูสลิป
-            btn.on('click', function() {
-                modal.show();
-            });
+            <footer>
+                <!-- ใส่ Footer ของคุณที่นี่ -->
+            </footer>
 
-            // ปิดโมดัลเมื่อคลิกที่ปุ่มปิด
-            span.on('click', function() {
-                modal.hide();
-            });
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script>
+                $(document).ready(function() {
+                    var modal = $('#slipModal');
+                    var btn = $('#viewSlipBtn');
+                    var span = $('.close');
 
-            // ปิดโมดัลเมื่อคลิกนอกโมดัล
-            $(window).on('click', function(event) {
-                if ($(event.target).is(modal)) {
-                    modal.hide();
-                }
-            });
+                    // แสดงโมดัลเมื่อคลิกปุ่มดูสลิป
+                    btn.on('click', function() {
+                        modal.show();
+                    });
 
-            $('#verifySlipBtn').on('click', function() {
-                $.ajax({
-                    url: 'update_order_status.php',
-                    method: 'POST',
-                    data: { order_id: <?php echo $order_id; ?>, status: 'ตรวจสอบแล้วกำลังดำเนินการ' },
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success) {
-                            $('#verifySlipBtn').hide();
-                            $('#statusMessage').text('สลิปได้รับการตรวจสอบเรียบร้อยแล้ว').show();
-                            setTimeout(function() {
-                                location.reload(); // รีเฟรชหน้า
-                            }, 1000); // หน่วงเวลา 1 วินาทีเพื่อให้เห็นข้อความ
-                        } else {
-                            alert('เกิดข้อผิดพลาด: ' + response.message);
+                    // ปิดโมดัลเมื่อคลิกที่ปุ่มปิด
+                    span.on('click', function() {
+                        modal.hide();
+                    });
+
+                    // ปิดโมดัลเมื่อคลิกนอกโมดัล
+                    $(window).on('click', function(event) {
+                        if ($(event.target).is(modal)) {
+                            modal.hide();
                         }
-                    },
-                    error: function() {
-                        alert('เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์');
-                    }
+                    });
+
+                    $('#verifySlipBtn').on('click', function() {
+                        $.ajax({
+                            url: 'update_order_status.php',
+                            method: 'POST',
+                            data: { order_id: <?php echo $order_id; ?>, status: 'ตรวจสอบแล้วกำลังดำเนินการ' },
+                            dataType: 'json',
+                            success: function(response) {
+                                if (response.success) {
+                                    $('#verifySlipBtn').hide();
+                                    $('#statusMessage').text('สลิปได้รับการตรวจสอบเรียบร้อยแล้ว').show();
+                                    setTimeout(function() {
+                                        location.reload(); // รีเฟรชหน้า
+                                    }, 1000);
+                                } else {
+                                    alert('เกิดข้อผิดพลาด: ' + response.message);
+                                }
+                            },
+                            error: function() {
+                                alert('เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์');
+                            }
+                        });
+                    });
+
+                    // อัปเดตสถานะการจัดส่ง
+                    $('#updateShippingBtn').on('click', function() {
+                        var trackingNumber = $('#trackingNumber').val().trim();
+                        if (trackingNumber === '') {
+                            alert('กรุณากรอกหมายเลขติดตามการจัดส่ง');
+                            return;
+                        }
+
+                        $.ajax({
+                            url: 'update_shipping_status.php',
+                            method: 'POST',
+                            data: { order_id: <?php echo $order_id; ?>, tracking_number: trackingNumber },
+                            dataType: 'json',
+                            success: function(response) {
+                                if (response.success) {
+                                    $('#shippingMessage').text('สถานะการจัดส่งได้รับการอัปเดตเรียบร้อยแล้ว').show();
+                                    setTimeout(function() {
+                                        location.reload(); // รีเฟรชหน้า
+                                    }, 1000);
+                                } else {
+                                    alert('เกิดข้อผิดพลาด: ' + response.message);
+                                }
+                            },
+                            error: function() {
+                                alert('เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์');
+                            }
+                        });
+                    });
                 });
-            });
-        });
-    </script>
-</body>
-</html>
-<style>
-    #verifySlipBtn {
-        display: <?php echo ($order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ' || $order['status'] === 'เสร็จสิ้น') ? 'none' : 'inline-block'; ?>;
-    }
+            </script>
+            </body>
+            </html>
+            <style>
+                #verifySlipBtn {
+                    display: <?php echo ($order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ' || $order['status'] === 'เสร็จสิ้น') ? 'none' : 'inline-block'; ?>;
+                }
 
-    #statusMessage {
-        display: <?php echo $order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ' ? 'inline-block' : 'none'; ?>;
-    }
-</style>
-
+                #statusMessage {
+                    display: <?php echo $order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ' ? 'inline-block' : 'none'; ?>;
+                }
+            </style>

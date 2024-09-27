@@ -14,12 +14,16 @@ if (!$cart_id) {
     die("ไม่พบ Cart ID");
 }
 
-// ดึงข้อมูลที่อยู่ของลูกค้า
-$address_query = "SELECT address FROM customer WHERE customer_id = ?";
+// ดึงข้อมูลที่อยู่ของลูกค้า รวมทั้งจังหวัดและอำเภอ
+$address_query = "SELECT address, amphur.amphurName, province.provinceName 
+                  FROM customer 
+                  JOIN amphur ON customer.amphur_id = amphur.amphurID 
+                  JOIN province ON amphur.provinceID = province.provinceID 
+                  WHERE customer.customer_id = ?";
 $stmt = mysqli_prepare($conn, $address_query);
 mysqli_stmt_bind_param($stmt, 'i', $customer_id);
 mysqli_stmt_execute($stmt);
-mysqli_stmt_bind_result($stmt, $address);
+mysqli_stmt_bind_result($stmt, $address, $amphurName, $provinceName);
 mysqli_stmt_fetch($stmt);
 mysqli_stmt_close($stmt);   
 
@@ -82,20 +86,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
         if (!mysqli_stmt_execute($stmt)) {  
             die("ข้อผิดพลาดในการแทรกคำสั่งซื้อ: " . mysqli_error($conn));
         }
-        
+    
         $order_id = mysqli_insert_id($conn);
-
+    
         // แทรกข้อมูลการสั่งซื้อและอัพเดตสต็อก
         $items_query = "SELECT product_id, quantity, price FROM cart_items WHERE cart_id = ?";
         $stmt = mysqli_prepare($conn, $items_query);
         mysqli_stmt_bind_param($stmt, 'i', $cart_id);
         mysqli_stmt_execute($stmt);
         $items_result = mysqli_stmt_get_result($stmt);
-
+    
         while ($item = mysqli_fetch_assoc($items_result)) {
             $product_id = $item['product_id'];
             $quantity = $item['quantity'];
-
+    
             // แทรกข้อมูลลงใน orderdetails
             $orderdetails_query = "INSERT INTO orderdetails (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
             $stmt = mysqli_prepare($conn, $orderdetails_query);
@@ -103,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
             if (!mysqli_stmt_execute($stmt)) {
                 die("ข้อผิดพลาดในการแทรกข้อมูลการสั่งซื้อ: " . mysqli_error($conn));
             }
-
+    
             // อัพเดตสต็อก
             $update_stock_query = "UPDATE product SET stock_quantity = stock_quantity - ? WHERE product_id = ?";
             $stmt = mysqli_prepare($conn, $update_stock_query);
@@ -112,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
                 die("ข้อผิดพลาดในการอัพเดตสต็อก: " . mysqli_error($conn));
             }
         }
-
+    
         // ลบข้อมูลที่เกี่ยวข้องใน cart_items
         $delete_cart_items_query = "DELETE FROM cart_items WHERE cart_id = ?";
         $stmt = mysqli_prepare($conn, $delete_cart_items_query);
@@ -120,12 +124,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
         if (!mysqli_stmt_execute($stmt)) {
             die("ข้อผิดพลาดในการลบข้อมูลใน cart_items: " . mysqli_error($conn));
         }
-
-        header("Location: order_history.php"); // เปลี่ยนเส้นทางไปที่หน้าขอบคุณ
+    
+        // แสดงการแจ้งเตือนและเปลี่ยนเส้นทาง
+        echo "<script>
+            setTimeout(function() {
+                window.location.href = 'order_history.php';
+            }, 3000); // 3000 milliseconds = 3 seconds
+            alert('คำสั่งซื้อของคุณถูกยืนยันแล้ว! กรุณารอสักครู่...');
+        </script>";
         exit();
     } else {
         die("ข้อผิดพลาดในการอัพโหลดใบเสร็จการชำระเงิน");
-    }
+    }    
 }
 
 include 'topnavbar.php';
@@ -193,20 +203,20 @@ function addNotification($customer_id, $order_id, $message) {
                     </thead>
                     <tbody>
                         <?php while ($item = mysqli_fetch_assoc($items_result)): ?>
-                            <tr>
-                                <td><img src="../Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
-                                <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
-                                <td><?php echo htmlspecialchars($item['quantity'], ENT_QUOTES, 'UTF-8'); ?></td>
-                                <td><?php echo number_format($item['price'], 2); ?> บาท</td>
-                                <td><?php echo number_format($item['total'], 2); ?> บาท</td>
-                            </tr>
+                        <tr>
+                            <td><img src="../Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
+                            <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td><?php echo htmlspecialchars($item['quantity'], ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td><?php echo number_format($item['price'], 2); ?> บาท</td>
+                            <td><?php echo number_format($item['total'], 2); ?> บาท</td>
+                        </tr>
                         <?php endwhile; ?>
                     </tbody>
                 </table>
-                <h3>ยอดรวมทั้งหมด: <?php echo number_format($grand_total, 2); ?> บาท</h3>
-                <h3>ที่อยู่สำหรับจัดส่ง:</h3>
+                <h4>ที่อยู่จัดส่ง:</h4>
                 <p><?php echo htmlspecialchars($address, ENT_QUOTES, 'UTF-8'); ?></p>
-                
+                <p><?php echo htmlspecialchars($amphurName, ENT_QUOTES, 'UTF-8'); ?> จังหวัด<?php echo htmlspecialchars($provinceName, ENT_QUOTES, 'UTF-8'); ?></p>
+                <h4>ยอดรวม: <?php echo number_format($grand_total, 2); ?> บาท</h4>
                 <!-- เพิ่ม QR Code และเลขบัญชีธนาคาร -->
                 <div class="payment-info">
                     <h3>Payment Information</h3>
@@ -215,20 +225,21 @@ function addNotification($customer_id, $order_id, $message) {
                     <p><strong>Bank Account:</strong> 123-456-7890</p>
                     <p><strong>Bank Name:</strong> Example Bank</p>
                 </div>
-
-                <h3>อัปโหลดสลิปการชำระเงิน:</h3>
-                <input type="file" name="payment_slip" required>
-                <button type="submit" class="btn btn-primary mt-3">ยืนยันการสั่งซื้อ</button>
+                <div class="mb-3">
+                    <label for="payment_slip" class="form-label">ใบเสร็จการชำระเงิน:</label>
+                    <input type="file" class="form-control" id="payment_slip" name="payment_slip" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn btn-primary">ยืนยันการสั่งซื้อ</button>
                 <?php else: ?>
-                    <p>ตะกร้าของคุณว่างเปล่า</p>
+                <p>ไม่มีรายการสินค้าในตะกร้า</p>
                 <?php endif; ?>
             </form>
         </section>
     </main>
+
+    <?php
+    mysqli_close($conn);
+    include 'footer.php';
+    ?>
 </body>
 </html>
-
-<?php
-mysqli_close($conn);
-include 'footer.php';
-?>

@@ -91,7 +91,7 @@ if (!isset($_SESSION['admin_id'])) {
             <!-- Nav Item - Graph -->
             <li class="nav-item">
                 <a class="nav-link" href="graph.php">
-                    <i class="fas fa-fw fa-chart-line"></i>
+                    <i class="fas fa-fw fa-chart-pie"></i> <!-- เปลี่ยนเป็นไอคอนกราฟที่เหมาะสม -->
                     <span>กราฟสรุป</span>
                 </a>
             </li>
@@ -99,7 +99,7 @@ if (!isset($_SESSION['admin_id'])) {
             <!-- Nav Item - Ordering Information -->
             <li class="nav-item">
                 <a class="nav-link" href="manage_orders.php">
-                    <i class="fas fa-fw fa-box"></i>
+                    <i class="fas fa-fw fa-shopping-cart"></i> <!-- เปลี่ยนเป็นไอคอนที่เหมาะสมกับการสั่งซื้อ -->
                     <span>ข้อมูลการสั่งซื้อ</span>
                 </a>
             </li>
@@ -107,8 +107,16 @@ if (!isset($_SESSION['admin_id'])) {
             <!-- Nav Item - Edit Product -->
             <li class="nav-item">
                 <a class="nav-link" href="manage_products.php">
-                    <i class="fas fa-fw fa-cogs"></i>
-                    <span>แก้ไขสินค้า</span>
+                    <i class="fas fa-fw fa-box-open"></i> <!-- เปลี่ยนเป็นไอคอนที่เหมาะสมกับสินค้า -->
+                    <span>สินค้า</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Edit Customer -->
+            <li class="nav-item">
+                <a class="nav-link" href="correct_customer.php">
+                    <i class="fas fa-fw fa-users"></i> <!-- เปลี่ยนเป็นไอคอนที่เหมาะสมกับลูกค้า -->
+                    <span>ลูกค้า</span>
                 </a>
             </li>
         </ul>

@@ -6,22 +6,22 @@ include '../connectDB.php';
 
 // ตรวจสอบการเชื่อมต่อ
 if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+    die(json_encode(array('error' => "Connection failed: " . mysqli_connect_error())));
 }
 
 // ดึงข้อมูลสถานะการสั่งซื้อ
-$query = "SELECT status, COUNT(*) AS count
-          FROM orders
-          GROUP BY status";
+$query = "SELECT status, COUNT(*) AS count FROM orders GROUP BY status";
 $result = mysqli_query($conn, $query);
 
 $data = array();
-$labels = array();
-$values = array();
+$labels = ['รอตรวจสอบ', 'กำลังดำเนินการ', 'กำลังจัดส่ง', 'เสร็จสิ้น'];
+$values = array_fill(0, count($labels), 0); // กำหนดค่าเริ่มต้นเป็น 0
 
 while ($row = mysqli_fetch_assoc($result)) {
-    $labels[] = $row['status']; // สถานะ
-    $values[] = $row['count']; // จำนวนคำสั่งซื้อในแต่ละสถานะ
+    $statusIndex = array_search($row['status'], $labels);
+    if ($statusIndex !== false) {
+        $values[$statusIndex] = $row['count']; // จำนวนคำสั่งซื้อในแต่ละสถานะ
+    }
 }
 
 // ปิดการเชื่อมต่อ

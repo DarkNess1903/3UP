@@ -12,8 +12,8 @@ if (!isset($_SESSION['customer_id'])) {
 $customer_id = $_SESSION['customer_id'];
 
 // ดึงประวัติการสั่งซื้อของลูกค้าจากฐานข้อมูล
-$order_query = "
-    SELECT order_id, order_date, total_amount
+$order_query =
+    "SELECT order_id, order_date, total_amount, orders.status
     FROM orders
     WHERE customer_id = ?
     ORDER BY order_date DESC
@@ -60,6 +60,7 @@ if (mysqli_num_rows($order_result) === 0) {
                         <tr>
                             <th>รหัสคำสั่งซื้อ</th>
                             <th>วันที่สั่งซื้อ</th>
+                            <th>สถานะ</th>
                             <th>ยอดรวมทั้งหมด</th>
                             <th>รายละเอียด</th>
                         </tr>
@@ -70,6 +71,7 @@ if (mysqli_num_rows($order_result) === 0) {
                                 <tr>
                                     <td><?php echo htmlspecialchars($order['order_id']); ?></td>
                                     <td><?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($order['order_date']))); ?></td>
+                                    <td><?php echo htmlspecialchars($order['status']); ?></td>
                                     <td>฿<?php echo number_format($order['total_amount'], 2); ?></td>
                                     <td>
                                         <a href="order_details.php?order_id=<?php echo htmlspecialchars($order['order_id']); ?>" class="btn btn-primary">

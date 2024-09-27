@@ -12,6 +12,13 @@ switch ($period) {
                 WHERE status = 'เสร็จสิ้น' 
                 GROUP BY DATE(order_date)";
         break;
+    case 'weekly':
+        // ดึงข้อมูลรายได้จากฐานข้อมูลรายสัปดาห์
+        $sql = "SELECT YEARWEEK(order_date, 1) AS week, SUM(total_amount) AS total 
+                FROM orders 
+                WHERE status = 'เสร็จสิ้น' 
+                GROUP BY YEARWEEK(order_date, 1)";
+        break;
     case 'monthly':
         // ดึงข้อมูลรายได้จากฐานข้อมูลรายเดือน
         $sql = "SELECT MONTH(order_date) as order_month, SUM(total_amount) as total 
@@ -32,6 +39,9 @@ $result = mysqli_query($conn, $sql);
 while ($row = mysqli_fetch_assoc($result)) {
     if ($period == 'daily') {
         $data['labels'][] = $row['order_date'];
+    } elseif ($period == 'weekly') {
+        // เปลี่ยนหมายเลขสัปดาห์เป็นวันที่เริ่มต้นของสัปดาห์นั้น
+        $data['labels'][] = date("Y-m-d", strtotime("{$row['week']}-1")); // สัปดาห์เริ่มต้นวันจันทร์
     } elseif ($period == 'monthly') {
         $data['labels'][] = $row['order_month'];
     } elseif ($period == 'yearly') {

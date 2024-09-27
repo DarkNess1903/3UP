@@ -12,6 +12,13 @@ if (!$conn) {
 <!DOCTYPE html>
 <html lang="th">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Font Awesome (ถ้าจำเป็น) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
     <title>แดชบอร์ดผู้ดูแลระบบ - กราฟสรุป</title>
     <style>
         .chart-pie {
@@ -31,7 +38,7 @@ if (!$conn) {
 <body>
     <main class="container mt-4">
         <div class="row">
-            <!-- Line Chart for Monthly Earnings -->
+            <!-- Line Chart for Weekly Earnings -->
             <div class="col-xl-8 col-lg-7">
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -42,7 +49,7 @@ if (!$conn) {
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
                                 <div class="dropdown-header">เลือกช่วงเวลา:</div>
-                                <a class="dropdown-item" href="#" data-period="daily">รายวัน</a>
+                                <a class="dropdown-item" href="#" data-period="weekly">รายสัปดาห์</a>
                                 <a class="dropdown-item" href="#" data-period="monthly">รายเดือน</a>
                                 <a class="dropdown-item" href="#" data-period="yearly">รายปี</a>
                             </div>
@@ -55,12 +62,26 @@ if (!$conn) {
                     </div>
                 </div>
             </div>
+
             <script>
+                // ฟังก์ชันเริ่มต้นเมื่อโหลดหน้า
+                document.addEventListener('DOMContentLoaded', () => {
+                    // เรียกข้อมูลรายสัปดาห์เป็นค่าเริ่มต้น
+                    fetchEarnings('weekly');
+
+                    // ตั้งค่า Event Listener สำหรับตัวเลือกใน Dropdown
+                    document.querySelectorAll('.dropdown-item').forEach(item => {
+                        item.addEventListener('click', function() {
+                            const period = this.getAttribute('data-period');
+                            fetchEarnings(period);
+                        });
+                    });
+                });
+
                 // กำหนดตัวแปรสำหรับกราฟ
                 let myLineChart;
 
                 function fetchEarnings(period) {
-                    // เรียกข้อมูลจากเซิร์ฟเวอร์
                     fetch(`get_data.php?period=${period}`)
                         .then(response => response.json())
                         .then(data => {
@@ -70,12 +91,10 @@ if (!$conn) {
                 }
 
                 function updateChart(labels, data) {
-                    // ตรวจสอบว่ามีกราฟอยู่แล้วหรือไม่ ถ้ามีให้ทำการลบออก
                     if (myLineChart) {
                         myLineChart.destroy();
                     }
 
-                    // สร้างกราฟใหม่
                     const ctx = document.getElementById('myLineChart').getContext('2d');
                     myLineChart = new Chart(ctx, {
                         type: 'line',
@@ -100,12 +119,9 @@ if (!$conn) {
                     });
                 }
 
-                // ฟังก์ชันเริ่มต้นเมื่อโหลดหน้า
                 document.addEventListener('DOMContentLoaded', () => {
-                    // เรียกข้อมูลรายเดือนเป็นค่าเริ่มต้น
                     fetchEarnings('monthly');
 
-                    // ตั้งค่า Event Listener สำหรับตัวเลือกใน Dropdown
                     document.querySelectorAll('.dropdown-item').forEach(item => {
                         item.addEventListener('click', function() {
                             const period = this.getAttribute('data-period');
@@ -133,7 +149,10 @@ if (!$conn) {
                                 <i class="fas fa-circle text-success"></i> กำลังดำเนินการ
                             </span>
                             <span class="mr-2">
-                                <i class="fas fa-circle text-info"></i> เสร็จสิ้น
+                                <i class="fas fa-circle text-info"></i> กำลังจัดส่ง
+                            </span>
+                            <span class="mr-2">
+                                <i class="fas fa-circle text-secondary"></i> เสร็จสิ้น
                             </span>
                         </div>
                     </div>
@@ -172,107 +191,128 @@ if (!$conn) {
 
     <!-- Chart.js Script -->
     <script>
-            // Pie Chart for Order Status
-            fetch('get_order_status_data.php')
-                .then(response => response.json())
-                .then(data => {
-                    var ctxPie = document.getElementById('myPieChart').getContext('2d');
-                    new Chart(ctxPie, {
-                        type: 'pie',
-                        data: {
-                            labels: data.labels,
-                            datasets: [{
-                                data: data.data,
-                                backgroundColor: ['rgba(78, 115, 223, 1)', 'rgba(28, 200, 138, 1)', 'rgba(54, 185, 204, 1)'],
-                                hoverBackgroundColor: ['rgba(78, 115, 223, 0.8)', 'rgba(28, 200, 138, 0.8)', 'rgba(54, 185, 204, 0.8)']
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            plugins: {
-                                legend: {
-                                    position: 'top',
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(tooltipItem) {
-                                            return tooltipItem.label + ': ' + tooltipItem.raw;
-                                        }
+        // Fetch order status data and render pie chart
+        fetch('get_order_status_data.php')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                var ctxPie = document.getElementById('myPieChart').getContext('2d');
+                new Chart(ctxPie, {
+                    type: 'pie',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.data,
+                            backgroundColor: [
+                                'rgba(78, 115, 223, 1)',  // รอดำเนินการ
+                                'rgba(28, 200, 138, 1)',  // กำลังดำเนินการ
+                                'rgba(54, 185, 204, 1)',   // กำลังจัดส่ง
+                                'rgba(231, 74, 59, 1)'     // เสร็จสิ้น
+                            ],
+                            hoverBackgroundColor: [
+                                'rgba(78, 115, 223, 0.8)',
+                                'rgba(28, 200, 138, 0.8)',
+                                'rgba(54, 185, 204, 0.8)',
+                                'rgba(231, 74, 59, 0.8)'
+                            ],
+                            borderWidth: 1,
+                            borderColor: 'rgba(255, 255, 255, 1)',
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        return tooltipItem.label + ': ' + tooltipItem.raw;
                                     }
                                 }
                             }
                         }
-                    });
-                })
-                .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูล:', error));
-
-            // Bar Chart for Sales by Product
-            $.getJSON('get_sales_data.php', function(data) {
-                var labels = [];
-                var dataSet = [];
-
-                data.forEach(function(item) {
-                    labels.push(item.product_name);
-                    dataSet.push(item.total_sold);
-                });
-
-                var ctxBar = document.getElementById('salesChart').getContext('2d');
-                new Chart(ctxBar, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'ยอดขายรวม',
-                            data: dataSet,
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
                     }
                 });
+            })
+            .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูล:', error));
+
+        // Bar Chart for Sales by Product
+        $.getJSON('get_sales_data.php', function(data) {
+            var labels = [];
+            var dataSet = [];
+
+            data.forEach(function(item) {
+                labels.push(item.product_name);
+                dataSet.push(item.total_sold);
             });
 
-            // Bar Chart for Inventory
-            $.getJSON('get_inventory_data.php', function(data) {
-                var labels = [];
-                var dataSet = [];
-
-                data.forEach(function(item) {
-                    labels.push(item.product_name);
-                    dataSet.push(item.stock_quantity);
-                });
-
-                var ctxInventory = document.getElementById('inventoryChart').getContext('2d');
-                new Chart(ctxInventory, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'จำนวนสินค้าคงคลัง',
-                            data: dataSet,
-                            backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                            borderColor: 'rgba(153, 102, 255, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
+            var ctxBar = document.getElementById('salesChart').getContext('2d');
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'ยอดขายรวม',
+                        data: dataSet,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
                         }
                     }
-                });
+                }
             });
+        });
+
+        // Bar Chart for Inventory
+        $.getJSON('get_inventory_data.php', function(data) {
+            var labels = [];
+            var dataSet = [];
+
+            data.forEach(function(item) {
+                labels.push(item.product_name);
+                dataSet.push(item.stock_quantity);
+            });
+
+            var ctxInventory = document.getElementById('inventoryChart').getContext('2d');
+            new Chart(ctxInventory, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'จำนวนสินค้าคงคลัง',
+                        data: dataSet,
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
     </script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

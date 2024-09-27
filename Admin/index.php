@@ -7,6 +7,13 @@ if (!isset($_SESSION['admin_id'])) {
     header("Location: login.php");
     exit();
 }
+
+// ดึงจำนวนลูกค้าทั้งหมดจากฐานข้อมูล
+$customer_count_query = "SELECT COUNT(*) AS total_customers FROM customer";
+$result = mysqli_query($conn, $customer_count_query);
+$row = mysqli_fetch_assoc($result);
+$total_customers = $row['total_customers'];
+
 ?>
 
 <!DOCTYPE html>
@@ -76,7 +83,7 @@ if (!isset($_SESSION['admin_id'])) {
             <!-- Nav Item - Graph -->
             <li class="nav-item">
                 <a class="nav-link" href="graph.php">
-                    <i class="fas fa-fw fa-chart-line"></i>
+                    <i class="fas fa-fw fa-chart-pie"></i> <!-- เปลี่ยนเป็นไอคอนกราฟที่เหมาะสม -->
                     <span>กราฟสรุป</span>
                 </a>
             </li>
@@ -84,7 +91,7 @@ if (!isset($_SESSION['admin_id'])) {
             <!-- Nav Item - Ordering Information -->
             <li class="nav-item">
                 <a class="nav-link" href="manage_orders.php">
-                    <i class="fas fa-fw fa-box"></i>
+                    <i class="fas fa-fw fa-shopping-cart"></i> <!-- เปลี่ยนเป็นไอคอนที่เหมาะสมกับการสั่งซื้อ -->
                     <span>ข้อมูลการสั่งซื้อ</span>
                 </a>
             </li>
@@ -92,8 +99,16 @@ if (!isset($_SESSION['admin_id'])) {
             <!-- Nav Item - Edit Product -->
             <li class="nav-item">
                 <a class="nav-link" href="manage_products.php">
-                    <i class="fas fa-fw fa-cogs"></i>
-                    <span>แก้ไขสินค้า</span>
+                    <i class="fas fa-fw fa-box-open"></i> <!-- เปลี่ยนเป็นไอคอนที่เหมาะสมกับสินค้า -->
+                    <span>สินค้า</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Edit Customer -->
+            <li class="nav-item">
+                <a class="nav-link" href="correct_customer.php">
+                    <i class="fas fa-fw fa-users"></i> <!-- เปลี่ยนเป็นไอคอนที่เหมาะสมกับลูกค้า -->
+                    <span>ลูกค้า</span>
                 </a>
             </li>
         </ul>
@@ -197,7 +212,6 @@ if (!isset($_SESSION['admin_id'])) {
                         </li>
 
                         <!-- Chart.js and jQuery -->
-                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
                         <script>
@@ -353,7 +367,7 @@ if (!isset($_SESSION['admin_id'])) {
                                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                                 สินค้าขายออกไปแล้ว
                                             </div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalSoldProducts">0</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalSoldProducts">0 </div>
                                         </div>
                                         <div class="col-auto">
                                             <i class="fas fa-boxes fa-2x text-info"></i>
@@ -401,45 +415,123 @@ if (!isset($_SESSION['admin_id'])) {
                             </div>
                         </div>
                         
-                        <!-- Completed Orders Card Example -->
+                        <!-- Card Example for Total Customers -->
                         <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-success shadow h-100 py-2">
+                            <div class="card border-left-primary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                                คำสั่งซื้อที่เสร็จสิ้น
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                ลูกค้าในระบบ
                                             </div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="completedOrdersCount">0</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalCustomersCount"><?php echo $total_customers; ?></div>
                                         </div>
                                         <div class="col-auto">
-                                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                                            <i class="fas fa-users fa-2x text-primary"></i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Daily Sales Chart Example -->
-                        <div class="col-xl-6 col-lg-6 mb-4">
-                            <div class="card shadow mb-4">
-                                <!-- Card Header -->
-                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-info">ยอดขายประจำวัน (7 วันล่าสุด)</h6>
-                                </div>
-                                <!-- Card Body -->
-                                <div class="card-body">
-                                    <canvas id="dailySalesChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- End of Page Content -->
+                        <div class="container-fluid">
+                            <div class="row">
 
-                <!-- JavaScript to fetch and display data -->
-                <script>
+                                <!-- Daily Sales Chart Example -->
+                                <div class="col-xl-7 col-lg-7 mb-4">
+                                    <div class="card shadow mb-4">
+                                        <!-- Card Header -->
+                                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                            <h6 class="m-0 font-weight-bold text-info">ยอดขายประจำวัน (7 วันล่าสุด)</h6>
+                                        </div>
+                                        <!-- Card Body -->
+                                        <div class="card-body">
+                                            <canvas id="dailySalesChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                 <!-- Pie Chart for Order Status -->
+                                <div class="col-xl-4 col-lg-5">
+                                    <div class="card shadow mb-4">
+                                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                            <h6 class="m-0 font-weight-bold text-primary">การกระจายสถานะคำสั่งซื้อ</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="chart-pie pt-4 pb-2">
+                                                <canvas id="myPieChart"></canvas>
+                                            </div>
+                                            <div class="mt-4 text-center small">
+                                                <span class="mr-2">
+                                                    <i class="fas fa-circle text-primary"></i> รอดำเนินการ
+                                                </span>
+                                                <span class="mr-2">
+                                                    <i class="fas fa-circle text-success"></i> กำลังดำเนินการ
+                                                </span>
+                                                <span class="mr-2">
+                                                    <i class="fas fa-circle text-info"></i> กำลังจัดส่ง
+                                                </span>
+                                                <span class="mr-2">
+                                                    <i class="fas fa-circle text-secondary"></i> เสร็จสิ้น
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+            <!-- JavaScript to fetch and display data -->
+            <script>
+               // Fetch order status data and render pie chart
+               fetch('get_order_status_data.php')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        var ctxPie = document.getElementById('myPieChart').getContext('2d');
+                        new Chart(ctxPie, {
+                            type: 'pie',
+                            data: {
+                                labels: data.labels,
+                                datasets: [{
+                                    data: data.data,
+                                    backgroundColor: [
+                                        'rgba(78, 115, 223, 1)',  // รอดำเนินการ
+                                        'rgba(28, 200, 138, 1)',  // กำลังดำเนินการ
+                                        'rgba(54, 185, 204, 1)',   // กำลังจัดส่ง
+                                        'rgba(231, 74, 59, 1)'     // เสร็จสิ้น
+                                    ],
+                                    hoverBackgroundColor: [
+                                        'rgba(78, 115, 223, 0.8)',
+                                        'rgba(28, 200, 138, 0.8)',
+                                        'rgba(54, 185, 204, 0.8)',
+                                        'rgba(231, 74, 59, 0.8)'
+                                    ],
+                                    borderWidth: 1,
+                                    borderColor: 'rgba(255, 255, 255, 1)',
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(tooltipItem) {
+                                                return tooltipItem.label + ': ' + tooltipItem.raw;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    })
+                    .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูล:', error));
+
                     document.addEventListener('DOMContentLoaded', function() {
                         // Total Sales
                         fetch('get_total_sales.php')
@@ -453,7 +545,7 @@ if (!isset($_SESSION['admin_id'])) {
                         fetch('get_sold_products_data.php')
                             .then(response => response.json())
                             .then(data => {
-                                document.getElementById('totalSoldProducts').textContent = data.totalSold || '0';
+                                document.getElementById('totalSoldProducts').textContent = `${data.totalSold || '0'}`;
                             })
                             .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูลสินค้าที่ขายออกไป:', error));
                         
@@ -495,19 +587,6 @@ if (!isset($_SESSION['admin_id'])) {
                                 document.getElementById('orderInProgress').textContent = data.inProgress || '0';
                             })
                             .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูลสถานะคำสั่งซื้อที่กำลังดำเนินการ:', error));
-                        
-                        // Completed Orders
-                        fetch('getCompletedOrders.php')
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.completedOrders !== undefined) {
-                                    document.getElementById('completedOrdersCount').textContent = data.completedOrders || '0';
-                                } else {
-                                    console.error('เกิดข้อผิดพลาดในการดึงข้อมูลคำสั่งซื้อที่เสร็จสิ้น:', data.error);
-                                    document.getElementById('completedOrdersCount').textContent = '0';
-                                }
-                            })
-                            .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูลคำสั่งซื้อที่เสร็จสิ้น:', error));
 
                         // Daily Sales
                         fetch('getDailySales.php')
