@@ -25,17 +25,16 @@ $order_result = mysqli_stmt_get_result($stmt);
 
 // ตรวจสอบว่าไม่พบข้อมูลการสั่งซื้อ
 if (mysqli_num_rows($order_result) === 0) {
-    echo "<p>No orders found.</p>";
+    echo "<p>ไม่มีข้อมูลการสั่งซื้อ.</p>";
     mysqli_close($conn);
     exit();
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-    <title>Order History</title>
-    <!-- Meta Tags -->
+    <title>ประวัติการสั่งซื้อ</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -50,13 +49,13 @@ if (mysqli_num_rows($order_result) === 0) {
     <script src="js/script.js"></script>
 </head>
 <body>
-    <header>
+    <header class="bg-dark text-white text-center py-3">
         <h1>ประวัติการสั่งซื้อ</h1>
     </header>
     <main>
         <section>
             <div class="container mt-4">
-                <table class="table table-bordered">
+                <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
                             <th>รหัสคำสั่งซื้อ</th>
@@ -66,18 +65,24 @@ if (mysqli_num_rows($order_result) === 0) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($order = mysqli_fetch_assoc($order_result)): ?>
+                        <?php if (mysqli_num_rows($order_result) > 0): ?>
+                            <?php while ($order = mysqli_fetch_assoc($order_result)): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($order['order_id']); ?></td>
+                                    <td><?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($order['order_date']))); ?></td>
+                                    <td>฿<?php echo number_format($order['total_amount'], 2); ?></td>
+                                    <td>
+                                        <a href="order_details.php?order_id=<?php echo htmlspecialchars($order['order_id']); ?>" class="btn btn-primary">
+                                            ดูรายละเอียด
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
                             <tr>
-                                <td><?php echo htmlspecialchars($order['order_id']); ?></td>
-                                <td><?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($order['order_date']))); ?></td>
-                                <td>฿<?php echo number_format($order['total_amount'], 2); ?></td>
-                                <td>
-                                    <a href="order_details.php?order_id=<?php echo htmlspecialchars($order['order_id']); ?>" class="btn btn-primary">
-                                        ดูรายละเอียด
-                                    </a>
-                                </td>
+                                <td colspan="4" class="text-center">ไม่มีประวัติการสั่งซื้อ</td>
                             </tr>
-                        <?php endwhile; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>

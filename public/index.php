@@ -3,6 +3,7 @@ session_start();
 include '../connectDB.php';
 include 'topnavbar.php';
 ?>
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -20,38 +21,41 @@ include 'topnavbar.php';
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/script.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <header>
+    <header class="bg-dark text-white text-center py-3">
         <h1>สินค้า</h1>
     </header>
     
-    <main>  
-        <section class="product-list">
+    <main class="container mt-4">  
+        <section class="row">
             <?php
             $query = "SELECT * FROM product";
             $result = mysqli_query($conn, $query);
 
             if (mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_assoc($result)) {
-                    echo '<div class="product">';
-                    echo '<img src="../Admin/product/' . htmlspecialchars($row['image']) . '" alt="' . htmlspecialchars($row['name']) . '" style="width: 150px;;height:150px;">';
-                    echo '<h2>' . htmlspecialchars($row['name']) . '</h2>';
-                    echo '<p>ราคา: ฿' . number_format($row['price'], 2) . '</p>';
-                    echo '<p>สต็อก: ' . htmlspecialchars($row['stock_quantity']) . '</p>';
-                    echo '<a href="add_to_cart.php?product_id=' . $row['product_id'] . '" class="btn">เพิ่มในตะกร้า</a>';
+                    echo '<div class="col-md-4 col-sm-6 mb-4">';
+                    echo '<div class="card h-100 text-center">';
+                    echo '<img src="../Admin/product/' . htmlspecialchars($row['image']) . '" class="card-img-top" alt="' . htmlspecialchars($row['name']) . '" style="height: 200px; object-fit: cover;">';
+                    echo '<div class="card-body">';
+                    echo '<h5 class="card-title">' . htmlspecialchars($row['name']) . '</h5>';
+                    echo '<p class="card-text">ราคา: ฿' . number_format($row['price'], 2) . '</p>';
+                    echo '<p class="card-text">สต็อก: ' . htmlspecialchars($row['stock_quantity']) . '</p>';
+                    echo '<a href="add_to_cart.php?product_id=' . $row['product_id'] . '" class="btn btn-primary">เพิ่มในตะกร้า</a>';
+                    echo '</div>';
+                    echo '</div>';
                     echo '</div>';
                 }
             } else {
-                echo '<p>ไม่พบสินค้า</p>';
+                echo '<p class="text-center">ไม่พบสินค้า</p>';
             }
             ?>
         </section>
     </main>
             
-    <div class="cart-icon">
-        <a href="cart.php">
+    <div class="cart-icon fixed-bottom mb-4 ms-4">
+        <a href="cart.php" class="btn">
             <i class="fas fa-shopping-cart"></i>
             <?php
             if (isset($_SESSION['cart_id'])) {
@@ -62,12 +66,8 @@ include 'topnavbar.php';
                 mysqli_stmt_execute($stmt);
                 $result = mysqli_stmt_get_result($stmt);
                 if ($row = mysqli_fetch_assoc($result)) {
-                    echo '<span class="cart-count">' . $row['item_count'] . '</span>';
-                } else {
-                    echo '<span class="cart-count">0</span>';
+                    echo '<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">' . $row['item_count'] . '</span>';
                 }
-            } else {
-                echo '<span class="cart-count">0</span>';
             }
             ?>
         </a>

@@ -156,20 +156,32 @@ function addNotification($customer_id, $order_id, $message) {
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa; /* Optional: Light background */
+        }
+        .confirm-checkout {
+            margin-top: 50px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
 <body>
-    <header>
+    <header class="text-white text-center py-3">
         <h1>ยืนยันคำสั่งซื้อของคุณ</h1>
     </header>
 
-    <main>
-        <section class="confirm-checkout">
+    <main class="container">
+        <section class="confirm-checkout mx-auto">
             <h2>ยืนยันคำสั่งซื้อ</h2>
             <form action="confirm_checkout.php" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="cart_id" value="<?php echo htmlspecialchars($cart_id, ENT_QUOTES, 'UTF-8'); ?>">
                 <h3>รายการสินค้าในตะกร้าของคุณ:</h3>
                 <?php if (mysqli_num_rows($items_result) > 0): ?>
-                <table>
+                <table class="table">
                     <thead>
                         <tr>
                             <th>รูปภาพ</th>
@@ -206,16 +218,17 @@ function addNotification($customer_id, $order_id, $message) {
 
                 <h3>อัปโหลดสลิปการชำระเงิน:</h3>
                 <input type="file" name="payment_slip" required>
-                <button type="submit">ยืนยันการสั่งซื้อ</button>
+                <button type="submit" class="btn btn-primary mt-3">ยืนยันการสั่งซื้อ</button>
                 <?php else: ?>
                     <p>ตะกร้าของคุณว่างเปล่า</p>
                 <?php endif; ?>
             </form>
         </section>
     </main>
-
-    <footer>
-        <p>© 2024 Meat Store. สงวนสิทธิ์.</p>
-    </footer>
 </body>
 </html>
+
+<?php
+mysqli_close($conn);
+include 'footer.php';
+?>

@@ -54,9 +54,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-    <title>Register - Meat Store</title>
+    <title>สมัครสมาชิก - Meat Store</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -77,63 +77,80 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
-    <header>
+    <header class="text-center py-4 bg-dark text-white">
         <h1>สมัครสมาชิก</h1>
     </header>
 
-    <main>
+    <main class="container mt-5">
         <section class="register">
-            <h2>สร้างบัญชีของคุณ</h2>
-            <form action="register.php" method="post">
-                <label for="name">ชื่อ:</label>
-                <input type="text" id="name" name="name" required>
-
-                <label for="phone">เบอร์โทรศัพท์:</label>
-                <input type="text" id="phone" name="phone" required>
-
-                <label for="address">ที่อยู่:</label>
-                <input type="text" id="address" name="address" required>
-
-                <label for="province_id">จังหวัด:</label>
-                <select class="form-select" name="province_id" id="province_id" required>
-                    <option value="">เลือกจังหวัด</option>
-                    <?php 
-                        while ($row3 = mysqli_fetch_assoc($result3)) {
-                            echo "<option value=\"{$row3['provinceID']}\">{$row3['provinceName']}</option>";
-                        }
-                    ?>
-                </select>
-
-                <label for="amphur_id">อำเภอ:</label>
-                <select class="form-select" name="amphur_id" id="amphur_id" required>
-                    <option value="">เลือกอำเภอ</option>
-                </select>
-
-                <label for="password">รหัสผ่าน:</label>
-                <div class="position-relative">
-                    <input type="password" id="password" name="password" required>
-                    <i class="fas fa-eye toggle-password" id="toggle-password" onclick="togglePasswordVisibility('password')"></i>
+            <h2 class="text-center mb-4">สร้างบัญชีของคุณ</h2>
+            <form action="register.php" method="post" class="row g-3">
+                <div class="col-md-6">
+                    <label for="name" class="form-label">ชื่อ:</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
                 </div>
 
-                <label for="confirm_password">ยืนยันรหัสผ่าน:</label>
-                <div class="position-relative">
-                    <input type="password" id="confirm_password" name="confirm_password" required>
-                    <i class="fas fa-eye toggle-password" id="toggle-confirm-password" onclick="togglePasswordVisibility('confirm_password')"></i>
+                <div class="col-md-6">
+                    <label for="phone" class="form-label">เบอร์โทรศัพท์:</label>
+                    <input type="text" id="phone" name="phone" class="form-control" required pattern="[0-9]{10}" title="กรุณากรอกเบอร์โทรศัพท์ 10 หลัก">
+                </div>
+
+                <div class="col-md-12">
+                    <label for="address" class="form-label">ที่อยู่:</label>
+                    <input type="text" id="address" name="address" class="form-control" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="province_id" class="form-label">จังหวัด:</label>
+                    <select class="form-select" name="province_id" id="province_id" required>
+                        <option value="">เลือกจังหวัด</option>
+                        <?php 
+                            while ($row3 = mysqli_fetch_assoc($result3)) {
+                                echo "<option value=\"{$row3['provinceID']}\">{$row3['provinceName']}</option>";
+                            }
+                        ?>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="amphur_id" class="form-label">อำเภอ:</label>
+                    <select class="form-select" name="amphur_id" id="amphur_id" required>
+                        <option value="">เลือกอำเภอ</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="password" class="form-label">รหัสผ่าน:</label>
+                    <div class="position-relative">
+                        <input type="password" id="password" name="password" class="form-control" required>
+                        <i class="fas fa-eye toggle-password" id="toggle-password" onclick="togglePasswordVisibility('password')"></i>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="confirm_password" class="form-label">ยืนยันรหัสผ่าน:</label>
+                    <div class="position-relative">
+                        <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
+                        <i class="fas fa-eye toggle-password" id="toggle-confirm-password" onclick="togglePasswordVisibility('confirm_password')"></i>
+                    </div>
                 </div>
 
                 <?php if (isset($error)): ?>
-                    <p class="error"><?php echo htmlspecialchars($error); ?></p>
-                <?php endif; ?><br>
+                    <div class="col-12">
+                        <p class="error text-danger text-center"><?php echo htmlspecialchars($error); ?></p>
+                    </div>
+                <?php endif; ?>
 
-                <input type="submit" value="สมัครสมาชิก" class="btn btn-primary">
+                <div class="col-12 text-center">
+                    <input type="submit" value="สมัครสมาชิก" class="btn btn-primary">
+                </div>
+
+                <div class="col-12 text-center">
+                    <p> <a href="login.php">เข้าสู่ระบบ</a></p>
+                </div>
             </form>
-            <p> <a href="login.php">เข้าสู่ระบบ</a></p>
         </section>
     </main>
-
-    <footer>
-        <p>&copy; 2024 ร้านขายเนื้อ. สงวนลิขสิทธิ์.</p>
-    </footer>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -141,8 +158,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             var input = document.getElementById(inputId);
             if (input.type === "password") {
                 input.type = "text";
+                document.getElementById('toggle-password').classList.remove('fa-eye');
+                document.getElementById('toggle-password').classList.add('fa-eye-slash');
             } else {
                 input.type = "password";
+                document.getElementById('toggle-password').classList.remove('fa-eye-slash');
+                document.getElementById('toggle-password').classList.add('fa-eye');
             }
         }
 
@@ -168,4 +189,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <?php
 mysqli_close($conn);
+include 'footer.php';
 ?>

@@ -49,7 +49,6 @@ $details_result = mysqli_stmt_get_result($stmt);
 <html lang="th">
 <head>
     <title>รายละเอียดคำสั่งซื้อ</title>
-    <!-- Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -64,10 +63,10 @@ $details_result = mysqli_stmt_get_result($stmt);
     <script src="js/script.js"></script>
 </head>
 <body>
-    <header>
+    <header class="bg-dark text-white text-center py-3">
         <h1>รายละเอียดคำสั่งซื้อ</h1>
     </header>
-    <main>
+    <main class="container mt-4">
         <section class="order-details">
             <h2>รหัสคำสั่งซื้อ: <?php echo htmlspecialchars($order['order_id']); ?></h2>
             <p><strong>วันที่สั่งซื้อ:</strong> <?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($order['order_date']))); ?></p>
@@ -78,60 +77,59 @@ $details_result = mysqli_stmt_get_result($stmt);
             $image_url = file_exists($image_path) && is_readable($image_path) ? $image_path : "../Admin/uploads/";
             ?>
             <p><strong>สลิปการชำระเงิน:</strong>
-                <a href="<?php echo htmlspecialchars($image_url, ENT_QUOTES, 'UTF-8'); ?>" class="view-payment-slip" data-image="<?php echo htmlspecialchars($image_url, ENT_QUOTES, 'UTF-8'); ?>">
+                <a href="#" class="view-payment-slip" data-image="<?php echo htmlspecialchars($image_url, ENT_QUOTES, 'UTF-8'); ?>">
                     <i class="fas fa-file-invoice-dollar"></i> ดูสลิปการชำระเงิน
                 </a>
             </p>
             <p><strong>สถานะ:</strong> <?php echo htmlspecialchars($order['status']); ?></p>
             <h3>รายการสินค้า</h3>
-            <ul class="order-items">
+            <ul class="list-group">
                 <?php while ($detail = mysqli_fetch_assoc($details_result)): ?>
-                    <li>
-                        <img src="../Admin/product/<?php echo htmlspecialchars($detail['image']); ?>" alt="<?php echo htmlspecialchars($detail['name']); ?>" width="100">
-                        <p><?php echo htmlspecialchars($detail['name']); ?> - จำนวน: <?php echo htmlspecialchars($detail['quantity']); ?> - ราคา: ฿<?php echo number_format($detail['price'], 2); ?> - ยอดรวม: ฿<?php echo number_format($detail['total'], 2); ?></p>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <img src="../Admin/product/<?php echo htmlspecialchars($detail['image']); ?>" alt="<?php echo htmlspecialchars($detail['name']); ?>" width="100" class="me-2">
+                            <div>
+                                <p class="mb-0"><?php echo htmlspecialchars($detail['name']); ?></p>
+                                <small>จำนวน: <?php echo htmlspecialchars($detail['quantity']); ?></small>
+                            </div>
+                        </div>
+                        <p class="mb-0">ราคา: ฿<?php echo number_format($detail['price'], 2); ?> - ยอดรวม: ฿<?php echo number_format($detail['total'], 2); ?></p>
                     </li>
                 <?php endwhile; ?>
             </ul>
         </section>
     </main>
-    <footer>
-        <p>&copy; <?php echo date("Y"); ?> ร้านของคุณ. สงวนลิขสิทธิ์.</p>
-    </footer>
 
     <!-- โมดัลสำหรับแสดงภาพ -->
-    <div id="myModal" class="modal">
-        <span class="close">&times;</span>
-        <img class="modal-content" id="img01">
-        <div id="caption"></div>
+    <div id="myModal" class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">สลิปการชำระเงิน</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img class="modal-img" id="img01" src="" alt="Payment Slip" style="width: 100%;">
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // JavaScript สำหรับการเปิดและปิดโมดัล
+        // JavaScript สำหรับการเปิดโมดัล
         var modal = document.getElementById("myModal");
         var links = document.querySelectorAll('.view-payment-slip');
-        var span = document.getElementsByClassName("close")[0];
-        var modalImg = document.getElementById("img01");
-        var captionText = document.getElementById("caption");
-
+        
         links.forEach(function(link) {
             link.onclick = function(event) {
                 event.preventDefault();
                 var imageUrl = this.getAttribute('data-image');
-                modal.style.display = "block";
+                var modalImg = document.getElementById("img01");
                 modalImg.src = imageUrl;
-                captionText.innerHTML = "สลิปการชำระเงิน";
+                var modalInstance = new bootstrap.Modal(modal);
+                modalInstance.show();
             }
         });
-
-        span.onclick = function() {
-            modal.style.display = "none";
-        }
-
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
     </script>
 </body>
 </html>
@@ -139,4 +137,5 @@ $details_result = mysqli_stmt_get_result($stmt);
 <?php
 // ปิดการเชื่อมต่อฐานข้อมูล
 mysqli_close($conn);
+include 'footer.php';
 ?>

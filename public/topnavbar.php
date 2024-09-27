@@ -18,11 +18,6 @@ include '../connectDB.php'; // เชื่อมต่อฐานข้อม�
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/script.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    
-    <!-- Bootstrap Bundle with Popper (for Bootstrap 5) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 <header>
@@ -63,12 +58,11 @@ include '../connectDB.php'; // เชื่อมต่อฐานข้อม�
     </nav>
 </header>
 
-<script>document.querySelectorAll('.navbar-nav .nav-link').forEach(item => {
+<script>
+document.querySelectorAll('.navbar-nav .nav-link').forEach(item => {
     item.addEventListener('click', () => {
-        const navbarCollapse = document.getElementById('navbarNav');
-        if (navbarCollapse.classList.contains('show')) {
-            navbarCollapse.classList.remove('show');
-        }
+        const navbarCollapse = new bootstrap.Collapse(document.getElementById('navbarNav'));
+        navbarCollapse.hide();
     });
 });
 </script>

@@ -1,5 +1,5 @@
-<footer>
-    <p>&copy; 2024 Meat Store. All rights reserved.</p>
-</footer>
+    <footer class="bg-dark text-white text-center py-3 mt-4">
+        <p>&copy; <?php echo date("Y"); ?> ร้านของคุณ. สงวนลิขสิทธิ์.</p>
+    </footer>
 </body>
-</html>
+</html> 

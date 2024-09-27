@@ -18,7 +18,7 @@ if (isset($_POST['add_product'])) {
     $image_tmp = $_FILES['image']['tmp_name'];
 
     if ($image) {
-        move_uploaded_file($image_tmp, '../admin/uploads/' . $image);
+        move_uploaded_file($image_tmp, '../admin/product/' . $image);
     }
 
     $query = "INSERT INTO product (name, price, cost, stock_quantity, image) VALUES (?, ?, ?, ?, ?)";
@@ -44,7 +44,7 @@ if (isset($_POST['edit_product'])) {
     $image_tmp = $_FILES['image']['tmp_name'];
 
     if ($image) {
-        move_uploaded_file($image_tmp, '../admin/uploads/' . $image);
+        move_uploaded_file($image_tmp, '../admin/product/' . $image);
         $query = "UPDATE product SET name = ?, price = ?, cost = ?, stock_quantity = ?, image = ? WHERE product_id = ?";
         $stmt = $conn->prepare($query);
         $stmt->bind_param('sdidsi', $product_name, $price, $cost, $stock, $image, $product_id);
@@ -94,7 +94,7 @@ if (isset($_GET['delete'])) {
 
     // ตรวจสอบว่ามีรูปภาพและไม่ว่างเปล่า
     if (!empty($product['image'])) {
-        $file_path = '../admin/uploads/' . $product['image'];
+        $file_path = '../admin/product/' . $product['image'];
         
         // ลบรูปภาพจากโฟลเดอร์ (ถ้าไฟล์มีอยู่จริง)
         if (file_exists($file_path) && is_file($file_path)) {
@@ -320,7 +320,7 @@ mysqli_close($conn);
                         <td><?php echo number_format($total_profit, 2); ?></td> <!-- กำไรทั้งหมด -->
                         <td>
                             <?php if ($row['image']) { ?>
-                            <img src="../admin/uploads/<?php echo htmlspecialchars($row['image']); ?>" alt="Product Image" style="max-width: 100px;">
+                            <img src="../admin/product/<?php echo htmlspecialchars($row['image']); ?>" alt="Product Image" style="max-width: 100px;">
                             <?php } ?>
                         </td>
                         <td>
