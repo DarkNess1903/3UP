@@ -1,6 +1,6 @@
 <?php
 ob_start();
-include '../connectDB.php';
+include 'connectDB.php';
 
 // ตรวจสอบการเข้าสู่ระบบของผู้ดูแลระบบ
 if (!isset($_SESSION['admin_id'])) {

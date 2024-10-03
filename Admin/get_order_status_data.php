@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 
 // เชื่อมต่อฐานข้อมูล
-include '../connectDB.php';
+include 'connectDB.php';
 
 // ตรวจสอบการเชื่อมต่อ
 if (!$conn) {

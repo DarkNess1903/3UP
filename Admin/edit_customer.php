@@ -1,7 +1,7 @@
 <?php
 session_start();
 include 'topnavbar.php';
-include '../connectDB.php';
+include 'connectDB.php';
 
 if (!isset($_SESSION['customer_id'])) {
     header("Location: login.php");

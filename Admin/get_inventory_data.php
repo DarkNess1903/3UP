@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-include '../connectDB.php'; // รวมไฟล์การเชื่อมต่อฐานข้อมูล
+include 'connectDB.php'; // รวมไฟล์การเชื่อมต่อฐานข้อมูล
 
 // ตรวจสอบการเชื่อมต่อ
 if (!$conn) {

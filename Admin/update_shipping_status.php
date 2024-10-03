@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../connectDB.php'; // เชื่อมต่อฐานข้อมูล
+include 'connectDB.php'; // เชื่อมต่อฐานข้อมูล
 
 // ตรวจสอบว่ามีการส่งข้อมูลเข้ามาหรือไม่
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

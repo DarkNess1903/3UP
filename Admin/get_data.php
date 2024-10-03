@@ -1,5 +1,5 @@
 <?php
-include '../connectDB.php';
+include 'connectDB.php';
 
 $period = $_GET['period'] ?? 'monthly'; // ค่าเริ่มต้นเป็น 'monthly'
 $data = [];

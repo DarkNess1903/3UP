@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../connectDB.php';
+include 'connectDB.php';
 
 $product_id = $_GET['id'] ?? null;
 

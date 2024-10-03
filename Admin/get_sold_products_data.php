@@ -1,5 +1,5 @@
 <?php
-include '../connectDB.php'; // เชื่อมต่อฐานข้อมูล
+include 'connectDB.php'; // เชื่อมต่อฐานข้อมูล
 
 // ตรวจสอบการเชื่อมต่อ
 if (!$conn) {

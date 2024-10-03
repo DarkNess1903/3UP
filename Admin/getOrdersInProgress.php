@@ -3,7 +3,7 @@
 
 header('Content-Type: application/json');
 
-include '../connectDB.php';
+include 'connectDB.php';
 
 // SQL query to get the count of orders in progress
 $sql = "SELECT COUNT(*) AS inProgress FROM orders WHERE status = 'ตรวจสอบแล้วกำลังดำเนินการ'";

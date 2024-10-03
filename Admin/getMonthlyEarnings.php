@@ -1,5 +1,5 @@
 <?php
-include '../connectDB.php';
+include 'connectDB.php';
 
 // ตรวจสอบการเชื่อมต่อฐานข้อมูล
 if ($conn->connect_error) {
