@@ -64,7 +64,7 @@ mysqli_data_seek($items_result, 0);
 // การแทรกข้อมูลการสั่งซื้อและอัพเดตสต็อก
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
     $payment_slip = $_FILES['payment_slip'];
-    $upload_dir = realpath(__DIR__ . '/../Admin/uploads/');
+    $upload_dir = realpath(__DIR__ . '/./Admin/uploads/');
     $file_name = basename($payment_slip['name']); // รับชื่อไฟล์
     $upload_file = $upload_dir . '/' . $file_name;
 
@@ -257,7 +257,7 @@ function sendLineNotify($message, $lineToken) {
                     <tbody>
                         <?php while ($item = mysqli_fetch_assoc($items_result)): ?>
                         <tr>
-                            <td><img src="../Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
+                            <td><img src="./Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
                             <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?php echo htmlspecialchars($item['quantity'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?php echo number_format($item['price'], 2); ?> บาท</td>
@@ -274,7 +274,7 @@ function sendLineNotify($message, $lineToken) {
                 <div class="payment-info">
                     <h3>Payment Information</h3>
                     <p>Please scan the QR code below to make a payment:</p>
-                    <img src="../Admin/images/qr_code.png" alt="QR Code" width="200">
+                    <img src="./Admin/images/qr_code.png" alt="QR Code" width="200">
                     <p><strong>Bank Account:</strong> 123-456-7890</p>
                     <p><strong>Bank Name:</strong> Example Bank</p>
                 </div>
