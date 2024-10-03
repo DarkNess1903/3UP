@@ -15,7 +15,7 @@ if (!$cart_id) {
 }
 
 // ดึงข้อมูลที่อยู่ของลูกค้า รวมทั้งจังหวัดและอำเภอ
-$address_query = "SELECT address, amphur.amphurName, province.provinceName 
+$address_query = "SELECT customer.name, customer.address, amphur.amphurName, province.provinceName 
                   FROM customer 
                   JOIN amphur ON customer.amphur_id = amphur.amphurID 
                   JOIN province ON amphur.provinceID = province.provinceID 
@@ -23,9 +23,9 @@ $address_query = "SELECT address, amphur.amphurName, province.provinceName
 $stmt = mysqli_prepare($conn, $address_query);
 mysqli_stmt_bind_param($stmt, 'i', $customer_id);
 mysqli_stmt_execute($stmt);
-mysqli_stmt_bind_result($stmt, $address, $amphurName, $provinceName);
+mysqli_stmt_bind_result($stmt, $customer_name, $address, $amphurName, $provinceName); // ดึงชื่อลูกค้า
 mysqli_stmt_fetch($stmt);
-mysqli_stmt_close($stmt);   
+mysqli_stmt_close($stmt); 
 
 // ตรวจสอบว่ามีข้อมูลในตะกร้าหรือไม่
 $cart_query = "SELECT * FROM cart WHERE cart_id = ? AND customer_id = ?";
@@ -90,24 +90,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
         $order_id = mysqli_insert_id($conn);
     
         // แทรกข้อมูลการสั่งซื้อและอัพเดตสต็อก
-        $items_query = "SELECT product_id, quantity, price FROM cart_items WHERE cart_id = ?";
+        $items_query = "SELECT ci.product_id, ci.quantity, ci.price, p.name
+                FROM cart_items ci
+                JOIN product p ON ci.product_id = p.product_id
+                WHERE ci.cart_id = ?";
         $stmt = mysqli_prepare($conn, $items_query);
         mysqli_stmt_bind_param($stmt, 'i', $cart_id);
         mysqli_stmt_execute($stmt);
         $items_result = mysqli_stmt_get_result($stmt);
+
+        // ตั้งค่า timezone
+        date_default_timezone_set('Asia/Bangkok'); // ตั้งเป็นเวลาประเทศไทย
+
+        // สร้างข้อความสำหรับ Line Notify
+        $line_message = "มีออเดอร์ใหม่เข้ามา\n";
+        $line_message .= "เลขออเดอร์: $order_id\n";
+        $line_message .= "เวลาที่สั่ง: " . date('Y-m-d H:i:s') . "\n";
     
         while ($item = mysqli_fetch_assoc($items_result)) {
             $product_id = $item['product_id'];
             $quantity = $item['quantity'];
-    
+            $price = $item['price']; // กำหนดตัวแปร $price ให้ตรงกับฐานข้อมูล
+            $name = $item['name']; // ดึงชื่อสินค้า
+        
             // แทรกข้อมูลลงใน orderdetails
             $orderdetails_query = "INSERT INTO orderdetails (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
             $stmt = mysqli_prepare($conn, $orderdetails_query);
-            mysqli_stmt_bind_param($stmt, 'iiid', $order_id, $product_id, $quantity, $item['price']);
+            mysqli_stmt_bind_param($stmt, 'iiid', $order_id, $product_id, $quantity, $price);
             if (!mysqli_stmt_execute($stmt)) {
                 die("ข้อผิดพลาดในการแทรกข้อมูลการสั่งซื้อ: " . mysqli_error($conn));
             }
-    
+        
             // อัพเดตสต็อก
             $update_stock_query = "UPDATE product SET stock_quantity = stock_quantity - ? WHERE product_id = ?";
             $stmt = mysqli_prepare($conn, $update_stock_query);
@@ -115,7 +128,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
             if (!mysqli_stmt_execute($stmt)) {
                 die("ข้อผิดพลาดในการอัพเดตสต็อก: " . mysqli_error($conn));
             }
-        }
+        
+            // เพิ่มรายละเอียดสินค้าในข้อความ Line Notify
+            $line_message .= "$name จำนวน: $quantity $price บาท\n"; // ใช้ตัวแปร $name สำหรับชื่อสินค้า
+        }        
+
+        $line_message .= "รวมทั้งสิ้น: " . number_format($grand_total, 2) . " บาท\n";
+        $line_message .= "รายละเอียดผู้สั่ง:\nชื่อ: $customer_name\nที่อยู่: $address, $amphurName, $provinceName\n";
+
+        // ส่งการแจ้งเตือนผ่าน Line Notify
+        $lineToken = 'BKShK2Llhdrohu0Nwr9w5CdiAWVaBeFkG8KB4Ts0GWW'; // เปลี่ยนเป็น Token ของคุณ
+        sendLineNotify($line_message, $lineToken);
     
         // ลบข้อมูลที่เกี่ยวข้องใน cart_items
         $delete_cart_items_query = "DELETE FROM cart_items WHERE cart_id = ?";
@@ -126,13 +149,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
         }
     
         // แสดงการแจ้งเตือนและเปลี่ยนเส้นทาง
-        echo "<script>
-            setTimeout(function() {
-                window.location.href = 'order_history.php';
-            }, 3000); // 3000 milliseconds = 3 seconds
-            alert('คำสั่งซื้อของคุณถูกยืนยันแล้ว! กรุณารอสักครู่...');
-        </script>";
-        exit();
+        echo "
+            <div id='confirmationModal' style='display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 9999;'>
+                <div style='background-color: white; padding: 20px; border-radius: 10px; text-align: center;'>
+                    <h2>คำสั่งซื้อของคุณถูกยืนยันแล้ว!</h2>
+                    <p>กรุณารอสักครู่...</p>
+                </div>
+            </div>
+
+            <script>
+                setTimeout(function() {
+                    document.getElementById('confirmationModal').style.display = 'none';
+                    window.location.href = 'order_history.php';
+                }, 3000); // 3000 milliseconds = 3 seconds
+            </script>";
+
     } else {
         die("ข้อผิดพลาดในการอัพโหลดใบเสร็จการชำระเงิน");
     }    
@@ -150,6 +181,28 @@ function addNotification($customer_id, $order_id, $message) {
     if (!mysqli_stmt_execute($stmt)) {
         die("ข้อผิดพลาดในการเพิ่มการแจ้งเตือน: " . mysqli_error($conn));
     }
+}
+
+// ฟังก์ชันสำหรับส่งการแจ้งเตือนผ่าน Line Notify
+function sendLineNotify($message, $lineToken) {
+    $line_api = 'https://notify-api.line.me/api/notify';
+    $headers = array(
+        'Content-Type: multipart/form-data',
+        'Authorization: Bearer ' . $lineToken
+    );
+
+    $fields = array('message' => $message);
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $line_api);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
+    $result = curl_exec($ch);
+    curl_close($ch);
+
+    return $result;
 }
 ?>
 
