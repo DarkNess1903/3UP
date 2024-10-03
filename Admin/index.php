@@ -206,9 +206,6 @@ $total_customers = $row['total_customers'];
                                 <!-- New Order Alert -->
                                 <div id="alertContent">
                                     <!-- Alerts will be dynamically inserted here -->
-                                </div>
-                                <a class="dropdown-item text-center small text-gray-500" href="orderDetails.php">Show All Alerts</a>
-                            </div>
                         </li>
 
                         <!-- Chart.js and jQuery -->

@@ -1,12 +1,7 @@
 <?php
-session_start();
+
 include 'topnavbar.php';
 include 'connectDB.php';
-
-// ตรวจสอบการเชื่อมต่อ
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
-}
 
 // ดึงข้อมูลคำสั่งซื้อทั้งหมด
 $query = "SELECT orders.order_id, orders.total_amount, orders.status, orders.order_date, customer.name 

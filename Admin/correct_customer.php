@@ -1,27 +1,21 @@
 <?php
-session_start();
-include 'topnavbar.php';
-include 'connectDB.php';
+include 'topnavbar.php'; // รวมไฟล์เมนูด้านบน
+include 'connectDB.php'; // รวมไฟล์เชื่อมต่อฐานข้อมูล
 
-if (!isset($_SESSION['customer_id'])) {
-    header("Location: login.php");
-    exit();
-}
-
-$customer_id = $_SESSION['customer_id'];
-
-// ดึงข้อมูลลูกค้าจากฐานข้อมูล
+// ดึงข้อมูลลูกค้าทั้งหมดจากฐานข้อมูล
 $customer_query = "SELECT c.customer_id, c.name, c.phone, c.address, p.provinceName, a.amphurName 
                    FROM customer c
                    JOIN province p ON c.province_id = p.provinceID
-                   JOIN amphur a ON c.amphur_id = a.amphurID
-                   WHERE c.customer_id = ?";
+                   JOIN amphur a ON c.amphur_id = a.amphurID";
 $stmt = mysqli_prepare($conn, $customer_query);
-mysqli_stmt_bind_param($stmt, 'i', $customer_id);
+
+// ตรวจสอบการเตรียมคำสั่ง SQL
+if (!$stmt) {
+    die("Failed to prepare the SQL statement: " . mysqli_error($conn));
+}
+
 mysqli_stmt_execute($stmt);
 mysqli_stmt_bind_result($stmt, $customer_id, $name, $phone, $address, $province_name, $amphur_name);
-mysqli_stmt_fetch($stmt);
-mysqli_stmt_close($stmt);
 ?>
 
 <!DOCTYPE html>
@@ -65,6 +59,7 @@ mysqli_stmt_close($stmt);
                     </tr>
                 </thead>
                 <tbody>
+                    <?php while (mysqli_stmt_fetch($stmt)): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($customer_id, ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?></td>
@@ -73,9 +68,10 @@ mysqli_stmt_close($stmt);
                         <td><?php echo htmlspecialchars($province_name, ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars($amphur_name, ENT_QUOTES, 'UTF-8'); ?></td>
                         <td>
-                            <a href="edit_customer.php" class="btn btn-primary">แก้ไข</a>
+                            <a href="edit_customer.php?customer_id=<?php echo $customer_id; ?>" class="btn btn-primary">แก้ไข</a>
                         </td>
                     </tr>
+                    <?php endwhile; ?>
                 </tbody>
             </table>
         </div>
@@ -88,5 +84,7 @@ mysqli_stmt_close($stmt);
 </html>
 
 <?php
+// ปิดการเชื่อมต่อฐานข้อมูลหลังจากการประมวลผลทั้งหมด
+mysqli_stmt_close($stmt);
 mysqli_close($conn);
 ?>

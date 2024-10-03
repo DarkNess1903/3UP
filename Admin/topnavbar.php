@@ -1,9 +1,11 @@
 <?php
+session_start();
 ob_start();
 include 'connectDB.php';
 
-// ตรวจสอบการเข้าสู่ระบบของผู้ดูแลระบบ
+// ตรวจสอบการเข้าสู่ระบบของผู้ดูแลระบบเท่านั้น
 if (!isset($_SESSION['admin_id'])) {
+    // หากไม่มีการล็อกอินของ admin ให้ส่งกลับไปหน้า login
     header("Location: login.php");
     exit();
 }
@@ -13,7 +15,6 @@ if (!isset($_SESSION['admin_id'])) {
 <html lang="th">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
@@ -28,8 +29,20 @@ if (!isset($_SESSION['admin_id'])) {
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-brand {
+            flex: 1;
+        }
+        .nav-time {
+            text-align: center;
+            flex: 2;
+        }
         .navbar .mx-auto {
             position: absolute;
             left: 50%;
@@ -214,13 +227,9 @@ if (!isset($_SESSION['admin_id'])) {
                                 <!-- New Order Alert -->
                                 <div id="alertContent">
                                     <!-- Alerts will be dynamically inserted here -->
-                                </div>
-                                <a class="dropdown-item text-center small text-gray-500" href="orderDetails.php">Show All Alerts</a>
-                            </div>
                         </li>
 
                         <!-- Chart.js and jQuery -->
-                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
                         <script>
@@ -286,15 +295,3 @@ if (!isset($_SESSION['admin_id'])) {
 
                 </nav>
                 <!-- End of Topbar -->
-
-                <!-- Bootstrap core JavaScript-->
-                <script src="vendor/jquery/jquery.min.js"></script>
-                <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-                <!-- Core plugin JavaScript-->
-                <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-
-                <!-- Custom scripts for all pages-->
-                <script src="js/sb-admin-2.min.js"></script>    
-</body>
-</html>

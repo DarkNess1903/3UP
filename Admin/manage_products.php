@@ -1,12 +1,6 @@
 <?php
-session_start();
 include 'topnavbar.php';
 include 'connectDB.php';
-
-// ตรวจสอบการเชื่อมต่อ
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
-}
 
 // การจัดการการเพิ่มสินค้า
 if (isset($_POST['add_product'])) {
