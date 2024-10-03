@@ -24,7 +24,7 @@ include 'connectDB.php'; // เชื่อมต่อฐานข้อมู�
     <nav class="navbar navbar-expand-md navbar-dark bg-dark-custom">
         <div class="container-fluid">
             <a href="index.php" class="navbar-brand d-flex align-items-center">
-                <img src="../public/images/logo.jpg" alt="Logo" width="100" height="100" class="me-2">
+                <img src="images/logo.jpg" alt="Logo" width="100" height="100" class="me-2">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>

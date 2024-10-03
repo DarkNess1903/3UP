@@ -37,7 +37,7 @@ include 'topnavbar.php';
             while ($row = mysqli_fetch_assoc($result)) {
                 echo '<div class="col-lg-3 col-md-4 col-sm-6 mb-4">';  // ใช้ col-lg-3 สำหรับจอใหญ่, col-md-4 สำหรับแท็บเล็ต, col-sm-6 สำหรับมือถือ
                 echo '<div class="card h-100 text-center">';
-                echo '<img src="../Admin/product/' . htmlspecialchars($row['image']) . '" class="card-img-top" alt="' . htmlspecialchars($row['name']) . '" style="height: 200px; object-fit: cover;">';
+                echo '<img src="./Admin/product/' . htmlspecialchars($row['image']) . '" class="card-img-top" alt="' . htmlspecialchars($row['name']) . '" style="height: 200px; object-fit: cover;">';
                 echo '<div class="card-body">';
                 echo '<h5 class="card-title">' . htmlspecialchars($row['name']) . '</h5>';
                 echo '<p class="card-text">ราคา: ฿' . number_format($row['price'], 2) . '</p>';
