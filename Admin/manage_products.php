@@ -131,6 +131,14 @@ mysqli_close($conn);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>จัดการสินค้า</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <style>
         .modal-body img {
             max-width: 100%;
@@ -141,48 +149,14 @@ mysqli_close($conn);
             font-size: 28px;
         }
 
-        /* ปรับขนาดฟอนต์สำหรับอุปกรณ์มือถือ */
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 24px;
-            }
-
-            table th, table td {
-                font-size: 14px;
-            }
-
-            .btn {
-                font-size: 14px;
-                padding: 6px 12px;
-            }
-
-            img {
-                max-width: 80px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            h1 {
-                font-size: 20px;
-            }
-
-            table th, table td {
-                font-size: 12px;
-            }
-
-            .btn {
-                font-size: 12px;
-                padding: 4px 8px;
-            }
-
-            img {
-                max-width: 60px;
-            }
-        }
-
         .table th, .table td {
             vertical-align: middle;
         }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
     </style>
 </head>
 <body>
@@ -303,57 +277,59 @@ mysqli_close($conn);
         <div class="table-responsive mt-4">
             <table class="table table-striped table-bordered text-center">
                 <thead>
-                <tr>
-                    <th>ชื่อสินค้า</th>
-                    <th>ราคา</th>
-                    <th>ต้นทุน</th>
-                    <th>กำไรต่อชิ้น</th>
-                    <th>จำนวนในสต็อก</th>
-                    <th>กำไรทั้งหมด</th>
-                    <th>รูปภาพสินค้า</th>
-                    <th>การกระทำ</th>
-                </tr>
+                    <tr>
+                        <th>ชื่อสินค้า</th>
+                        <th>ราคา</th>
+                        <th>ต้นทุน</th>
+                        <th>กำไรต่อชิ้น</th>
+                        <th>จำนวนในสต็อก</th>
+                        <th>กำไรทั้งหมด</th>
+                        <th>รูปภาพสินค้า</th>
+                        <th>การกระทำ</th>
+                    </tr>
                 </thead>
                 <tbody>
                     <?php while ($row = mysqli_fetch_assoc($result)) { 
-                    // คำนวณกำไรต่อชิ้นและกำไรทั้งหมด
-                    $profit_per_item = $row['price'] - $row['cost'];
-                    $total_profit = $profit_per_item * $row['stock_quantity'];
+                        // คำนวณกำไรต่อชิ้นและกำไรทั้งหมด
+                        $profit_per_item = $row['price'] - $row['cost'];
+                        $total_profit = $profit_per_item * $row['stock_quantity'];
                     ?>
                         <tr>
                             <td><?php echo htmlspecialchars($row['name']); ?></td>
-                            <td><?php echo htmlspecialchars($row['price']); ?></td>
-                            <td><?php echo htmlspecialchars($row['cost']); ?></td>
-                            <td><?php echo number_format($profit_per_item, 2); ?></td>
+                            <td><?php echo number_format($row['price'], 2); ?> บาท</td>
+                            <td><?php echo number_format($row['cost'], 2); ?> บาท</td>
+                            <td><?php echo number_format($profit_per_item, 2); ?> บาท</td>
                             <td><?php echo htmlspecialchars($row['stock_quantity']); ?></td>
-                            <td><?php echo number_format($total_profit, 2); ?></td>
+                            <td><?php echo number_format($total_profit, 2); ?> บาท</td>
                             <td>
                                 <?php if ($row['image']) { ?>
-                                <img src="../admin/product/<?php echo htmlspecialchars($row['image']); ?>" alt="Product Image" class="img-fluid">
+                                    <img src="../admin/product/<?php echo htmlspecialchars($row['image']); ?>" alt="Product Image" class="img-fluid" style="max-width: 100px; height: auto;">
                                 <?php } ?>
                             </td>
                             <td>
-                                <!-- ปุ่มแก้ไข -->
-                                <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editProductModal"
-                                        data-id="<?php echo $row['product_id']; ?>"
-                                        data-name="<?php echo htmlspecialchars($row['name']); ?>"
-                                        data-price="<?php echo htmlspecialchars($row['price']); ?>"
-                                        data-cost="<?php echo htmlspecialchars($row['cost']); ?>"
-                                        data-stock="<?php echo htmlspecialchars($row['stock_quantity']); ?>"
-                                        data-image="<?php echo htmlspecialchars($row['image']); ?>">
-                                    <i class="fas fa-edit"></i>
-                                </button> 
+                                <div class="btn-group" role="group">
+                                    <!-- ปุ่มแก้ไข -->
+                                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editProductModal"
+                                            data-id="<?php echo $row['product_id']; ?>"
+                                            data-name="<?php echo htmlspecialchars($row['name']); ?>"
+                                            data-price="<?php echo htmlspecialchars($row['price']); ?>"
+                                            data-cost="<?php echo htmlspecialchars($row['cost']); ?>"
+                                            data-stock="<?php echo htmlspecialchars($row['stock_quantity']); ?>"
+                                            data-image="<?php echo htmlspecialchars($row['image']); ?>">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
 
-                                <!-- ปุ่มเติมสต็อก -->
-                                <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#restockModal"
-                                        data-id="<?php echo $row['product_id']; ?>">
-                                    <i class="fas fa-box-open"></i>
-                                </button>
+                                    <!-- ปุ่มเติมสต็อก -->
+                                    <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#restockModal"
+                                            data-id="<?php echo $row['product_id']; ?>">
+                                        <i class="fas fa-box-open"></i>
+                                    </button>
 
-                                <!-- ปุ่มลบ -->
-                                <a href="manage_products.php?delete=<?php echo $row['product_id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบสินค้า?');">
-                                    <i class="fas fa-trash-alt"></i>
-                                </a>
+                                    <!-- ปุ่มลบ -->
+                                    <a href="manage_products.php?delete=<?php echo $row['product_id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบสินค้า?');">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     <?php } ?>

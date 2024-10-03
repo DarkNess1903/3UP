@@ -27,32 +27,32 @@ include 'topnavbar.php';
         <h1>สินค้า</h1>
     </header>
     
-    <main class="container mt-4">  
-        <section class="row">
-            <?php
-            $query = "SELECT * FROM product";
-            $result = mysqli_query($conn, $query);
+    <main class="container mt-4">
+    <section class="row">
+        <?php
+        $query = "SELECT * FROM product";
+        $result = mysqli_query($conn, $query);
 
-            if (mysqli_num_rows($result) > 0) {
-                while ($row = mysqli_fetch_assoc($result)) {
-                    echo '<div class="col-md-4 col-sm-6 mb-4">';
-                    echo '<div class="card h-100 text-center">';
-                    echo '<img src="../Admin/product/' . htmlspecialchars($row['image']) . '" class="card-img-top" alt="' . htmlspecialchars($row['name']) . '" style="height: 200px; object-fit: cover;">';
-                    echo '<div class="card-body">';
-                    echo '<h5 class="card-title">' . htmlspecialchars($row['name']) . '</h5>';
-                    echo '<p class="card-text">ราคา: ฿' . number_format($row['price'], 2) . '</p>';
-                    echo '<p class="card-text">สต็อก: ' . htmlspecialchars($row['stock_quantity']) . '</p>';
-                    echo '<a href="add_to_cart.php?product_id=' . $row['product_id'] . '" class="btn btn-primary">เพิ่มในตะกร้า</a>';
-                    echo '</div>';
-                    echo '</div>';
-                    echo '</div>';
-                }
-            } else {
-                echo '<p class="text-center">ไม่พบสินค้า</p>';
+        if (mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                echo '<div class="col-lg-3 col-md-4 col-sm-6 mb-4">';  // ใช้ col-lg-3 สำหรับจอใหญ่, col-md-4 สำหรับแท็บเล็ต, col-sm-6 สำหรับมือถือ
+                echo '<div class="card h-100 text-center">';
+                echo '<img src="../Admin/product/' . htmlspecialchars($row['image']) . '" class="card-img-top" alt="' . htmlspecialchars($row['name']) . '" style="height: 200px; object-fit: cover;">';
+                echo '<div class="card-body">';
+                echo '<h5 class="card-title">' . htmlspecialchars($row['name']) . '</h5>';
+                echo '<p class="card-text">ราคา: ฿' . number_format($row['price'], 2) . '</p>';
+                echo '<p class="card-text">สต็อก: ' . htmlspecialchars($row['stock_quantity']) . '</p>';
+                echo '<a href="add_to_cart.php?product_id=' . $row['product_id'] . '" class="btn btn-primary">เพิ่มในตะกร้า</a>';
+                echo '</div>';
+                echo '</div>';
+                echo '</div>';
             }
-            ?>
-        </section>
-    </main>
+        } else {
+            echo '<p class="text-center">ไม่พบสินค้า</p>';
+        }
+        ?>
+    </section>
+</main>
             
     <div class="cart-icon fixed-bottom mb-4 ms-4">
         <a href="cart.php" class="btn">

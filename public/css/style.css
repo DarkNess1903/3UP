@@ -101,3 +101,12 @@ header {
 iframe {
     border-radius: 8px; /* เพิ่มมุมโค้งให้กับ iframe */
 }
+
+.card-img-top {
+    max-height: 200px;
+    object-fit: cover;
+}
+
+.card-body {
+    text-align: center;
+}
