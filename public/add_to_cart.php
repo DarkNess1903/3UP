@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../connectDB.php';
+include 'connectDB.php';
 
 // ตรวจสอบว่ามีการเชื่อมต่อฐานข้อมูล
 if (!$conn) {

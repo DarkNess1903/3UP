@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../connectDB.php';
+include 'connectDB.php';
 include 'topnavbar.php';
 
 $customer_id = $_SESSION['customer_id'];

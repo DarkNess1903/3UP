@@ -1,5 +1,5 @@
 <?php
-include '../connectDB.php'; // เชื่อมต่อฐานข้อมูล
+include 'connectDB.php'; // เชื่อมต่อฐานข้อมูล
 ?>
 
 <!DOCTYPE html>

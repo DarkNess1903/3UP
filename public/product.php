@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../connectDB.php';
+include 'connectDB.php';
 
 // ตรวจสอบการเข้าสู่ระบบ
 if (!isset($_SESSION['customer_id'])) {

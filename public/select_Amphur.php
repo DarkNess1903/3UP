@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../connectDB.php';
+include 'connectDB.php';
 
 if (isset($_POST['id'])) {
     $id_province = mysqli_real_escape_string($conn, $_POST['id']);
