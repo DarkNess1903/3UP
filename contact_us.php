@@ -34,9 +34,9 @@ if (!isset($_SESSION['customer_id'])) {
         <!-- Contact Information -->
         <section class="contact-info">
             <h3>ข้อมูลการติดต่อ</h3>
-            <p><strong>ที่อยู่:</strong> ร้านสเต็กเนื้อย่าง Homemade & บาร์ลับ 50/1 ถนนราเมศวร ตำบลหอรัตนไชย อำเภอพระนครศรีอยุธยา จังหวัดพระนครศรีอยุธยา 13000</p>
+            <p><strong>ที่อยู่:</strong> 50/1 ถนนราเมศวร ตำบลหอรัตนไชย อำเภอพระนครศรีอยุธยา จังหวัดพระนครศรีอยุธยา 13000</p>
             <p><strong>เบอร์:</strong> 062 386 8314</p>
-            <p><strong>อีเมล:</strong> <a href="mailto:info@meatstore.com">info@meatstore.com</a></p>
+            <p><strong>อีเมล:</strong> <a href="mailto:prapaapornpj@icloud.com">prapaapornpj@icloud.com</a></p>
             <p><strong>Facebook:</strong> <a href="https://www.facebook.com/3upbistro" target="_blank">คลิกเพื่อดู</a></p>
             <p><strong>เวลาทำการ:</strong> จันทร์ - ศุกร์: 09.00 - 18.00 น.</p>
         </section>

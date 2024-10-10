@@ -3,6 +3,11 @@ session_start();
 include 'connectDB.php';
 include 'topnavbar.php';
 
+// ตรวจสอบการเข้าสู่ระบบ
+if (!isset($_SESSION['customer_id'])) {
+    header("Location: login.php");
+    exit();
+}
 $customer_id = $_SESSION['customer_id'];
 
 // ดึงข้อมูลตะกร้าสินค้า

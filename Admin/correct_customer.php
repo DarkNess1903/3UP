@@ -21,10 +21,7 @@ mysqli_stmt_bind_result($stmt, $customer_id, $name, $phone, $address, $province_
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ข้อมูลลูกค้า</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         @media (max-width: 576px) {
             h1 {
@@ -76,10 +73,6 @@ mysqli_stmt_bind_result($stmt, $customer_id, $name, $phone, $address, $province_
             </table>
         </div>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
 

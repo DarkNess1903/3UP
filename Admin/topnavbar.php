@@ -2,6 +2,8 @@
 session_start();
 ob_start();
 include 'connectDB.php';
+include 'header.php';
+
 
 // ตรวจสอบการเข้าสู่ระบบของผู้ดูแลระบบเท่านั้น
 if (!isset($_SESSION['admin_id'])) {
@@ -13,71 +15,6 @@ if (!isset($_SESSION['admin_id'])) {
 
 <!DOCTYPE html>
 <html lang="th">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
-    <link href="css/sb-admin-2.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Font Awesome (ถ้าจำเป็น) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
-    <style>
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .navbar-brand {
-            flex: 1;
-        }
-        .nav-time {
-            text-align: center;
-            flex: 2;
-        }
-        .navbar .mx-auto {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px; /* เพิ่มขนาดตัวอักษร */
-            font-weight: bold;
-            color: #4e73df; /* สีที่โดดเด่น */
-        }
-
-        @media (max-width: 768px) {
-            .navbar .mx-auto {
-                font-size: 18px; /* ขนาดตัวอักษรเล็กลงสำหรับอุปกรณ์ขนาดเล็ก */
-            }
-        }
-
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .navbar-brand {
-            flex: 1;
-        }
-        .nav-time {
-            text-align: center;
-            flex: 2;
-        }
-        
-    </style>
-</head>
-
 <body id="page-top">
 
     <!-- Page Wrapper -->
@@ -108,7 +45,7 @@ if (!isset($_SESSION['admin_id'])) {
             <!-- Nav Item - Graph -->
             <li class="nav-item">
                 <a class="nav-link" href="graph.php">
-                    <i class="fas fa-fw fa-chart-pie"></i> <!-- เปลี่ยนเป็นไอคอนกราฟที่เหมาะสม -->
+                    <i class="fas fa-fw fa-chart-pie"></i>
                     <span>กราฟสรุป</span>
                 </a>
             </li>
@@ -116,7 +53,7 @@ if (!isset($_SESSION['admin_id'])) {
             <!-- Nav Item - Ordering Information -->
             <li class="nav-item">
                 <a class="nav-link" href="manage_orders.php">
-                    <i class="fas fa-fw fa-shopping-cart"></i> <!-- เปลี่ยนเป็นไอคอนที่เหมาะสมกับการสั่งซื้อ -->
+                    <i class="fas fa-fw fa-shopping-cart"></i>
                     <span>ข้อมูลการสั่งซื้อ</span>
                 </a>
             </li>
@@ -124,7 +61,7 @@ if (!isset($_SESSION['admin_id'])) {
             <!-- Nav Item - Edit Product -->
             <li class="nav-item">
                 <a class="nav-link" href="manage_products.php">
-                    <i class="fas fa-fw fa-box-open"></i> <!-- เปลี่ยนเป็นไอคอนที่เหมาะสมกับสินค้า -->
+                    <i class="fas fa-fw fa-box-open"></i>
                     <span>สินค้า</span>
                 </a>
             </li>
@@ -132,7 +69,7 @@ if (!isset($_SESSION['admin_id'])) {
             <!-- Nav Item - Edit Customer -->
             <li class="nav-item">
                 <a class="nav-link" href="correct_customer.php">
-                    <i class="fas fa-fw fa-users"></i> <!-- เปลี่ยนเป็นไอคอนที่เหมาะสมกับลูกค้า -->
+                    <i class="fas fa-fw fa-users"></i>
                     <span>ลูกค้า</span>
                 </a>
             </li>
@@ -154,88 +91,44 @@ if (!isset($_SESSION['admin_id'])) {
                     </button>
 
                     <!-- Time display in the center -->
-                        <div class="mx-auto" id="current-time"></div>
+                    <div class="mx-auto" id="current-time"></div>
 
-                        <!-- JavaScript -->
-                        <script>
-                        function updateTime() {
-                            const now = new Date();
-                            const hours = now.getHours().toString().padStart(2, '0');
-                            const minutes = now.getMinutes().toString().padStart(2, '0');
-                            const seconds = now.getSeconds().toString().padStart(2, '0');
-                            const currentTime = `${hours}:${minutes}:${seconds}`;
-                            
-                            document.getElementById('current-time').textContent = currentTime;
-                        }
+                    <script>
+                    function updateTime() {
+                        const now = new Date();
+                        const hours = now.getHours().toString().padStart(2, '0');
+                        const minutes = now.getMinutes().toString().padStart(2, '0');
+                        const seconds = now.getSeconds().toString().padStart(2, '0');
+                        const currentTime = `${hours}:${minutes}:${seconds}`;
+                        
+                        document.getElementById('current-time').textContent = currentTime;
+                    }
 
-                        // Update every second
-                        setInterval(updateTime, 1000);
-
-                        // Initial call to display time immediately
-                        updateTime();
-                        </script>
-
-                        <!-- CSS -->
-                        <style>
-                        .navbar .mx-auto {
-                            position: absolute;
-                            left: 50%;
-                            transform: translateX(-50%);
-                            font-size: 24px; /* เพิ่มขนาดตัวอักษร */
-                            font-weight: bold;
-                            color: #4e73df; /* สีที่โดดเด่น */
-                        }
-
-                        @media (max-width: 768px) {
-                            .navbar .mx-auto {
-                                font-size: 18px; /* ขนาดตัวอักษรเล็กลงสำหรับอุปกรณ์ขนาดเล็ก */
-                            }
-                        }
-                        </style>
+                    // Update every second
+                    setInterval(updateTime, 1000);
+                    updateTime(); // Initial call to display time immediately
+                    </script>
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
-
-                        <!-- (Visible Only XS) -->
-                            <!-- Dropdown - Messages -->
-                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                aria-labelledby="searchDropdown">
-                                <form class="form-inline mr-auto w-100 navbar-search">
-                                    <div class="input-group">
-                                        <input type="text" class="form-control bg-light border-0 small"
-                                            placeholder="Search for..." aria-label="Search"
-                                            aria-describedby="basic-addon2">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" type="button">
-                                                <i class="fas fa-search fa-sm"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </li>
 
                         <!-- Nav Item - Alerts -->
                         <li class="nav-item dropdown no-arrow mx-1 show">
                             <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                                 <i class="fas fa-bell fa-fw"></i>
-                                <!-- Counter - Alerts -->
                                 <span class="badge badge-danger badge-counter" id="alertCount">0</span>
                             </a>
 
                             <!-- Dropdown - Alerts -->
                             <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">
-                                    Alerts Center
-                                </h6>
-                                <!-- New Order Alert -->
+                                <h6 class="dropdown-header">Alerts Center</h6>
                                 <div id="alertContent">
-                                    <!-- Alerts will be dynamically inserted here -->
+                                    <a class="dropdown-item text-center small text-gray-500" href="#">No new orders</a>
+                                </div>
+                            </div>
                         </li>
 
                         <!-- Chart.js and jQuery -->
-                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
                         <script>
                         $(document).ready(function() {
                             // ฟังก์ชันดึงข้อมูลออเดอร์ใหม่

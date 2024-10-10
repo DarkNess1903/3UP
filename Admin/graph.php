@@ -127,7 +127,7 @@ if (!$conn) {
             <div class="col-xl-4 col-lg-5">
                 <div class="card shadow mb-4">
                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                        <h6 class="m-0 font-weight-bold text-primary">การกระจายสถานะคำสั่งซื้อ</h6>
+                        <h6 class="m-0 font-weight-bold text-primary">สถานะคำสั่งซื้อ</h6>
                     </div>
                     <div class="card-body">
                         <div class="chart-pie pt-4 pb-2">
@@ -181,58 +181,58 @@ if (!$conn) {
         </div>
     </main>
 
-    <!-- Chart.js Script -->
-    <script>
-        // Fetch order status data and render pie chart
-        fetch('get_order_status_data.php')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                var ctxPie = document.getElementById('myPieChart').getContext('2d');
-                new Chart(ctxPie, {
-                    type: 'pie',
-                    data: {
-                        labels: data.labels,
-                        datasets: [{
-                            data: data.data,
-                            backgroundColor: [
-                                'rgba(78, 115, 223, 1)',  // รอดำเนินการ
-                                'rgba(28, 200, 138, 1)',  // กำลังดำเนินการ
-                                'rgba(54, 185, 204, 1)',   // กำลังจัดส่ง
-                                'rgba(231, 74, 59, 1)'     // เสร็จสิ้น
-                            ],
-                            hoverBackgroundColor: [
-                                'rgba(78, 115, 223, 0.8)',
-                                'rgba(28, 200, 138, 0.8)',
-                                'rgba(54, 185, 204, 0.8)',
-                                'rgba(231, 74, 59, 0.8)'
-                            ],
-                            borderWidth: 1,
-                            borderColor: 'rgba(255, 255, 255, 1)',
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'top',
+            <!-- JavaScript to fetch and display data -->
+            <script>
+               // Fetch order status data and render pie chart
+               fetch('get_order_status_data.php')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        var ctxPie = document.getElementById('myPieChart').getContext('2d');
+                        new Chart(ctxPie, {
+                            type: 'pie',
+                            data: {
+                                labels: data.labels,
+                                datasets: [{
+                                    data: data.data,
+                                    backgroundColor: [
+                                        'rgba(78, 115, 223, 1)',  // รอดำเนินการ
+                                        'rgba(28, 200, 138, 1)',  // กำลังดำเนินการ
+                                        'rgba(54, 185, 204, 1)',   // กำลังจัดส่ง
+                                        'rgba(231, 74, 59, 1)'     // เสร็จสิ้น
+                                    ],
+                                    hoverBackgroundColor: [
+                                        'rgba(78, 115, 223, 0.8)',
+                                        'rgba(28, 200, 138, 0.8)',
+                                        'rgba(54, 185, 204, 0.8)',
+                                        'rgba(231, 74, 59, 0.8)'
+                                    ],
+                                    borderWidth: 1,
+                                    borderColor: 'rgba(255, 255, 255, 1)',
+                                }]
                             },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(tooltipItem) {
-                                        return tooltipItem.label + ': ' + tooltipItem.raw;
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(tooltipItem) {
+                                                return tooltipItem.label + ': ' + tooltipItem.raw;
+                                            }
+                                        }
                                     }
                                 }
                             }
-                        }
-                    }
-                });
-            })
-            .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูล:', error));
+                        });
+                    })
+                    .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูล:', error));
 
         // Bar Chart for Sales by Product
         $.getJSON('get_sales_data.php', function(data) {
@@ -302,9 +302,5 @@ if (!$conn) {
             });
         });
     </script>
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <!-- Bootstrap JS -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

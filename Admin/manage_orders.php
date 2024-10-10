@@ -81,12 +81,9 @@ if (!$result) {
     </style>
 </head>
 <body>
-    <header>
-        <!-- ใส่ Navbar ของคุณที่นี่ -->
-    </header>
 
-    <div class="container">
-        <h1>จัดการคำสั่งซื้อ</h1>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">จัดการคำสั่งซื้อ</h1>
         <div class="table-responsive">
             <table class="table table-bordered table-striped">
                 <thead>
@@ -130,9 +127,6 @@ if (!$result) {
     <footer>
         <!-- ใส่ Footer ของคุณที่นี่ -->
     </footer>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <script>
     $(document).ready(function() {
         $('.deleteOrderBtn').on('click', function() {

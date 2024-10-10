@@ -1,2 +1,0 @@
-# กำหนดค่า session cookie lifetime เป็น 0 (ทำให้ session หมดอายุเมื่อปิดเบราว์เซอร์)
-php_value session.cookie_lifetime 0

@@ -12,7 +12,7 @@ if (isset($_POST['add_product'])) {
     $image_tmp = $_FILES['image']['tmp_name'];
 
     if ($image) {
-        move_uploaded_file($image_tmp, '../admin/product/' . $image);
+        move_uploaded_file($image_tmp, 'product/' . $image);
     }
 
     $query = "INSERT INTO product (name, price, cost, stock_quantity, image) VALUES (?, ?, ?, ?, ?)";
@@ -38,7 +38,7 @@ if (isset($_POST['edit_product'])) {
     $image_tmp = $_FILES['image']['tmp_name'];
 
     if ($image) {
-        move_uploaded_file($image_tmp, '../admin/product/' . $image);
+        move_uploaded_file($image_tmp, 'product/' . $image);
         $query = "UPDATE product SET name = ?, price = ?, cost = ?, stock_quantity = ?, image = ? WHERE product_id = ?";
         $stmt = $conn->prepare($query);
         $stmt->bind_param('sdidsi', $product_name, $price, $cost, $stock, $image, $product_id);
@@ -88,7 +88,7 @@ if (isset($_GET['delete'])) {
 
     // ตรวจสอบว่ามีรูปภาพและไม่ว่างเปล่า
     if (!empty($product['image'])) {
-        $file_path = '../admin/product/' . $product['image'];
+        $file_path = 'product/' . $product['image'];
         
         // ลบรูปภาพจากโฟลเดอร์ (ถ้าไฟล์มีอยู่จริง)
         if (file_exists($file_path) && is_file($file_path)) {
@@ -121,26 +121,14 @@ mysqli_close($conn);
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>จัดการสินค้า</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Bootstrap CSS -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Bootstrap JS -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
     <style>
         .modal-body img {
             max-width: 100%;
             height: auto;
-        }
-
-        h1 {
-            font-size: 28px;
         }
 
         .table th, .table td {
@@ -260,7 +248,7 @@ mysqli_close($conn);
 
     <!-- ตารางสินค้า -->
     <div class="container mt-4">
-        <h1 class="text-center">จัดการสินค้า</h1>
+        <h1 class="text-center mb-4">จัดการสินค้า</h1>
 
         <!-- ปุ่มเพิ่มสินค้า -->
         <button type="button" class="btn btn-primary mb-4" data-toggle="modal" data-target="#addProductModal">
@@ -290,14 +278,14 @@ mysqli_close($conn);
                     ?>
                         <tr>
                             <td><?php echo htmlspecialchars($row['name']); ?></td>
-                            <td><?php echo number_format($row['price'], 2); ?> บาท</td>
-                            <td><?php echo number_format($row['cost'], 2); ?> บาท</td>
-                            <td><?php echo number_format($profit_per_item, 2); ?> บาท</td>
+                            <td><?php echo number_format($row['price'], 2); ?> </td>
+                            <td><?php echo number_format($row['cost'], 2); ?> </td>
+                            <td><?php echo number_format($profit_per_item, 2); ?> </td>
                             <td><?php echo htmlspecialchars($row['stock_quantity']); ?></td>
-                            <td><?php echo number_format($total_profit, 2); ?> บาท</td>
+                            <td><?php echo number_format($total_profit, 2); ?> </td>
                             <td>
                                 <?php if ($row['image']) { ?>
-                                    <img src="../admin/product/<?php echo htmlspecialchars($row['image']); ?>" alt="Product Image" class="img-fluid" style="max-width: 100px; height: auto;">
+                                    <img src="product/<?php echo htmlspecialchars($row['image']); ?>" alt="Product Image" class="img-fluid" style="max-width: 100px; height: auto;">
                                 <?php } ?>
                             </td>
                             <td>
@@ -331,11 +319,6 @@ mysqli_close($conn);
             </table>
         </div>
     </div>
-
-    <!-- JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         $('#editProductModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget);

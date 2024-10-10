@@ -17,25 +17,33 @@ $total_customers = $row['total_customers'];
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <title>SB Admin 2 - Dashboard</title>
+
+    <!-- Meta tags -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
+    <meta http-equiv="refresh" content="300">
+
+    <!-- Stylesheets -->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
     <link href="css/sb-admin-2.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
+    <!-- JavaScript libraries -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+
     <style>
         .navbar {
             display: flex;
@@ -49,8 +57,15 @@ $total_customers = $row['total_customers'];
             text-align: center;
             flex: 2;
         }
+        .navbar .mx-auto {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px; /* เพิ่มขนาดตัวอักษร */
+            font-weight: bold;
+            color: #4e73df; /* สีที่โดดเด่น */
+        }
     </style>
-
 </head>
 
 <body id="page-top">
@@ -125,7 +140,7 @@ $total_customers = $row['total_customers'];
 
                     <!-- Sidebar Toggle (Topbar) -->
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
+                        <i class="fas fa-bars"></i>
                     </button>
 
                     <!-- Time display in the center -->
@@ -207,9 +222,6 @@ $total_customers = $row['total_customers'];
                                 <div id="alertContent">
                                     <!-- Alerts will be dynamically inserted here -->
                         </li>
-
-                        <!-- Chart.js and jQuery -->
-                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
                         <script>
                         $(document).ready(function() {
@@ -449,32 +461,32 @@ $total_customers = $row['total_customers'];
                                 </div>
 
                                  <!-- Pie Chart for Order Status -->
-                                <div class="col-xl-4 col-lg-5">
-                                    <div class="card shadow mb-4">
-                                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                            <h6 class="m-0 font-weight-bold text-primary">การกระจายสถานะคำสั่งซื้อ</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="chart-pie pt-4 pb-2">
-                                                <canvas id="myPieChart"></canvas>
+                                    <div class="col-xl-4 col-lg-5">
+                                        <div class="card shadow mb-4">
+                                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                                <h6 class="m-0 font-weight-bold text-primary">สถานะคำสั่งซื้อ</h6>
                                             </div>
-                                            <div class="mt-4 text-center small">
-                                                <span class="mr-2">
-                                                    <i class="fas fa-circle text-primary"></i> รอดำเนินการ
-                                                </span>
-                                                <span class="mr-2">
-                                                    <i class="fas fa-circle text-success"></i> กำลังดำเนินการ
-                                                </span>
-                                                <span class="mr-2">
-                                                    <i class="fas fa-circle text-info"></i> กำลังจัดส่ง
-                                                </span>
-                                                <span class="mr-2">
-                                                    <i class="fas fa-circle text-secondary"></i> เสร็จสิ้น
-                                                </span>
+                                            <div class="card-body">
+                                                <div class="chart-pie pt-4 pb-2">
+                                                    <canvas id="myPieChart"></canvas>
+                                                </div>
+                                                <div class="mt-4 text-center small">
+                                                    <span class="mr-2">
+                                                        <i class="fas fa-circle text-primary"></i> รอดำเนินการ
+                                                    </span>
+                                                    <span class="mr-2">
+                                                        <i class="fas fa-circle text-success"></i> กำลังดำเนินการ
+                                                    </span>
+                                                    <span class="mr-2">
+                                                        <i class="fas fa-circle text-info"></i> กำลังจัดส่ง
+                                                    </span>
+                                                    <span class="mr-2">
+                                                        <i class="fas fa-circle text-secondary"></i> เสร็จสิ้น
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
             <!-- JavaScript to fetch and display data -->
             <script>
@@ -684,22 +696,5 @@ $total_customers = $row['total_customers'];
             </div>
         </div>
     </div>
-
-    <!-- Bootstrap core JavaScript-->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Core plugin JavaScript-->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-
-    <!-- Custom scripts for all pages-->
-    <script src="js/sb-admin-2.min.js"></script>
-
-    <!-- Page level plugins -->
-    <script src="vendor/chart.js/Chart.min.js"></script>
-
-    <!-- Page level custom scripts -->
-    <script src="js/demo/chart-area-demo.js"></script>
-    <script src="js/demo/chart-pie-demo.js"></script>
 </body>
 </html>

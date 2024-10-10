@@ -275,8 +275,8 @@ function sendLineNotify($message, $lineToken) {
                     <h3>Payment Information</h3>
                     <p>Please scan the QR code below to make a payment:</p>
                     <img src="./Admin/images/qr_code.png" alt="QR Code" width="200">
-                    <p><strong>Bank Account:</strong> 123-456-7890</p>
-                    <p><strong>Bank Name:</strong> Example Bank</p>
+                    <p><strong>Bank Account:</strong> 407-8689387</p>
+                    <p><strong>Bank Name:</strong> ประภาภรณ์ จันปุ่ม</p>
                 </div>
                 <div class="mb-3">
                     <label for="payment_slip" class="form-label">ใบเสร็จการชำระเงิน:</label>

@@ -54,8 +54,8 @@ mysqli_close($conn);
             </form>
         </section>
     </main>
-    <footer>
-        <p>&copy; 2024 Your Store. All rights reserved.</p>
+    <footer class="bg-dark text-white text-center py-3 mt-4">
+        <p>&copy; <?php echo date("Y"); ?> เนื้อหอมมาลองเซ่. สงวนลิขสิทธิ์.</p>
     </footer>
 </body>
 </html>
