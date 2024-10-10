@@ -7,7 +7,7 @@ if (!$conn) {
 }
 
 // Query for provinces
-$result3 = mysqli_query($conn, "SELECT provinceID, provinceName FROM province");
+$result3 = mysqli_query($conn, "SELECT PROVINCE_ID AS provinceID, PROVINCE_NAME AS provinceName FROM province");
 if (!$result3) {
     die("Error fetching provinces: " . mysqli_error($conn));
 }
@@ -19,6 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $address = mysqli_real_escape_string($conn, $_POST['address']);
     $province_id = mysqli_real_escape_string($conn, $_POST['province_id']);
     $amphur_id = mysqli_real_escape_string($conn, $_POST['amphur_id']);
+    $district_id = mysqli_real_escape_string($conn, $_POST['district_id']);
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
 
@@ -36,10 +37,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT); // Encrypt the password
 
             // Insert new customer
-            $query = "INSERT INTO customer (name, phone, address, province_id, amphur_id, password) VALUES (?, ?, ?, ?, ?, ?)";
+            $query = "INSERT INTO customer (name, phone, address, province_id, amphur_id, district_id, password) VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt = mysqli_prepare($conn, $query);
-            mysqli_stmt_bind_param($stmt, 'ssssss', $name, $phone, $address, $province_id, $amphur_id, $hashed_password);
-            
+            mysqli_stmt_bind_param($stmt, 'sssssss', $name, $phone, $address, $province_id, $amphur_id, $district_id, $hashed_password);
+
             if (mysqli_stmt_execute($stmt)) {
                 header("Location: login.php");
                 exit();
@@ -121,22 +122,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
 
             <div class="col-md-6">
-                <label for="tcode" class="form-label">ตำบล:</label>
-                <select class="form-select" name="tcode" id="tcode" required>
+                <label for="district_id" class="form-label">ตำบล:</label>
+                <select class="form-select" name="district_id" id="district_id" required>
                     <option value="">เลือกตำบล</option>
                 </select>
             </div>
 
             <div class="col-md-6">
                 <label for="zip_code" class="form-label">รหัสไปรษณีย์:</label>
-                <input type="text" id="zip_code" name="zip_code" class="form-control" required>
+                <input type="text" id="zip_code" name="zip_code" class="form-control" required readonly>
             </div>
 
             <div class="col-md-6">
                 <label for="password" class="form-label">รหัสผ่าน:</label>
                 <div class="position-relative">
                     <input type="password" id="password" name="password" class="form-control" required>
-                    <i class="fas fa-eye toggle-password position-absolute" id="toggle-password" style="right: 10px; top: 50%;" onclick="togglePasswordVisibility('password')"></i>
+                    <i class="fas fa-eye toggle-password position-absolute" id="toggle-password" onclick="togglePasswordVisibility('password', 'toggle-password')"></i>
                 </div>
             </div>
 
@@ -144,7 +145,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <label for="confirm_password" class="form-label">ยืนยันรหัสผ่าน:</label>
                 <div class="position-relative">
                     <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
-                    <i class="fas fa-eye toggle-password position-absolute" id="toggle-confirm-password" style="right: 10px; top: 50%;" onclick="togglePasswordVisibility('confirm_password')"></i>
+                    <i class="fas fa-eye toggle-password position-absolute" id="toggle-confirm-password" onclick="togglePasswordVisibility('confirm_password', 'toggle-confirm-password')"></i>
                 </div>
             </div>
 
@@ -167,16 +168,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        function togglePasswordVisibility(inputId) {
+        function togglePasswordVisibility(inputId, toggleId) {
             var input = document.getElementById(inputId);
+            var toggleIcon = document.getElementById(toggleId);
             if (input.type === "password") {
                 input.type = "text";
-                document.getElementById('toggle-password').classList.remove('fa-eye');
-                document.getElementById('toggle-password').classList.add('fa-eye-slash');
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
             } else {
                 input.type = "password";
-                document.getElementById('toggle-password').classList.remove('fa-eye-slash');
-                document.getElementById('toggle-password').classList.add('fa-eye');
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
             }
         }
 
@@ -185,29 +187,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 var id_province = $(this).val();
                 $.ajax({
                     type: "POST",
-                    url: "select_Amphur.php", // Ensure this file exists and returns amphurs based on province
-                    data: {id: id_province},
+                    url: "select_Amphur.php",
+                    data: { id: id_province },
                     success: function(data) {
                         $('#amphur_id').html(data);
+                        $('#district_id').html('<option value="">เลือกตำบล</option>');
+                        $('#zip_code').val('');
                     },
                     error: function() {
                         $('#amphur_id').html('<option value="">ไม่สามารถดึงข้อมูลอำเภอได้</option>');
                     }
                 });
             });
-        });
-        $(document).ready(function() {
+
             $('#amphur_id').change(function() {
-                var id_province = $(this).val();
+                var id_amphur = $(this).val();
                 $.ajax({
                     type: "POST",
-                    url: "select_tambol.php", // Ensure this file exists and returns amphurs based on province
-                    data: {id: id_province},
+                    url: "select_Tambol.php",
+                    data: { id: id_amphur },
                     success: function(data) {
-                        $('#tcode').html(data);
+                        $('#district_id').html(data);
+                        $('#zip_code').val('');
                     },
                     error: function() {
-                        $('#tcode').html('<option value="">ไม่สามารถดึงข้อมูลตำบลได้</option>');
+                        $('#district_id').html('<option value="">ไม่สามารถดึงข้อมูลตำบลได้</option>');
+                    }
+                });
+            });
+
+            $('#district_id').change(function() {
+                var id_district = $(this).val();
+                $.ajax({
+                    type: "POST",
+                    url: "get_zip_code.php",
+                    data: { id: id_district },
+                    success: function(data) {
+                        console.log(data);
+                        $('#zip_code').val(data); // Fix zip_code ID
+                    },
+                    error: function() {
+                        console.log('Error in AJAX request');
+                        $('#zip_code').val(''); // Fix zip_code ID
                     }
                 });
             });

@@ -8,53 +8,51 @@ if (!isset($_SESSION['customer_id'])) {
     exit();
 }
 
-// รับค่าจากฟอร์ม
-$customer_id = $_POST['customer_id'];
-$name = trim($_POST['name']);
-$email = trim($_POST['email']);
-$phone = trim($_POST['phone']);
-$address = trim($_POST['address']);
+$customer_id = $_SESSION['customer_id'];
 
-// ตรวจสอบความถูกต้องของข้อมูลที่ส่งมา
-if (empty($name) || empty($email) || empty($phone) || empty($address)) {
-    header("Location: profile.php?update_error=1");
-    exit();
-}
+// ตรวจสอบว่าฟอร์มถูกส่งมาหรือไม่
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // รับข้อมูลจากฟอร์ม
+    $name = mysqli_real_escape_string($conn, $_POST['name']);
+    $phone = mysqli_real_escape_string($conn, $_POST['phone']);
+    $address = mysqli_real_escape_string($conn, $_POST['address']);
+    $province_id = intval($_POST['province_id']);
+    $amphur_id = intval($_POST['amphur_id']);
+    $district_id = intval($_POST['district_id']);
+    $postcode = mysqli_real_escape_string($conn, $_POST['postcode']);
 
-// ตรวจสอบอีเมลให้ถูกต้อง
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    header("Location: profile.php?update_error=2");
-    exit();
-}
+    // ตรวจสอบว่าข้อมูลครบถ้วนหรือไม่
+    if (empty($name) || empty($phone) || empty($address) || empty($province_id) || empty($amphur_id) || empty($district_id) || empty($postcode)) {
+        header("Location: profile.php?update_error=1");
+        exit();
+    }
 
-// เตรียมคำสั่ง SQL สำหรับอัปเดตข้อมูลลูกค้า
-$update_query = "
-    UPDATE customer
-    SET name = ?, email = ?, phone = ?, address = ?
-    WHERE customer_id = ?
-";
-$stmt = mysqli_prepare($conn, $update_query);
+    // อัปเดตข้อมูลในฐานข้อมูล
+    $update_query = "
+        UPDATE customer 
+        SET name = ?, phone = ?, address = ?, province_id = ?, amphur_id = ?, district_id = ?, postcode = ?
+        WHERE customer_id = ?
+    ";
+    $stmt = mysqli_prepare($conn, $update_query);
+    
+    if ($stmt) {
+        // ผูกค่ากับคำสั่ง SQL
+        mysqli_stmt_bind_param($stmt, 'sssiiisi', $name, $phone, $address, $province_id, $amphur_id, $district_id, $postcode, $customer_id);
 
-if (!$stmt) {
-    header("Location: profile.php?update_error=3");
-    exit();
-}
+        // ดำเนินการอัปเดต
+        if (mysqli_stmt_execute($stmt)) {
+            header("Location: profile.php?update=success");
+        } else {
+            header("Location: profile.php?update_error=4");
+        }
 
-// ผูกค่าจากฟอร์มเข้ากับคำสั่ง SQL
-mysqli_stmt_bind_param($stmt, 'ssssi', $name, $email, $phone, $address, $customer_id);  
-
-// ดำเนินการอัปเดตข้อมูลลูกค้า
-if (mysqli_stmt_execute($stmt)) {
-    header("Location: profile.php?update=success");
-    exit();
+        mysqli_stmt_close($stmt);
+    } else {
+        header("Location: profile.php?update_error=3");
+    }
 } else {
-    // เพิ่มการ log ข้อผิดพลาดเพื่อการตรวจสอบเพิ่มเติม
-    error_log("Error updating profile: " . mysqli_error($conn));
-    header("Location: profile.php?update_error=4");
-    exit();
+    header("Location: profile.php");
 }
 
-// ปิดการเชื่อมต่อฐานข้อมูล
-mysqli_stmt_close($stmt);
 mysqli_close($conn);
 ?>
