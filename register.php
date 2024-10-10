@@ -82,75 +82,88 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </header>
 
     <main class="container mt-5">
-        <section class="register">
-            <h2 class="text-center mb-4">สร้างบัญชีของคุณ</h2>
-            <form action="register.php" method="post" class="row g-3">
-                <div class="col-md-6">
-                    <label for="name" class="form-label">ชื่อ:</label>
-                    <input type="text" id="name" name="name" class="form-control" required>
-                </div>
+    <section class="register">
+        <h2 class="text-center mb-4">สร้างบัญชีของคุณ</h2>
+        <form action="register.php" method="post" class="row g-3">
+            <div class="col-md-6">
+                <label for="name" class="form-label">ชื่อ:</label>
+                <input type="text" id="name" name="name" class="form-control" required>
+            </div>
 
-                <div class="col-md-6">
-                    <label for="phone" class="form-label">เบอร์โทรศัพท์:</label>
-                    <input type="text" id="phone" name="phone" class="form-control" required pattern="[0-9]{10}" title="กรุณากรอกเบอร์โทรศัพท์ 10 หลัก">
-                </div>
+            <div class="col-md-6">
+                <label for="phone" class="form-label">เบอร์โทรศัพท์:</label>
+                <input type="text" id="phone" name="phone" class="form-control" required pattern="[0-9]{10}" title="กรุณากรอกเบอร์โทรศัพท์ 10 หลัก">
+            </div>
 
-                <div class="col-md-12">
-                    <label for="address" class="form-label">ที่อยู่:</label>
-                    <input type="text" id="address" name="address" class="form-control" required>
-                </div>
+            <div class="col-md-12">
+                <label for="address" class="form-label">ที่อยู่:</label>
+                <input type="text" id="address" name="address" class="form-control" required>
+            </div>
 
-                <div class="col-md-6">
-                    <label for="province_id" class="form-label">จังหวัด:</label>
-                    <select class="form-select" name="province_id" id="province_id" required>
-                        <option value="">เลือกจังหวัด</option>
-                        <?php 
-                            while ($row3 = mysqli_fetch_assoc($result3)) {
-                                echo "<option value=\"{$row3['provinceID']}\">{$row3['provinceName']}</option>";
-                            }
-                        ?>
-                    </select>
-                </div>
+            <div class="col-md-6">
+                <label for="province_id" class="form-label">จังหวัด:</label>
+                <select class="form-select" name="province_id" id="province_id" required>
+                    <option value="">เลือกจังหวัด</option>
+                    <?php 
+                        // ดึงจังหวัดทั้งหมดจากฐานข้อมูลและแสดงใน dropdown
+                        while ($row3 = mysqli_fetch_assoc($result3)) {
+                            echo "<option value=\"{$row3['provinceID']}\">{$row3['provinceName']}</option>";
+                        }
+                    ?>
+                </select>
+            </div>
 
-                <div class="col-md-6">
-                    <label for="amphur_id" class="form-label">อำเภอ:</label>
-                    <select class="form-select" name="amphur_id" id="amphur_id" required>
-                        <option value="">เลือกอำเภอ</option>
-                    </select>
-                </div>
+            <div class="col-md-6">
+                <label for="amphur_id" class="form-label">อำเภอ:</label>
+                <select class="form-select" name="amphur_id" id="amphur_id" required>
+                    <option value="">เลือกอำเภอ</option>
+                </select>
+            </div>
 
-                <div class="col-md-6">
-                    <label for="password" class="form-label">รหัสผ่าน:</label>
-                    <div class="position-relative">
-                        <input type="password" id="password" name="password" class="form-control" required>
-                        <i class="fas fa-eye toggle-password" id="toggle-password" onclick="togglePasswordVisibility('password')"></i>
-                    </div>
-                </div>
+            <div class="col-md-6">
+                <label for="tcode" class="form-label">ตำบล:</label>
+                <select class="form-select" name="tcode" id="tcode" required>
+                    <option value="">เลือกตำบล</option>
+                </select>
+            </div>
 
-                <div class="col-md-6">
-                    <label for="confirm_password" class="form-label">ยืนยันรหัสผ่าน:</label>
-                    <div class="position-relative">
-                        <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
-                        <i class="fas fa-eye toggle-password" id="toggle-confirm-password" onclick="togglePasswordVisibility('confirm_password')"></i>
-                    </div>
-                </div>
+            <div class="col-md-6">
+                <label for="zip_code" class="form-label">รหัสไปรษณีย์:</label>
+                <input type="text" id="zip_code" name="zip_code" class="form-control" required>
+            </div>
 
-                <?php if (isset($error)): ?>
-                    <div class="col-12">
-                        <p class="error text-danger text-center"><?php echo htmlspecialchars($error); ?></p>
-                    </div>
-                <?php endif; ?>
-
-                <div class="col-12 text-center">
-                    <input type="submit" value="สมัครสมาชิก" class="btn btn-primary">
+            <div class="col-md-6">
+                <label for="password" class="form-label">รหัสผ่าน:</label>
+                <div class="position-relative">
+                    <input type="password" id="password" name="password" class="form-control" required>
+                    <i class="fas fa-eye toggle-password position-absolute" id="toggle-password" style="right: 10px; top: 50%;" onclick="togglePasswordVisibility('password')"></i>
                 </div>
+            </div>
 
-                <div class="col-12 text-center">
-                    <p> <a href="login.php">เข้าสู่ระบบ</a></p>
+            <div class="col-md-6">
+                <label for="confirm_password" class="form-label">ยืนยันรหัสผ่าน:</label>
+                <div class="position-relative">
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
+                    <i class="fas fa-eye toggle-password position-absolute" id="toggle-confirm-password" style="right: 10px; top: 50%;" onclick="togglePasswordVisibility('confirm_password')"></i>
                 </div>
-            </form>
-        </section>
-    </main>
+            </div>
+
+            <?php if (isset($error)): ?>
+                <div class="col-12">
+                    <p class="error text-danger text-center"><?php echo htmlspecialchars($error); ?></p>
+                </div>
+            <?php endif; ?>
+
+            <div class="col-12 text-center">
+                <input type="submit" value="สมัครสมาชิก" class="btn btn-primary">
+            </div>
+
+            <div class="col-12 text-center">
+                <p> <a href="login.php">เข้าสู่ระบบ</a></p>
+            </div>
+        </form>
+    </section>
+</main>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -179,6 +192,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     },
                     error: function() {
                         $('#amphur_id').html('<option value="">ไม่สามารถดึงข้อมูลอำเภอได้</option>');
+                    }
+                });
+            });
+        });
+        $(document).ready(function() {
+            $('#amphur_id').change(function() {
+                var id_province = $(this).val();
+                $.ajax({
+                    type: "POST",
+                    url: "select_tambol.php", // Ensure this file exists and returns amphurs based on province
+                    data: {id: id_province},
+                    success: function(data) {
+                        $('#tcode').html(data);
+                    },
+                    error: function() {
+                        $('#tcode').html('<option value="">ไม่สามารถดึงข้อมูลตำบลได้</option>');
                     }
                 });
             });

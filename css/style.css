@@ -1,0 +1,103 @@
+body {
+    background-color: #f0f0f0;
+}
+
+header {
+    background-color: #1b1b1b;
+    border-bottom: 3px solid #e87277;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.cart-icon {
+    background-color: #e87277;
+    color: white;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.cart-icon:hover {
+    background-color: #d05b63;
+}
+
+.card-title {
+    color: #1b1b1b;
+}
+
+.btn-primary {
+    background-color: #e87277;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #d05b63;
+}
+
+.bg-dark-custom {
+    background-color: #18181a !important;
+}
+
+.toggle-password {
+    cursor: pointer;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+.position-relative {
+    position: relative;
+}
+
+.table th, .table td {
+    vertical-align: middle; /* จัดตำแหน่งแนวตั้งของข้อความในตาราง */
+}
+
+.btn-primary {
+    background-color: #e87277; /* สีพื้นหลังของปุ่ม */
+    border: none; /* ไม่มีขอบ */
+}
+
+.btn-primary:hover {
+    background-color: #d05b63; /* เปลี่ยนสีเมื่อเมาส์ชี้ไปที่ปุ่ม */
+}
+
+.order-details h2 {
+    margin-top: 20px;
+}
+
+.list-group-item {
+    background-color: #ffffff; /* สีพื้นหลังของรายการสินค้า */
+    border: 1px solid #e87277; /* ขอบรายการสินค้า */
+}
+
+.modal-body img {
+    max-width: 100%; /* ทำให้ภาพแสดงในโมดัลไม่เกินขนาด */
+    height: auto; /* ให้สูงอัตโนมัติ */
+}
+
+.contact-info h3, .map h3 {
+    margin-top: 20px;
+}
+
+.contact-info p {
+    margin: 10px 0; /* เพิ่มระยะห่างระหว่างพารากราฟ */
+}
+
+.map {
+    margin-top: 30px; /* เพิ่มระยะห่างก่อนแสดงแผนที่ */
+}
+
+iframe {
+    border-radius: 8px; /* เพิ่มมุมโค้งให้กับ iframe */
+}

@@ -33,8 +33,8 @@ include 'connectDB.php'; // เชื่อมต่อฐานข้อมู�
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link text-white" href="index.php">สินค้า</a></li>
                     <li class="nav-item"><a class="nav-link text-white" href="order_history.php">ประวัติการสั่งซื้อ</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="contact_us.php">ติดต่อเรา</a></li>
                     <li class="nav-item"><a class="nav-link text-white" href="profile.php">ตั้งค่าบัญชี</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="contact_us.php">ติดต่อเรา</a></li>
                 </ul>
                 <?php
                 if (isset($_SESSION['customer_id'])) {

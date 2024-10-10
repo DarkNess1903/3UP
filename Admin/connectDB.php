@@ -1,8 +1,8 @@
 <?php
 $servername = "localhost";
-$username = "nueahom_meat_store"; // ตัวอย่างชื่อผู้ใช้
-$password = "1234567890"; // ตัวอย่างรหัสผ่าน (ถ้ามี)
-$dbname = "nueahom_meat_store";
+$username = "root"; // ตัวอย่างชื่อผู้ใช้
+$password = ""; // ตัวอย่างรหัสผ่าน (ถ้ามี)
+$dbname = "meat_store";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
