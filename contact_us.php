@@ -33,7 +33,15 @@ include 'topnavbar.php';
             <p><strong>ที่อยู่:</strong> 50/1 ถนนราเมศวร ตำบลหอรัตนไชย อำเภอพระนครศรีอยุธยา จังหวัดพระนครศรีอยุธยา 13000</p>
             <p><strong>เบอร์:</strong> 062 386 8314</p>
             <p><strong>อีเมล:</strong> <a href="mailto:prapaapornpj@icloud.com">prapaapornpj@icloud.com</a></p>
-            <p><strong>Facebook:</strong> <a href="https://www.facebook.com/3upbistro" target="_blank">คลิกเพื่อดู</a></p>
+            <p>
+                <strong>ติดต่อเรา:</strong>
+                <a href="https://www.facebook.com/3upbistro" target="_blank" class="text-decoration-none me-2" title="Facebook">
+                    <i class="fab fa-facebook fa-lg"></i>
+                </a>
+                <a href="https://lin.ee/x6CVj6e" target="_blank" class="text-decoration-none" title="LINE">
+                    <i class="fab fa-line fa-lg" style="color: green;"></i> <!-- Set LINE icon color to green -->
+                </a>
+            </p>
             <p><strong>เวลาทำการ:</strong> จันทร์ - ศุกร์: 09.00 - 18.00 น.</p>
         </section>
 

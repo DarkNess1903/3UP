@@ -14,7 +14,7 @@ if (isset($_POST['id'])) {
     $result = mysqli_query($conn, $query);
 
     if (mysqli_num_rows($result) > 0) {
-        echo '<option value="">เลือกอำเภอ</option>'; // Option for default selection
+        echo '<option value="">เลือกอำเภอ/เขต</option>'; // Option for default selection
         while ($row = mysqli_fetch_assoc($result)) {
             echo '<option value="' . $row['amphurID'] . '">' . $row['amphurName'] . '</option>';
         }

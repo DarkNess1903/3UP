@@ -162,58 +162,60 @@ $profile = mysqli_fetch_assoc($profile_result);
             </div>
         </div>
 
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script>
-        $(document).ready(function() {
-            $('#province_id').change(function() {
-                var id_province = $(this).val();
-                $.ajax({
-                    type: "POST",
-                    url: "select_Amphur.php", // Ensure this file exists and returns amphurs based on province
-                    data: {id: id_province},
-                    success: function(data) {
-                        $('#amphur_id').html(data);
-                        $('#district_id').html('<option value="">เลือกตำบล</option>'); // Reset district dropdown
-                        $('#zip_code').val(''); // Reset zip code
-                    },
-                    error: function() {
-                        $('#amphur_id').html('<option value="">ไม่สามารถดึงข้อมูลอำเภอได้</option>');
-                    }
-                });
-            });
-
-            $('#amphur_id').change(function() {
-                var id_amphur = $(this).val();
-                $.ajax({
-                    type: "POST",
-                    url: "select_Tambol.php", // Ensure this file exists and returns tambols based on amphur
-                    data: {id: id_amphur},
-                    success: function(data) {
-                        $('#district_id').html(data);
-                        $('#zip_code').val(''); // Reset zip code
-                    },
-                    error: function() {
-                        $('#district_id').html('<option value="">ไม่สามารถดึงข้อมูลตำบลได้</option>');
-                    }
-                });
-            });
-
-            $('#district_id').change(function() {
-                var id_district = $(this).val();
-                $.ajax({
-                    type: "POST",
-                    url: "get_zip_code.php", // Ensure this file exists and returns zip code based on tambol
-                    data: {id: id_district},
-                    success: function(data) {
-                        $('#zip_code').val(data); // Set zip code
-                    },
-                    error: function() {
-                        $('#zip_code').val(''); // Reset zip code
-                    }
-                });
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#province_id').change(function() {
+            var id_province = $(this).val();
+            $.ajax({
+                type: "POST",
+                url: "select_Amphur.php",
+                data: {id: id_province},
+                success: function(data) {
+                    $('#amphur_id').html(data);
+                    $('#district_id').html('<option value="">เลือกตำบล</option>');
+                    $('#postcode').val(''); // Reset postcode
+                },
+                error: function() {
+                    $('#amphur_id').html('<option value="">ไม่สามารถดึงข้อมูลอำเภอได้</option>');
+                }
             });
         });
-    </script>
+
+        $('#amphur_id').change(function() {
+            var id_amphur = $(this).val();
+            $.ajax({
+                type: "POST",
+                url: "select_Tambol.php",
+                data: {id: id_amphur},
+                success: function(data) {
+                    $('#district_id').html(data);
+                    $('#postcode').val(''); // Reset postcode
+                },
+                error: function() {
+                    $('#district_id').html('<option value="">ไม่สามารถดึงข้อมูลตำบลได้</option>');
+                }
+            });
+        });
+
+        $('#district_id').change(function() {
+            var id_district = $(this).val();
+            $.ajax({
+                type: "POST",
+                url: "get_zip_code.php",
+                data: { id: id_district },
+                success: function(data) {
+                    console.log(data);
+                    $('#postcode').val(data); // Update to correct postcode field ID
+                },
+                error: function() {
+                    console.log('Error in AJAX request');
+                    $('#postcode').val(''); // Reset postcode on error
+                }
+            });
+        });
+    });
+</script>
     <?php mysqli_close($conn); ?>
 </body>
 </html>

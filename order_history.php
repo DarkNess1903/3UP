@@ -24,11 +24,7 @@ mysqli_stmt_execute($stmt);
 $order_result = mysqli_stmt_get_result($stmt);
 
 // ตรวจสอบว่าไม่พบข้อมูลการสั่งซื้อ
-if (mysqli_num_rows($order_result) === 0) {
-    echo "<p>ไม่มีข้อมูลการสั่งซื้อ.</p>";
-    mysqli_close($conn);
-    exit();
-}
+$no_order = mysqli_num_rows($order_result) === 0;
 ?>
 
 <!DOCTYPE html>
@@ -66,7 +62,7 @@ if (mysqli_num_rows($order_result) === 0) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if (mysqli_num_rows($order_result) > 0): ?>
+                        <?php if (!$no_order): ?>
                             <?php while ($order = mysqli_fetch_assoc($order_result)): ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($order['order_id']); ?></td>
@@ -82,7 +78,7 @@ if (mysqli_num_rows($order_result) === 0) {
                             <?php endwhile; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="4" class="text-center">ไม่มีประวัติการสั่งซื้อ</td>
+                                <td colspan="5" class="text-center">ไม่มีประวัติการสั่งซื้อ</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -90,6 +86,30 @@ if (mysqli_num_rows($order_result) === 0) {
             </div>
         </section>
     </main>
+
+    <!-- Modal สำหรับแจ้งเตือน -->
+    <div class="modal fade" id="noOrderModal" tabindex="-1" aria-labelledby="noOrderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="noOrderModalLabel">แจ้งเตือน</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>ไม่มีคำสั่งซื้อในระบบ</p>
+                    <a href="index.php" class="btn btn-primary">ไปที่หน้าสินค้า</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    <?php if ($no_order): ?>
+        // แสดง Modal เมื่อไม่มีคำสั่งซื้อ
+        var noOrderModal = new bootstrap.Modal(document.getElementById('noOrderModal'));
+        noOrderModal.show();
+    <?php endif; ?>
+    </script>
 </body>
 </html>
 

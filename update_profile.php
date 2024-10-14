@@ -29,25 +29,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // อัปเดตข้อมูลในฐานข้อมูล
     $update_query = "
-        UPDATE customer 
-        SET name = ?, phone = ?, address = ?, province_id = ?, amphur_id = ?, district_id = ?, postcode = ?
-        WHERE customer_id = ?
+    UPDATE customer 
+    SET name = ?, phone = ?, address = ?, province_id = ?, amphur_id = ?, district_id = ?
+    WHERE customer_id = ?
     ";
     $stmt = mysqli_prepare($conn, $update_query);
-    
     if ($stmt) {
-        // ผูกค่ากับคำสั่ง SQL
-        mysqli_stmt_bind_param($stmt, 'sssiiisi', $name, $phone, $address, $province_id, $amphur_id, $district_id, $postcode, $customer_id);
-
+        mysqli_stmt_bind_param($stmt, 'sssiiii', $name, $phone, $address, $province_id, $amphur_id, $district_id, $customer_id);
         // ดำเนินการอัปเดต
         if (mysqli_stmt_execute($stmt)) {
             header("Location: profile.php?update=success");
         } else {
             header("Location: profile.php?update_error=4");
         }
-
         mysqli_stmt_close($stmt);
-    } else {
+    }
+ else {
         header("Location: profile.php?update_error=3");
     }
 } else {

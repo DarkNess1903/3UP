@@ -115,9 +115,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
 
             <div class="col-md-6">
-                <label for="amphur_id" class="form-label">อำเภอ:</label>
+                <label for="amphur_id" class="form-label">อำเภอ/เขต:</label>
                 <select class="form-select" name="amphur_id" id="amphur_id" required>
-                    <option value="">เลือกอำเภอ</option>
+                    <option value="">เลือกอำเภอ/เขต</option>
                 </select>
             </div>
 

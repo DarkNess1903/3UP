@@ -8,7 +8,8 @@ if (isset($_POST['id'])) {
     
     $result = mysqli_query($conn, $query);
     
-    if ($result) {
+    if (mysqli_num_rows($result) > 0) {
+        echo '<option value="">เลือกตำบล</option>'; // Option for default selection
         while ($row = mysqli_fetch_assoc($result)) {
             echo "<option value=\"{$row['DISTRICT_ID']}\">{$row['DISTRICT_NAME']}</option>";
         }
