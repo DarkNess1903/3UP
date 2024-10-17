@@ -15,47 +15,83 @@ if (!$cart_id) {
 }
 
 // ดึงข้อมูลที่อยู่ของลูกค้า รวมทั้งจังหวัดและอำเภอ
-$address_query = "SELECT customer.name, customer.address, amphur.amphurName, province.provinceName 
-                  FROM customer 
-                  JOIN amphur ON customer.amphur_id = amphur.amphurID 
-                  JOIN province ON amphur.provinceID = province.provinceID 
-                  WHERE customer.customer_id = ?";
+$address_query = "
+    SELECT 
+        customer.name, 
+        customer.phone AS customer_phone, 
+        customer.address, 
+        amphur.AMPHUR_NAME AS amphurName, 
+        province.PROVINCE_NAME AS provinceName,
+        CASE 
+            WHEN province.PROVINCE_NAME = 'กรุงเทพมหานคร' THEN district.DISTRICT_CODE
+            ELSE amphur.POSTCODE 
+        END AS postal_code,
+        district.DISTRICT_NAME AS districtName
+    FROM customer 
+    JOIN amphur ON customer.amphur_id = amphur.AMPHUR_ID 
+    JOIN province ON amphur.PROVINCE_ID = province.PROVINCE_ID 
+    LEFT JOIN district ON customer.district_id = district.DISTRICT_ID
+    WHERE customer.customer_id = ?";
+
 $stmt = mysqli_prepare($conn, $address_query);
 mysqli_stmt_bind_param($stmt, 'i', $customer_id);
 mysqli_stmt_execute($stmt);
-mysqli_stmt_bind_result($stmt, $customer_name, $address, $amphurName, $provinceName); // ดึงชื่อลูกค้า
+mysqli_stmt_bind_result($stmt, $customer_name, $customer_phone, $address, $amphurName, $provinceName, $postal_code, $districtName);
 mysqli_stmt_fetch($stmt);
 mysqli_stmt_close($stmt); 
 
-// ตรวจสอบว่ามีข้อมูลในตะกร้าหรือไม่
-$cart_query = "SELECT * FROM cart WHERE cart_id = ? AND customer_id = ?";
+// ดึงข้อมูลตะกร้าสินค้า
+$cart_query = "SELECT * FROM cart WHERE customer_id = ? ORDER BY created_at DESC LIMIT 1";
 $stmt = mysqli_prepare($conn, $cart_query);
-mysqli_stmt_bind_param($stmt, 'ii', $cart_id, $customer_id);
+mysqli_stmt_bind_param($stmt, 'i', $customer_id);
 mysqli_stmt_execute($stmt);
 $cart_result = mysqli_stmt_get_result($stmt);
 
-if (!$cart_result || mysqli_num_rows($cart_result) == 0) {
-    die("ไม่พบตะกร้า");
+if (!$cart_result) {
+    echo "Error fetching cart: " . mysqli_error($conn);
+    exit();
 }
 
-// ดึงข้อมูลตะกร้า
-$items_query = "SELECT ci.cart_item_id, p.product_id, p.name, p.image, ci.quantity, ci.price, (ci.quantity * ci.price) AS total
-                FROM cart_items ci
-                JOIN product p ON ci.product_id = p.product_id
-                WHERE ci.cart_id = ?";
-$stmt = mysqli_prepare($conn, $items_query);
-mysqli_stmt_bind_param($stmt, 'i', $cart_id);
-mysqli_stmt_execute($stmt);
-$items_result = mysqli_stmt_get_result($stmt);
+$cart = mysqli_fetch_assoc($cart_result);
 
-if (!$items_result) {
-    die("เกิดข้อผิดพลาดในการดึงข้อมูล: " . mysqli_error($conn));
-}
+if ($cart) {
+    $cart_id = $cart['cart_id'];
 
-// คำนวณยอดรวม
-$grand_total = 0;
-while ($item = mysqli_fetch_assoc($items_result)) {
-    $grand_total += $item['total'];
+    // ดึงข้อมูลสินค้าจากตะกร้า
+    $items_query = "SELECT ci.cart_item_id, p.name, p.image, ci.quantity, ci.price, p.price_per_piece, (ci.quantity * ci.price) AS total, p.stock_quantity, p.weight_per_item
+    FROM cart_items ci
+    JOIN product p ON ci.product_id = p.product_id
+    WHERE ci.cart_id = ?";
+    
+    $stmt = mysqli_prepare($conn, $items_query);
+    mysqli_stmt_bind_param($stmt, 'i', $cart_id);
+    mysqli_stmt_execute($stmt);
+    $items_result = mysqli_stmt_get_result($stmt);
+
+    if (!$items_result) {
+        echo "Error fetching items: " . mysqli_error($conn);
+        exit();
+    }
+
+    // คำนวณยอดรวม
+    $grand_total = 0;
+    while ($item = mysqli_fetch_assoc($items_result)) {
+        // คำนวณยอดรวมที่ถูกต้อง
+        if ($item['quantity'] * $item['weight_per_item'] >= 1000) {
+            // คำนวณจากราคาเป็นกิโลกรัม
+            $item_total = ($item['price'] * ($item['quantity'] * $item['weight_per_item'] / 1000));
+        } else {
+            // คำนวณจากราคาเป็นชิ้น
+            $item_total = ($item['price_per_piece'] * $item['quantity']);
+        }
+        $grand_total += $item_total;
+    }
+    // Reset the result pointer to fetch items again
+    mysqli_data_seek($items_result, 0);
+
+} else {
+    $items_result = [];
+    $grand_total = 0;
 }
 
 // รีเซ็ตตัวชี้ผลลัพธ์เพื่อดึงข้อมูลสินค้าซ้ำ
@@ -65,7 +101,7 @@ mysqli_data_seek($items_result, 0);
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
     $payment_slip = $_FILES['payment_slip'];
     $upload_dir = realpath(__DIR__ . '/./Admin/uploads/');
-    $file_name = basename($payment_slip['name']); // รับชื่อไฟล์
+    $file_name = basename($payment_slip['name']);
     $upload_file = $upload_dir . '/' . $file_name;
 
     // ตรวจสอบประเภทและขนาดไฟล์
@@ -82,8 +118,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
         $order_query = "INSERT INTO orders (customer_id, total_amount, payment_slip, order_date, status, address) VALUES (?, ?, ?, NOW(), ?, ?)";
         $stmt = mysqli_prepare($conn, $order_query);
         $status = 'รอตรวจสอบ';
-        mysqli_stmt_bind_param($stmt, 'idsss', $customer_id, $grand_total, $file_name, $status, $address); // ใช้ชื่อไฟล์
-        if (!mysqli_stmt_execute($stmt)) {  
+        mysqli_stmt_bind_param($stmt, 'idsss', $customer_id, $grand_total, $file_name, $status, $address);
+        if (!mysqli_stmt_execute($stmt)) {
             die("ข้อผิดพลาดในการแทรกคำสั่งซื้อ: " . mysqli_error($conn));
         }
     
@@ -91,16 +127,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
     
         // แทรกข้อมูลการสั่งซื้อและอัพเดตสต็อก
         $items_query = "SELECT ci.product_id, ci.quantity, ci.price, p.name
-                FROM cart_items ci
-                JOIN product p ON ci.product_id = p.product_id
-                WHERE ci.cart_id = ?";
+                        FROM cart_items ci
+                        JOIN product p ON ci.product_id = p.product_id
+                        WHERE ci.cart_id = ?";
         $stmt = mysqli_prepare($conn, $items_query);
         mysqli_stmt_bind_param($stmt, 'i', $cart_id);
         mysqli_stmt_execute($stmt);
         $items_result = mysqli_stmt_get_result($stmt);
 
         // ตั้งค่า timezone
-        date_default_timezone_set('Asia/Bangkok'); // ตั้งเป็นเวลาประเทศไทย
+        date_default_timezone_set('Asia/Bangkok'); 
 
         // สร้างข้อความสำหรับ Line Notify
         $line_message = "มีออเดอร์ใหม่เข้ามา\n";
@@ -110,8 +146,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
         while ($item = mysqli_fetch_assoc($items_result)) {
             $product_id = $item['product_id'];
             $quantity = $item['quantity'];
-            $price = $item['price']; // กำหนดตัวแปร $price ให้ตรงกับฐานข้อมูล
-            $name = $item['name']; // ดึงชื่อสินค้า
+            $price = $item['price']; 
+            $name = $item['name']; 
         
             // แทรกข้อมูลลงใน orderdetails
             $orderdetails_query = "INSERT INTO orderdetails (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
@@ -130,14 +166,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
             }
         
             // เพิ่มรายละเอียดสินค้าในข้อความ Line Notify
-            $line_message .= "$name จำนวน: $quantity $price บาท\n"; // ใช้ตัวแปร $name สำหรับชื่อสินค้า
+            $line_message .= "$name จำนวน: $quantity $price บาท\n";
         }        
 
         $line_message .= "รวมทั้งสิ้น: " . number_format($grand_total, 2) . " บาท\n";
         $line_message .= "รายละเอียดผู้สั่ง:\nชื่อ: $customer_name\nที่อยู่: $address, $amphurName, $provinceName\n";
 
         // ส่งการแจ้งเตือนผ่าน Line Notify
-        $lineToken = 'BKShK2Llhdrohu0Nwr9w5CdiAWVaBeFkG8KB4Ts0GWW'; // เปลี่ยนเป็น Token ของคุณ
+        $lineToken = 'BKShK2Llhdrohu0Nwr9w5CdiAWVaBeFkG8KB4Ts0GWW'; 
         sendLineNotify($line_message, $lineToken);
     
         // ลบข้อมูลที่เกี่ยวข้องใน cart_items
@@ -171,19 +207,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
 
 include 'topnavbar.php';
 
-function addNotification($customer_id, $order_id, $message) {
-    global $conn;
-    
-    // เพิ่มการแจ้งเตือน
-    $notification_query = "INSERT INTO notifications (customer_id, order_id, message, status) VALUES (?, ?, ?, 'unread')";
-    $stmt = mysqli_prepare($conn, $notification_query);
-    mysqli_stmt_bind_param($stmt, 'iis', $customer_id, $order_id, $message);
-    if (!mysqli_stmt_execute($stmt)) {
-        die("ข้อผิดพลาดในการเพิ่มการแจ้งเตือน: " . mysqli_error($conn));
-    }
-}
-
-// ฟังก์ชันสำหรับส่งการแจ้งเตือนผ่าน Line Notify
 function sendLineNotify($message, $lineToken) {
     $line_api = 'https://notify-api.line.me/api/notify';
     $headers = array(
@@ -191,14 +214,17 @@ function sendLineNotify($message, $lineToken) {
         'Authorization: Bearer ' . $lineToken
     );
 
-    $fields = array('message' => $message);
-    
+    $data = array(
+        'message' => $message,
+    );
+
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $line_api);
-    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
+
     $result = curl_exec($ch);
     curl_close($ch);
 
@@ -259,18 +285,80 @@ function sendLineNotify($message, $lineToken) {
                         <tr>
                             <td><img src="./Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
                             <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td><?php echo htmlspecialchars($item['quantity'], ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td><?php echo number_format($item['price'], 2); ?> บาท</td>
-                            <td><?php echo number_format($item['total'], 2); ?> บาท</td>
+                            <td>
+                                <?php 
+                                    // แสดงจำนวนตามเงื่อนไข
+                                    if ($item['quantity'] * $item['weight_per_item'] >= 1000) {
+                                        echo number_format($item['quantity'] * $item['weight_per_item'] / 1000, 2) . ' กก.'; // แสดงเป็นกิโลกรัม
+                                    } else {
+                                        echo number_format($item['quantity'], 0) . ' ชิ้น'; // แสดงเป็นจำนวนชิ้น
+                                    }
+                                ?>
+                            </td>
+                            <td>
+                                <?php
+                                // แสดงราคาให้ถูกต้อง
+                                if ($item['quantity'] * $item['weight_per_item'] >= 1000) {
+                                    echo number_format($item['price'], 2); // แสดงราคาเป็นกิโลกรัม
+                                } else {
+                                    echo number_format($item['price_per_piece'], 2); // แสดงราคาเป็นชิ้น
+                                }
+                                ?>
+                            </td>
+                            <td>
+                                <?php
+                                // คำนวณยอดรวมที่ถูกต้อง
+                                if ($item['quantity'] * $item['weight_per_item'] >= 1000) {
+                                    echo number_format($item['price'] * ($item['quantity'] * $item['weight_per_item'] / 1000), 2); // ยอดรวมเป็นกิโลกรัม
+                                } else {
+                                    echo number_format($item['price_per_piece'] * $item['quantity'], 2); // ยอดรวมเป็นชิ้น
+                                }
+                                ?>
+                            </td>
                         </tr>
                         <?php endwhile; ?>
                     </tbody>
                 </table>
-                <h4>ที่อยู่จัดส่ง:</h4>
-                <p><?php echo htmlspecialchars($address, ENT_QUOTES, 'UTF-8'); ?></p>
-                <p><?php echo htmlspecialchars($amphurName, ENT_QUOTES, 'UTF-8'); ?> จังหวัด<?php echo htmlspecialchars($provinceName, ENT_QUOTES, 'UTF-8'); ?></p>
+                <?php
+                    function calculateShippingCost($totalWeight, $isCentralRegion) {
+                        // กำหนดค่าจัดส่งตามน้ำหนักและพื้นที่
+                        $shippingRates = [
+                            5 => [190, 270],
+                            10 => [230, 290],
+                            15 => [260, 330],
+                            20 => [290, 370],
+                            25 => [330, 430],
+                            30 => [390, 490],
+                        ];
+
+                        // ค้นหาค่าจัดส่งตามน้ำหนัก
+                        foreach ($shippingRates as $weight => $rates) {
+                            if ($totalWeight <= $weight) {
+                                return $isCentralRegion ? $rates[0] : $rates[1];
+                            }
+                        }
+
+                        // ถ้าหากน้ำหนักมากกว่า 30 กิโลกรัม จะกำหนดค่าจัดส่งเป็น 490 บาท (ค่าจัดส่งสูงสุดที่กำหนด)
+                        return $isCentralRegion ? 390 : 490;
+                    }
+
+                    // การใช้ฟังก์ชัน
+                    $totalWeight = 10; // น้ำหนักรวม
+                    $isCentralRegion = true; // ตั้งค่าเป็น true ถ้าส่งในภาคกลาง
+
+                    $shippingCost = calculateShippingCost($totalWeight, $isCentralRegion);
+                    $grandTotal = $orderTotal + $shippingCost; // $orderTotal เป็นยอดรวมของสินค้า
+
+                    echo "<h4>ยอดรวม: " . number_format($grandTotal, 2) . " บาท</h4>";
+                    echo "<h4>ค่าจัดส่ง: " . number_format($shippingCost, 2) . " บาท</h4>";
+                ?>
+
                 <h4>ยอดรวม: <?php echo number_format($grand_total, 2); ?> บาท</h4>
-                <!-- เพิ่ม QR Code และเลขบัญชีธนาคาร -->
+                <p><h4>ข้อมูลสำหรับจัดส่ง:</h4></p>
+                    <p><strong><?php echo htmlspecialchars($customer_name, ENT_QUOTES, 'UTF-8'); ?></strong> | <strong><?php echo htmlspecialchars($customer_phone, ENT_QUOTES, 'UTF-8'); ?></strong></p>
+                    <p>ที่อยู่: <?php echo htmlspecialchars($address, ENT_QUOTES, 'UTF-8') . ', ' . htmlspecialchars($districtName, ENT_QUOTES, 'UTF-8') . ', ' . htmlspecialchars($amphurName, ENT_QUOTES, 'UTF-8') . ', ' . htmlspecialchars($provinceName, ENT_QUOTES, 'UTF-8') . ', รหัสไปรษณีย์: ' . htmlspecialchars($postal_code, ENT_QUOTES, 'UTF-8'); ?></p>
+
+                    <!-- เพิ่ม QR Code และเลขบัญชีธนาคาร -->
                 <div class="payment-info">
                     <h3>Payment Information</h3>
                     <p>Please scan the QR code below to make a payment:</p>

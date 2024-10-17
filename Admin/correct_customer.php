@@ -5,7 +5,7 @@ include 'connectDB.php'; // รวมไฟล์เชื่อมต่อฐ�
 // ดึงข้อมูลลูกค้าทั้งหมดจากฐานข้อมูล
 $customer_query = "
     SELECT c.customer_id, c.name, c.phone, c.address, 
-           p.PROVINCE_NAME, a.AMPHUR_NAME, d.DISTRICT_NAME, c.created_at
+           p.PROVINCE_NAME, a.AMPHUR_NAME, d.DISTRICT_NAME, a.POSTCODE, c.created_at
     FROM customer c
     JOIN province p ON c.province_id = p.PROVINCE_ID
     JOIN amphur a ON c.amphur_id = a.AMPHUR_ID
@@ -20,7 +20,7 @@ if (!$stmt) {
 }
 
 mysqli_stmt_execute($stmt);
-mysqli_stmt_bind_result($stmt, $customer_id, $name, $phone, $address, $province_name, $amphur_name, $district_name, $created_at);
+mysqli_stmt_bind_result($stmt, $customer_id, $name, $phone, $address, $province_name, $amphur_name, $district_name, $postcode, $created_at);
 ?>
 
 <!DOCTYPE html>
@@ -58,6 +58,7 @@ mysqli_stmt_bind_result($stmt, $customer_id, $name, $phone, $address, $province_
                         <th>จังหวัด</th>
                         <th>อำเภอ</th>
                         <th>เขต/ตำบล</th>
+                        <th>รหัสไปรษณีย์</th>
                         <th>วันที่สร้าง</th>
                         <th>แก้ไข</th>
                     </tr>
@@ -72,6 +73,7 @@ mysqli_stmt_bind_result($stmt, $customer_id, $name, $phone, $address, $province_
                         <td><?php echo htmlspecialchars($province_name, ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars($amphur_name, ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars($district_name, ENT_QUOTES, 'UTF-8'); ?></td>
+                        <td><?php echo htmlspecialchars($postcode, ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?php echo htmlspecialchars(date("d/m/Y H:i:s", strtotime($created_at)), ENT_QUOTES, 'UTF-8'); ?></td>
                         <td>
                             <a href="edit_customer.php?customer_id=<?php echo $customer_id; ?>" class="btn btn-primary">แก้ไข</a>

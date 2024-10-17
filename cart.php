@@ -28,10 +28,11 @@ if ($cart) {
     $cart_id = $cart['cart_id'];
 
     // ดึงข้อมูลสินค้าจากตะกร้า
-    $items_query = "SELECT ci.cart_item_id, p.name, p.image, ci.quantity, ci.price, (ci.quantity * ci.price) AS total, p.stock_quantity
-                    FROM cart_items ci
-                    JOIN product p ON ci.product_id = p.product_id
-                    WHERE ci.cart_id = ?";
+    $items_query = "SELECT ci.cart_item_id, p.name, p.image, ci.quantity, ci.price, p.price_per_piece, (ci.quantity * ci.price) AS total, p.stock_quantity, p.weight_per_item
+    FROM cart_items ci
+    JOIN product p ON ci.product_id = p.product_id
+    WHERE ci.cart_id = ?";
+    
     $stmt = mysqli_prepare($conn, $items_query);
     mysqli_stmt_bind_param($stmt, 'i', $cart_id);
     mysqli_stmt_execute($stmt);
@@ -45,11 +46,19 @@ if ($cart) {
     // คำนวณยอดรวม
     $grand_total = 0;
     while ($item = mysqli_fetch_assoc($items_result)) {
-        $grand_total += $item['total'];
+        // คำนวณยอดรวมที่ถูกต้อง
+        if ($item['quantity'] * $item['weight_per_item'] >= 1000) {
+            // คำนวณจากราคาเป็นกิโลกรัม
+            $item_total = ($item['price'] * ($item['quantity'] * $item['weight_per_item'] / 1000));
+        } else {
+            // คำนวณจากราคาเป็นชิ้น
+            $item_total = ($item['price_per_piece'] * $item['quantity']);
+        }
+        $grand_total += $item_total;
     }
-
     // Reset the result pointer to fetch items again
     mysqli_data_seek($items_result, 0);
+
 } else {
     $items_result = [];
     $grand_total = 0;
@@ -59,13 +68,12 @@ if ($cart) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Cart</title>
+    <title>ตะกร้าสินค้า</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
@@ -82,7 +90,7 @@ if ($cart) {
                         <tr>
                             <th>รูปภาพ</th>
                             <th>สินค้า</th>
-                            <th>จำนวน</th>
+                            <th>จำนวน</th> <!-- แก้ไขหัวข้อที่นี่ -->
                             <th>ราคา</th>
                             <th>รวมทั้งหมด</th>
                             <th>สต็อก</th>
@@ -90,28 +98,55 @@ if ($cart) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($item = mysqli_fetch_assoc($items_result)): ?>
-                            <tr>
-                                <td><img src="./Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
-                                <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
-                                <td>
-                                    <form action="update_cart.php" method="post" class="d-flex align-items-center">
-                                        <input type="hidden" name="cart_item_id" value="<?php echo htmlspecialchars($item['cart_item_id'], ENT_QUOTES, 'UTF-8'); ?>">
-                                        <button type="submit" name="action" value="decrease" class="btn btn-outline-secondary">-</button>
-                                        <input type="text" name="quantity" value="<?php echo htmlspecialchars($item['quantity'], ENT_QUOTES, 'UTF-8'); ?>" class="form-control mx-2" style="width: 60px; text-align: center;" readonly>
-                                        <button type="submit" name="action" value="increase" class="btn btn-outline-secondary">+</button>
-                                    </form>
-                                </td>
-                                <td><?php echo number_format($item['price'], 2); ?></td>
-                                <td><?php echo number_format($item['total'], 2); ?></td>
-                                <td><?php echo htmlspecialchars($item['stock_quantity'], ENT_QUOTES, 'UTF-8'); ?></td> 
-                                <td>
-                                    <a href="remove_from_cart.php?cart_item_id=<?php echo htmlspecialchars($item['cart_item_id'], ENT_QUOTES, 'UTF-8'); ?>" onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?')">
-                                        <i class="fas fa-trash-alt" title="ลบ"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endwhile; ?>
+                    <?php while ($item = mysqli_fetch_assoc($items_result)): ?>
+                        <tr>
+                            <td><img src="./Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
+                            <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td>
+                                <form action="update_cart.php" method="post" class="d-flex align-items-center">
+                                    <input type="hidden" name="cart_item_id" value="<?php echo htmlspecialchars($item['cart_item_id'], ENT_QUOTES, 'UTF-8'); ?>">
+                                    <button type="submit" name="action" value="decrease" class="btn btn-outline-secondary">-</button>
+                                    <input type="text" name="quantity" 
+                                    value="<?php 
+                                        // แสดงจำนวนตามเงื่อนไข
+                                        if ($item['quantity'] * $item['weight_per_item'] >= 1000) {
+                                            echo number_format($item['quantity'] * $item['weight_per_item'] / 1000, 2) . ' กก.'; // แสดงเป็นกิโลกรัม
+                                        } else {
+                                            echo number_format($item['quantity'], 0) . ' ชิ้น'; // แสดงเป็นจำนวนชิ้น
+                                        }
+                                    ?>" 
+                                    class="form-control mx-2" style="width: 80px; text-align: center;" readonly>
+                                    <button type="submit" name="action" value="increase" class="btn btn-outline-secondary">+</button>
+                                </form>
+                            </td>
+                            <td>
+                                <?php
+                                // แสดงราคาให้ถูกต้อง
+                                if ($item['quantity'] * $item['weight_per_item'] >= 1000) {
+                                    echo number_format($item['price'], 2); // แสดงราคาเป็นกิโลกรัม
+                                } else {
+                                    echo number_format($item['price_per_piece'], 2); // แสดงราคาเป็นชิ้น
+                                }
+                                ?>
+                            </td>
+                            <td>
+                                <?php
+                                // คำนวณยอดรวมที่ถูกต้อง
+                                if ($item['quantity'] * $item['weight_per_item'] >= 1000) {
+                                    echo number_format($item['price'] * ($item['quantity'] * $item['weight_per_item'] / 1000), 2); // ยอดรวมเป็นกิโลกรัม
+                                } else {
+                                    echo number_format($item['price_per_piece'] * $item['quantity'], 2); // ยอดรวมเป็นชิ้น
+                                }
+                                ?>
+                            </td>
+                            <td><?php echo htmlspecialchars($item['stock_quantity'], ENT_QUOTES, 'UTF-8'); ?></td> 
+                            <td>
+                                <a href="remove_from_cart.php?cart_item_id=<?php echo htmlspecialchars($item['cart_item_id'], ENT_QUOTES, 'UTF-8'); ?>" onclick="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบสินค้านี้?')">
+                                    <i class="fas fa-trash-alt" title="ลบ"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
                     </tbody>
                 </table>
                 <p><strong>รวมทั้งหมด: <?php echo number_format($grand_total, 2); ?></strong></p>
@@ -145,11 +180,10 @@ if ($cart) {
             </div>
         </div>
     </div>
+
+    <?php
+    include 'footer.php';
+    mysqli_close($conn);
+    ?>
 </body>
 </html>
-
-
-<?php
-include 'footer.php';
-mysqli_close($conn);
-?>

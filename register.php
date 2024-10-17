@@ -10,7 +10,7 @@ if (!$conn) {
 $result3 = mysqli_query($conn, "SELECT PROVINCE_ID AS provinceID, PROVINCE_NAME AS provinceName FROM province");
 if (!$result3) {
     die("Error fetching provinces: " . mysqli_error($conn));
-}
+}   
 
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $error = "หมายเลขโทรศัพท์นี้มีอยู่ในระบบแล้ว กรุณาใช้หมายเลขอื่น";
         } else {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT); // Encrypt the password
-
+            
             // Insert new customer
             $query = "INSERT INTO customer (name, phone, address, province_id, amphur_id, district_id, password) VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt = mysqli_prepare($conn, $query);
@@ -107,8 +107,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <option value="">เลือกจังหวัด</option>
                     <?php 
                         // ดึงจังหวัดทั้งหมดจากฐานข้อมูลและแสดงใน dropdown
-                        while ($row3 = mysqli_fetch_assoc($result3)) {
-                            echo "<option value=\"{$row3['provinceID']}\">{$row3['provinceName']}</option>";
+                        while ($row1 = mysqli_fetch_assoc($result3)) {
+                            echo "<option value=\"{$row1['provinceID']}\">{$row1['provinceName']}</option>";
                         }
                     ?>
                 </select>
@@ -201,11 +201,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             });
 
             $('#amphur_id').change(function() {
-                var id_amphur = $(this).val();
+                var applicants_id = $(this).val();
                 $.ajax({
                     type: "POST",
                     url: "select_Tambol.php",
-                    data: { id: id_amphur },
+                    data: { id: applicants_id },
                     success: function(data) {
                         $('#district_id').html(data);
                         $('#zip_code').val('');

@@ -9,7 +9,7 @@ if (isset($_GET['customer_id'])) {
     // ดึงข้อมูลลูกค้าจากฐานข้อมูล
     $customer_query = "SELECT c.customer_id, c.name, c.phone, c.address, 
                               c.province_id, c.amphur_id, c.district_id, p.PROVINCE_NAME, 
-                              a.AMPHUR_NAME, d.DISTRICT_NAME 
+                              a.AMPHUR_NAME, d.DISTRICT_NAME, a.POSTCODE 
                        FROM customer c
                        JOIN province p ON c.province_id = p.PROVINCE_ID
                        JOIN amphur a ON c.amphur_id = a.AMPHUR_ID
@@ -25,7 +25,7 @@ if (isset($_GET['customer_id'])) {
     }
 
     mysqli_stmt_execute($stmt);
-    mysqli_stmt_bind_result($stmt, $customer_id, $name, $phone, $address, $province_id, $amphur_id, $district_id, $province_name, $amphur_name, $district_name);
+    mysqli_stmt_bind_result($stmt, $customer_id, $name, $phone, $address, $province_id, $amphur_id, $district_id, $province_name, $amphur_name, $district_name, $postcode);
     mysqli_stmt_fetch($stmt);
     mysqli_stmt_close($stmt);
 } else {
@@ -40,15 +40,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $province_id = $_POST['province_id'];
     $amphur_id = $_POST['amphur_id'];
     $district_id = $_POST['district_id'];
+    $postcode = $_POST['postcode']; // เพิ่มรหัสไปรษณีย์
 
-    // คำสั่ง SQL สำหรับอัพเดตข้อมูลลูกค้า
+    // ลบฟิลด์ postcode ออกจากคำสั่งอัปเดต
     $update_query = "UPDATE customer SET name = ?, phone = ?, address = ?, province_id = ?, amphur_id = ?, district_id = ? WHERE customer_id = ?";
     $stmt = mysqli_prepare($conn, $update_query);
-    mysqli_stmt_bind_param($stmt, 'ssssssi', $name, $phone, $address, $province_id, $amphur_id, $district_id, $customer_id);
+    mysqli_stmt_bind_param($stmt, 'sssssii', $name, $phone, $address, $province_id, $amphur_id, $district_id, $customer_id);
 
     if (mysqli_stmt_execute($stmt)) {
         // ถ้าอัพเดตสำเร็จ
-        echo "<script>alert('ข้อมูลลูกค้าอัพเดตเรียบร้อย'); window.location.href='customer_list.php';</script>";
+        echo "<script>alert('ข้อมูลลูกค้าอัพเดตเรียบร้อย'); window.location.href='correct_customer.php';</script>";
     } else {
         echo "Error updating record: " . mysqli_error($conn);
     }
@@ -133,12 +134,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ?>
                 </select>
             </div>
+            <div class="mb-3">
+                <label for="postcode" class="form-label">รหัสไปรษณีย์</label>
+                <input type="text" class="form-control" id="postcode" name="postcode" value="<?php echo htmlspecialchars($postcode, ENT_QUOTES, 'UTF-8'); ?>" readonly>
+            </div>
             <button type="submit" class="btn btn-primary">บันทึก</button>
             <a href="correct_customer.php" class="btn btn-secondary">ย้อนกลับ</a>
         </form>
     </div>
 </body>
 </html>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#province_id').change(function() {
+            var id_province = $(this).val();
+            $.ajax({
+                type: "POST",
+                url: "../select_Amphur.php",
+                data: { id: id_province },
+                success: function(data) {
+                    $('#amphur_id').html(data);
+                    $('#district_id').html('<option value="">เลือกตำบล</option>');
+                    $('#postcode').val('');
+                },
+                error: function() {
+                    $('#amphur_id').html('<option value="">ไม่สามารถดึงข้อมูลอำเภอได้</option>');
+                }
+            });
+        });
+
+        $('#amphur_id').change(function() {
+            var id_amphur = $(this).val();
+            $.ajax({
+                type: "POST",
+                url: "../select_Tambol.php",
+                data: { id: id_amphur },
+                success: function(data) {
+                    $('#district_id').html(data);
+                    $('#postcode').val('');
+                },
+                error: function() {
+                    $('#district_id').html('<option value="">ไม่สามารถดึงข้อมูลตำบลได้</option>');
+                }
+            });
+        });
+
+        $('#district_id').change(function() {
+            var id_district = $(this).val();
+            $.ajax({
+                type: "POST",
+                url: "../get_zip_code.php",
+                data: { id: id_district },
+                success: function(data) {
+                    $('#postcode').val(data); // Fix postcode ID
+                },
+                error: function() {
+                    $('#postcode').val(''); // Fix postcode ID
+                }
+            });
+        });
+    });
+</script>
 
 <?php
 mysqli_close($conn);

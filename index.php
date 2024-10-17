@@ -29,23 +29,59 @@ include 'topnavbar.php';
     
     <main class="container mt-4">
     <section class="row">
-        <?php
+    <?php
+        // Query to retrieve product data including weight_per_item
         $query = "SELECT * FROM product";
         $result = mysqli_query($conn, $query);
 
         if (mysqli_num_rows($result) > 0) {
             while ($row = mysqli_fetch_assoc($result)) {
-                echo '<div class="col-lg-3 col-md-4 col-sm-6 mb-4">';  // ใช้ col-lg-3 สำหรับจอใหญ่, col-md-4 สำหรับแท็บเล็ต, col-sm-6 สำหรับมือถือ
+                $product_id = $row['product_id'];
+                $stock_grams = $row['stock_quantity']; // Stock in grams
+                $stock_kg = $row['stock_quantity'];
+                $weight_per_piece = $row['weight_per_item']; // Retrieve weight per piece from the database
+
+                echo '<div class="col-lg-3 col-md-4 col-sm-6 mb-4">';
                 echo '<div class="card h-100 text-center">';
                 echo '<img src="./Admin/product/' . htmlspecialchars($row['image']) . '" class="card-img-top" alt="' . htmlspecialchars($row['name']) . '" style="height: 200px; object-fit: cover;">';
                 echo '<div class="card-body">';
                 echo '<h5 class="card-title">' . htmlspecialchars($row['name']) . '</h5>';
-                echo '<p class="card-text">ราคา: ฿' . number_format($row['price'], 2) . '</p>';
-                echo '<p class="card-text">สต็อก: ' . htmlspecialchars($row['stock_quantity']) . '</p>';
-                echo '<a href="add_to_cart.php?product_id=' . $row['product_id'] . '" class="btn btn-primary">เพิ่มในตะกร้า</a>';
+                echo '<p class="card-text">ราคา: ' . number_format($row['price'], 2) . '฿ (1 กก.)</p>';
+                echo '<p class="card-text">สต็อก: ' . number_format($stock_kg, 2) . ' (กก.)</p>';  // Show stock in kilograms
+                echo '<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productModal' . $product_id . '">เพิ่มในตะกร้า</button>';
                 echo '</div>';
                 echo '</div>';
                 echo '</div>';
+
+                // Modal for quantity selection
+                echo '
+                <div class="modal fade" id="productModal' . $product_id . '" tabindex="-1" aria-labelledby="productModalLabel' . $product_id . '" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="productModalLabel' . $product_id . '">เลือกปริมาณ - ' . htmlspecialchars($row['name']) . '</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="add_to_cart.php" method="GET">
+                                    <input type="hidden" name="product_id" value="' . $product_id . '">
+                                    <div class="mb-3">
+                                        <label for="unit_' . $product_id . '">เลือกปริมาณ:</label>
+                                        <select id="unit_' . $product_id . '" name="unit" class="form-select">
+                                            <option value="1kg">1 กิโลกรัม</option>
+                                            <option value="1piece">1 ชิ้น (' . number_format($weight_per_piece, 0) . ' กรัม)</option>
+                                        </select>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                        <button type="submit" class="btn btn-primary">ยืนยันการเพิ่มในตะกร้า</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ';
             }
         } else {
             echo '<p class="text-center">ไม่พบสินค้า</p>';
