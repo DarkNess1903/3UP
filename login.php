@@ -3,22 +3,31 @@ session_start();
 include 'connectDB.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $phone = mysqli_real_escape_string($conn, $_POST['phone']);
+    $phone_or_username = mysqli_real_escape_string($conn, $_POST['phone']);
     $password = mysqli_real_escape_string($conn, $_POST['password']);
 
-    // ตรวจสอบข้อมูลผู้ใช้ในฐานข้อมูล
-    $query = "SELECT * FROM customer WHERE phone = '$phone'";
-    $result = mysqli_query($conn, $query);
-    $user = mysqli_fetch_assoc($result);
+    // ตรวจสอบในตาราง customer ก่อน
+    $query_customer = "SELECT * FROM customer WHERE phone = '$phone_or_username'";
+    $result_customer = mysqli_query($conn, $query_customer);
+    $user_customer = mysqli_fetch_assoc($result_customer);
 
-    if ($user && password_verify($password, $user['password'])) {
-        // ข้อมูลผู้ใช้ถูกต้อง
-        $_SESSION['customer_id'] = $user['customer_id'];
+    // ตรวจสอบในตาราง admin
+    $query_admin = "SELECT * FROM admin WHERE username = '$phone_or_username'";
+    $result_admin = mysqli_query($conn, $query_admin);
+    $user_admin = mysqli_fetch_assoc($result_admin);
 
-        // ใส่โค้ดสำหรับการแจ้งเตือนหรือการเปลี่ยนหน้าเมื่อเข้าสู่ระบบสำเร็จ
+    if ($user_customer && password_verify($password, $user_customer['password'])) {
+        // ล็อกอินสำเร็จสำหรับลูกค้า
+        $_SESSION['customer_id'] = $user_customer['customer_id'];
         echo "<script>window.location.href='index.php';</script>";
         exit();
+    } elseif ($user_admin && $password === $user_admin['password']) {
+        // ล็อกอินสำเร็จสำหรับแอดมิน
+        $_SESSION['admin_id'] = $user_admin['admin_id'];
+        echo "<script>window.location.href='Admin/index.php';</script>";
+        exit();
     } else {
+        // กรณีที่ข้อมูลไม่ถูกต้อง
         $error = "เบอร์มือถือหรือรหัสผ่านไม่ถูกต้องกรุณาลองอีกครั้ง";
     }
 }

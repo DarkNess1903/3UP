@@ -49,7 +49,7 @@ include 'connectDB.php'; // เชื่อมต่อฐานข้อมู�
                     if ($row = mysqli_fetch_assoc($result)) {
                         echo "<span class='navbar-text me-3 user-name text-white'>" . htmlspecialchars($row['name']) . "</span>";
                     }
-                    echo "<a class='btn btn-outline-danger ms-2' href='logout.php'>ออกจากระบบ</a>";
+                    echo "<button class='btn btn-outline-danger ms-2' data-bs-toggle='modal' data-bs-target='#logoutModal'>ออกจากระบบ</button>";
                 } else {
                     echo "<a class='btn btn-outline-primary me-2' href='login.php'>เข้าสู่ระบบ</a>";
                     echo "<a class='btn btn-outline-success' href='register.php'>สมัครสมาชิก</a>";
@@ -60,6 +60,25 @@ include 'connectDB.php'; // เชื่อมต่อฐานข้อมู�
     </nav>
 </header>
 
+<!-- Modal สำหรับยืนยันการออกจากระบบ -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="logoutModalLabel">ยืนยันการออกจากระบบ</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        <a href="logout.php" class="btn btn-danger">ออกจากระบบ</a>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 document.querySelectorAll('.navbar-nav .nav-link').forEach(item => {
     item.addEventListener('click', () => {
@@ -68,3 +87,6 @@ document.querySelectorAll('.navbar-nav .nav-link').forEach(item => {
     });
 });
 </script>
+
+</body>
+</html>
