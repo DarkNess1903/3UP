@@ -230,6 +230,46 @@ function sendLineNotify($message, $lineToken) {
 
     return $result;
 }
+
+function calculateShippingFee($weight, $customer_id, $conn) {
+    // ดึงข้อมูลจังหวัดและภูมิภาคของลูกค้าจาก customer_id
+    $query = "SELECT p.GEO_ID, g.GEO_NAME
+              FROM customer c
+              JOIN province p ON c.province_id = p.PROVINCE_ID
+              JOIN geography g ON p.GEO_ID = g.GEO_ID
+              WHERE c.customer_id = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $customer_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows == 0) {
+        return -1; // ส่งค่าผิดพลาดเมื่อไม่พบข้อมูลลูกค้า
+    }
+
+    $row = $result->fetch_assoc();
+    $geo_id = $row['GEO_ID'];
+
+    // กำหนดค่าจัดส่งตามน้ำหนักและภูมิภาค
+    if ($weight >= 1 && $weight <= 5) {
+        $shippingFee = ($geo_id == 2) ? 190 : 270;
+    } elseif ($weight >= 6 && $weight <= 10) {
+        $shippingFee = ($geo_id == 2) ? 230 : 290;
+    } elseif ($weight >= 11 && $weight <= 15) {
+        $shippingFee = ($geo_id == 2) ? 260 : 330;
+    } elseif ($weight >= 16 && $weight <= 20) {
+        $shippingFee = ($geo_id == 2) ? 290 : 370;
+    } elseif ($weight >= 21 && $weight <= 25) {
+        $shippingFee = ($geo_id == 2) ? 330 : 430;
+    } elseif ($weight >= 26 && $weight <= 30) {
+        $shippingFee = ($geo_id == 2) ? 390 : 490;
+    } else {
+        return -2; // ส่งค่าผิดพลาดเมื่อเกินน้ำหนัก
+    }
+
+    return $shippingFee; // คืนค่าจัดส่ง
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -240,14 +280,9 @@ function sendLineNotify($message, $lineToken) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <script src="js/script.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         body {
-            background-color: #f8f9fa; /* Optional: Light background */
+            background-color: #f8f9fa;
         }
         .confirm-checkout {
             margin-top: 50px;
@@ -281,98 +316,79 @@ function sendLineNotify($message, $lineToken) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($item = mysqli_fetch_assoc($items_result)): ?>
+                        <?php 
+                        $total_weight = 0; // น้ำหนักรวม
+                        $grand_total = 0; // ยอดรวมทั้งหมด
+                        while ($item = mysqli_fetch_assoc($items_result)): 
+                            // คำนวณน้ำหนักและยอดรวมที่ถูกต้อง
+                            $item_weight = $item['quantity'] * $item['weight_per_item'];
+                            $total_weight += $item_weight;
+
+                            if ($item_weight >= 1000) {
+                                $quantity_display = number_format($item_weight / 1000, 2) . ' กก.';
+                                $price = $item['price'];
+                                $item_total = $price * ($item_weight / 1000);
+                            } else {
+                                $quantity_display = number_format($item['quantity'], 0) . ' ชิ้น';
+                                $price = $item['price_per_piece'];
+                                $item_total = $price * $item['quantity'];
+                            }
+                            $grand_total += $item_total;
+                        ?>
                         <tr>
                             <td><img src="./Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
                             <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td>
-                                <?php 
-                                    // แสดงจำนวนตามเงื่อนไข
-                                    if ($item['quantity'] * $item['weight_per_item'] >= 1000) {
-                                        echo number_format($item['quantity'] * $item['weight_per_item'] / 1000, 2) . ' กก.'; // แสดงเป็นกิโลกรัม
-                                    } else {
-                                        echo number_format($item['quantity'], 0) . ' ชิ้น'; // แสดงเป็นจำนวนชิ้น
-                                    }
-                                ?>
-                            </td>
-                            <td>
-                                <?php
-                                // แสดงราคาให้ถูกต้อง
-                                if ($item['quantity'] * $item['weight_per_item'] >= 1000) {
-                                    echo number_format($item['price'], 2); // แสดงราคาเป็นกิโลกรัม
-                                } else {
-                                    echo number_format($item['price_per_piece'], 2); // แสดงราคาเป็นชิ้น
-                                }
-                                ?>
-                            </td>
-                            <td>
-                                <?php
-                                // คำนวณยอดรวมที่ถูกต้อง
-                                if ($item['quantity'] * $item['weight_per_item'] >= 1000) {
-                                    echo number_format($item['price'] * ($item['quantity'] * $item['weight_per_item'] / 1000), 2); // ยอดรวมเป็นกิโลกรัม
-                                } else {
-                                    echo number_format($item['price_per_piece'] * $item['quantity'], 2); // ยอดรวมเป็นชิ้น
-                                }
-                                ?>
-                            </td>
+                            <td><?php echo $quantity_display; ?></td>
+                            <td><?php echo number_format($price, 2); ?></td>
+                            <td><?php echo number_format($item_total, 2); ?></td>
                         </tr>
                         <?php endwhile; ?>
                     </tbody>
                 </table>
+
                 <?php
-                    function calculateShippingCost($totalWeight, $isCentralRegion) {
-                        // กำหนดค่าจัดส่งตามน้ำหนักและพื้นที่
-                        $shippingRates = [
-                            5 => [190, 270],
-                            10 => [230, 290],
-                            15 => [260, 330],
-                            20 => [290, 370],
-                            25 => [330, 430],
-                            30 => [390, 490],
-                        ];
+                $shippingFee = calculateShippingFee($total_weight / 1000, $customer_id, $conn); // น้ำหนักในหน่วยกิโลกรัม
 
-                        // ค้นหาค่าจัดส่งตามน้ำหนัก
-                        foreach ($shippingRates as $weight => $rates) {
-                            if ($totalWeight <= $weight) {
-                                return $isCentralRegion ? $rates[0] : $rates[1];
-                            }
-                        }
-
-                        // ถ้าหากน้ำหนักมากกว่า 30 กิโลกรัม จะกำหนดค่าจัดส่งเป็น 490 บาท (ค่าจัดส่งสูงสุดที่กำหนด)
-                        return $isCentralRegion ? 390 : 490;
-                    }
-
-                    // การใช้ฟังก์ชัน
-                    $totalWeight = 10; // น้ำหนักรวม
-                    $isCentralRegion = true; // ตั้งค่าเป็น true ถ้าส่งในภาคกลาง
-
-                    $shippingCost = calculateShippingCost($totalWeight, $isCentralRegion);
-                    $grandTotal = $orderTotal + $shippingCost; // $orderTotal เป็นยอดรวมของสินค้า
-
-                    echo "<h4>ยอดรวม: " . number_format($grandTotal, 2) . " บาท</h4>";
-                    echo "<h4>ค่าจัดส่ง: " . number_format($shippingCost, 2) . " บาท</h4>";
+                if ($shippingFee < 0) {
+                    // แสดงข้อความผิดพลาด
+                    $shipping_info = "เกิดข้อผิดพลาดในการคำนวณค่าจัดส่ง";
+                } else {
+                    $shipping_info = "น้ำหนักรวม: " . number_format($total_weight / 1000, 2) . " กก. ค่าจัดส่ง: " . number_format($shippingFee, 2) . " บาท";
+                }
                 ?>
+                
+                <div class="order-summary">
+                    <h4>ยอดคำสั่งซื้อ: <span class="text-success"><?php echo number_format($grand_total, 2); ?> บาท</span></h4>
+                    <h4><?php echo $shipping_info; ?></h4>
+                    <h4>ยอดรวมทั้งหมด: <span class="text-danger"><?php echo number_format($grand_total + $shippingFee, 2); ?> บาท</span></h4>
+                </div>
 
-                <h4>ยอดรวม: <?php echo number_format($grand_total, 2); ?> บาท</h4>
-                <p><h4>ข้อมูลสำหรับจัดส่ง:</h4></p>
+                <!-- ข้อมูลสำหรับจัดส่ง -->
+                <h4 class="mt-4">ข้อมูลสำหรับจัดส่ง:</h4>
+                <div class="shipping-info">
                     <p><strong><?php echo htmlspecialchars($customer_name, ENT_QUOTES, 'UTF-8'); ?></strong> | <strong><?php echo htmlspecialchars($customer_phone, ENT_QUOTES, 'UTF-8'); ?></strong></p>
                     <p>ที่อยู่: <?php echo htmlspecialchars($address, ENT_QUOTES, 'UTF-8') . ', ' . htmlspecialchars($districtName, ENT_QUOTES, 'UTF-8') . ', ' . htmlspecialchars($amphurName, ENT_QUOTES, 'UTF-8') . ', ' . htmlspecialchars($provinceName, ENT_QUOTES, 'UTF-8') . ', รหัสไปรษณีย์: ' . htmlspecialchars($postal_code, ENT_QUOTES, 'UTF-8'); ?></p>
-
-                    <!-- เพิ่ม QR Code และเลขบัญชีธนาคาร -->
-                <div class="payment-info">
-                    <h3>Payment Information</h3>
-                    <p>Please scan the QR code below to make a payment:</p>
-                    <img src="./Admin/images/qr_code.png" alt="QR Code" width="200">
-                    <p><strong>Bank Account:</strong> 407-8689387</p>
-                    <p><strong>Bank Name:</strong> ประภาภรณ์ จันปุ่ม</p>
                 </div>
-                <div class="mb-3">
+
+                <!-- เพิ่ม QR Code และเลขบัญชีธนาคาร -->
+                <div class="payment-info mt-4">
+                    <h3>ข้อมูลการชำระเงิน</h3>
+                    <p>กรุณาสแกน QR Code ด้านล่างเพื่อทำการชำระเงิน:</p>
+                    <img src="./Admin/images/qr_code.png" alt="QR Code" width="200" class="img-fluid mb-3">
+                    <p><strong>บัญชีธนาคาร:</strong> 407-8689387</p>
+                    <p><strong>ชื่อบัญชี:</strong> ประภาภรณ์ จันปุ่ม</p>
+                </div>
+
+                <!-- อัปโหลดใบเสร็จ -->
+                <div class="mb-3 mt-4">
                     <label for="payment_slip" class="form-label">ใบเสร็จการชำระเงิน:</label>
                     <input type="file" class="form-control" id="payment_slip" name="payment_slip" accept="image/*" required>
                 </div>
+
                 <button type="submit" class="btn btn-primary">ยืนยันการสั่งซื้อ</button>
+
                 <?php else: ?>
-                <p>ไม่มีรายการสินค้าในตะกร้า</p>
+                    <p>ไม่มีรายการสินค้าในตะกร้า</p>
                 <?php endif; ?>
             </form>
         </section>
