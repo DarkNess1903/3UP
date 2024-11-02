@@ -47,14 +47,17 @@ if ($product_id > 0) {
 
     // กำหนดจำนวนสินค้าตามที่ผู้ใช้เลือก
     $quantity = 0;
+    $weight_in_grams = 0; // เพิ่มตัวแปรสำหรับน้ำหนักรวม
     if ($product_data) {
         $weight_per_piece = $product_data['weight_per_item']; // น้ำหนักของ 1 ชิ้น (กรัม)
 
         // หากเลือก 1 กก ให้เพิ่มเป็นจำนวนชิ้นตามน้ำหนัก
         if ($unit === '1kg') {
             $quantity = 1000 / $weight_per_piece; // แปลง 1 กิโลกรัมเป็นจำนวนชิ้น
+            $weight_in_grams = 1000; // น้ำหนักรวมเป็น 1000 กรัม
         } elseif ($unit === '1piece') {
             $quantity = 1; // เพิ่ม 1 ชิ้น
+            $weight_in_grams = $weight_per_piece; // น้ำหนักรวมเป็นน้ำหนักของ 1 ชิ้น
         }
     }
 
@@ -66,19 +69,19 @@ if ($product_id > 0) {
     $result = mysqli_stmt_get_result($stmt);
 
     if (mysqli_num_rows($result) > 0) {
-        // ถ้ามีสินค้าในตะกร้าแล้ว ให้เพิ่มจำนวนสินค้า
-        $query = "UPDATE cart_items SET quantity = quantity + ? WHERE cart_id = ? AND product_id = ?";
+        // ถ้ามีสินค้าในตะกร้าแล้ว ให้เพิ่มจำนวนสินค้าและอัปเดตน้ำหนักรวม
+        $query = "UPDATE cart_items SET quantity = quantity + ?, weight_in_grams = weight_in_grams + ? WHERE cart_id = ? AND product_id = ?";
         $stmt = mysqli_prepare($conn, $query);
-        mysqli_stmt_bind_param($stmt, 'iii', $quantity, $cart_id, $product_id);
+        mysqli_stmt_bind_param($stmt, 'iiii', $quantity, $weight_in_grams, $cart_id, $product_id);
     } else {
         // ถ้ายังไม่มีสินค้าในตะกร้า ให้เพิ่มสินค้าใหม่
-        $query = "INSERT INTO cart_items (cart_id, product_id, quantity, price)
-        SELECT ?, p.product_id, ?, p.price 
+        $query = "INSERT INTO cart_items (cart_id, product_id, quantity, price, weight_in_grams)
+        SELECT ?, p.product_id, ?, p.price, ? 
         FROM product p 
         WHERE p.product_id = ?";
         $stmt = mysqli_prepare($conn, $query);
-        mysqli_stmt_bind_param($stmt, 'iii', $cart_id, $quantity, $product_id);
-    }
+        mysqli_stmt_bind_param($stmt, 'iiii', $cart_id, $quantity, $weight_in_grams, $product_id);
+    }    
 
     // Execute the statement to add or update the item in the cart
     if (mysqli_stmt_execute($stmt)) {

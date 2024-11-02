@@ -1,73 +1,71 @@
 <?php
+session_start();
 include 'connectDB.php';
 
-session_start();
 if (!isset($_SESSION['customer_id'])) {
-    echo "Please log in to update your cart.";
     header("Location: login.php");
     exit();
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $cart_item_id = intval($_POST['cart_item_id']);
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $cart_item_id = $_POST['cart_item_id'];
     $action = $_POST['action'];
 
-    // ดึงข้อมูลสินค้าจาก cart_items
-    $cart_item_query = "SELECT ci.cart_id, ci.product_id, ci.quantity, p.stock_quantity
-                        FROM cart_items ci
-                        JOIN product p ON ci.product_id = p.product_id
-                        WHERE ci.cart_item_id = ?";
-    $stmt = mysqli_prepare($conn, $cart_item_query);
+    // ดึงข้อมูลจากตะกร้าเพื่ออัพเดต
+    $query = "SELECT ci.quantity, p.weight_per_item
+              FROM cart_items ci
+              JOIN product p ON ci.product_id = p.product_id
+              WHERE ci.cart_item_id = ?";
+    $stmt = mysqli_prepare($conn, $query);
     mysqli_stmt_bind_param($stmt, 'i', $cart_item_id);
     mysqli_stmt_execute($stmt);
-    $cart_item_result = mysqli_stmt_get_result($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 
-    if (!$cart_item_result) {
-        die("Error fetching cart item: " . mysqli_error($conn));
-    }
+    if ($result) {
+        $item = mysqli_fetch_assoc($result);
+        $quantity = $item['quantity'];
+        $weight_per_item = $item['weight_per_item'];
+        $weight_in_grams = $quantity * $weight_per_item;
 
-    $cart_item = mysqli_fetch_assoc($cart_item_result);
-
-    if ($cart_item) {
-        $cart_id = $cart_item['cart_id'];
-        $product_id = $cart_item['product_id'];
-        $current_quantity = $cart_item['quantity'];
-        $stock_quantity = $cart_item['stock_quantity'];
-
-        if ($action == 'increase') {
-            if ($current_quantity < $stock_quantity) {
-                $query = "UPDATE cart_items SET quantity = quantity + 1 WHERE cart_item_id = ?";
-                $stmt = mysqli_prepare($conn, $query);
-                mysqli_stmt_bind_param($stmt, 'i', $cart_item_id);
-                mysqli_stmt_execute($stmt);
+        if ($action === 'increase') {
+            if ($weight_in_grams >= 1000) {
+                $quantity += 1000 / $weight_per_item; // เพิ่ม 1000 กรัม
             } else {
-                echo "Cannot increase quantity. Not enough stock.";
-                exit();
+                $quantity += 1; // เพิ่ม 1 ชิ้น
             }
-        } elseif ($action == 'decrease') {
-            if ($current_quantity > 1) {
-                $query = "UPDATE cart_items SET quantity = quantity - 1 WHERE cart_item_id = ?";
-                $stmt = mysqli_prepare($conn, $query);
-                mysqli_stmt_bind_param($stmt, 'i', $cart_item_id);
-                mysqli_stmt_execute($stmt);
-            } elseif ($current_quantity == 1) {
-                // หากจำนวนสินค้าลดลงเหลือ 1 ให้ลบรายการออกจากตะกร้า
-                $query = "DELETE FROM cart_items WHERE cart_item_id = ?";
-                $stmt = mysqli_prepare($conn, $query);
-                mysqli_stmt_bind_param($stmt, 'i', $cart_item_id);
-                mysqli_stmt_execute($stmt);
+        } elseif ($action === 'decrease') {
+            if ($weight_in_grams >= 1000) {
+                $quantity -= 1000 / $weight_per_item; // ลด 1000 กรัม
             } else {
-                echo "Cannot decrease quantity. Minimum quantity is 1.";
-                exit();
+                $quantity -= 1; // ลด 1 ชิ้น
             }
         }
 
-        // Redirect back to cart page
-        header("Location: cart.php");
-        exit();
+        if ($quantity <= 0) {
+            // แสดงการยืนยันการลบโดยใช้ JavaScript modal
+            echo "<script>
+                if (confirm('คุณต้องการลบสินค้านี้ออกจากตะกร้าใช่หรือไม่?')) {
+                    window.location.href = 'remove_from_cart.php?cart_item_id=' + $cart_item_id;
+                } else {
+                    window.location.href = 'cart.php';
+                }
+            </script>";
+        } else {
+            // อัพเดตจำนวนในฐานข้อมูล
+            $update_query = "UPDATE cart_items SET quantity = ? WHERE cart_item_id = ?";
+            $update_stmt = mysqli_prepare($conn, $update_query);
+            mysqli_stmt_bind_param($update_stmt, 'di', $quantity, $cart_item_id);
+            mysqli_stmt_execute($update_stmt);
+
+            if (mysqli_stmt_affected_rows($update_stmt) > 0) {
+                header("Location: cart.php");
+                exit();
+            } else {
+                echo "Error updating quantity: " . mysqli_error($conn);
+            }
+        }
     } else {
-        echo "Cart item not found.";
-        exit();
+        echo "Error fetching item: " . mysqli_error($conn);
     }
 }
 

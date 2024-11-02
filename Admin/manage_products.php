@@ -13,12 +13,14 @@ if (isset($_POST['add_product'])) {
     $cost = $_POST['cost'] ?? 0.0;
     $stock = $_POST['stock'] ?? 0;
     $weight_per_item = $_POST['weight_per_item'] ?? 0;
-    $price_per_piece = $_POST['price_per_piece'] ?? 0;
 
     if (empty($name)) {
         echo "ชื่อสินค้าต้องไม่ว่าง";
         exit; // หยุดการทำงานของสคริปต์
     }
+
+    // คำนวณราคาแยกชิ้น
+    $price_per_piece = ($price / 1000) * $weight_per_item + 2.50; // คำนวณราคาแยกชิ้น
 
     $image = '';
     if (!empty($_FILES['image']['name'])) {
@@ -31,11 +33,14 @@ if (isset($_POST['add_product'])) {
     $stmt->bind_param('ssdidds', $name, $price, $cost, $weight_per_item, $stock, $price_per_piece, $image);
     
     if ($stmt->execute()) {
-        echo "เพิ่มสินค้าสำเร็จ";
+        // แจ้งเตือนเมื่อเติมสต็อกสำเร็จ
+        echo "<script>alert('เติมสต็อกสำเร็จ');</script>";
+        // รีเฟรชหน้า
+        echo "<script>window.location.href='manage_products.php';</script>";
     } else {
         echo "เกิดข้อผิดพลาด: " . $stmt->error;
-    }
-}   
+    }    
+}
 
 // แก้ไขสินค้า
 if (isset($_POST['edit_product'])) {
@@ -45,7 +50,9 @@ if (isset($_POST['edit_product'])) {
     $cost = $_POST['cost'];
     $stock = $_POST['stock'];
     $weight_per_item = $_POST['weight_per_item'];
-    $price_per_piece = $_POST['price_per_piece'];
+
+    // คำนวณราคาแยกชิ้น
+    $price_per_piece = ($price / 1000) * $weight_per_item + 2.50; // คำนวณราคาแยกชิ้น
 
     // อัพโหลดรูปภาพใหม่ถ้ามี
     if (!empty($_FILES['image']['name'])) {
@@ -61,7 +68,8 @@ if (isset($_POST['edit_product'])) {
     }
 
     if ($conn->query($sql) === TRUE) {
-        echo "แก้ไขสินค้าสำเร็จ";
+        echo "<script>alert('แก้ไขสินค้าสำเร็จ');</script>";
+        echo "<script>window.location.href='manage_products.php';</script>";
     } else {
         echo "เกิดข้อผิดพลาด: " . $sql . "<br>" . $conn->error;
     }
@@ -74,7 +82,8 @@ if (isset($_GET['delete'])) {
     $sql = "DELETE FROM product WHERE product_id='$product_id'";
 
     if ($conn->query($sql) === TRUE) {
-        echo "ลบสินค้าสำเร็จ";
+        echo "<script>alert('ลบสินค้าสำเร็จ');</script>";
+        echo "<script>window.location.href='manage_products.php';</script>";
     } else {
         echo "เกิดข้อผิดพลาด: " . $conn->error;
     }
@@ -90,7 +99,8 @@ if (isset($_POST['restock_product'])) { // เปลี่ยนชื่อใ�
         $sql = "UPDATE product SET stock_quantity = stock_quantity + '$additional_stock' WHERE product_id='$product_id'";
 
         if ($conn->query($sql) === TRUE) {
-            echo "เติมสต็อกสำเร็จ";
+            echo "<script>alert('เติมสต็อกสำเร็จ');</script>";
+            echo "<script>window.location.href='manage_products.php';</script>";
         } else {
             echo "เกิดข้อผิดพลาด: " . $conn->error;
         }
@@ -152,10 +162,6 @@ $conn->close();
                         <input type="number" id="price" name="price" class="form-control" step="0.01" required>
                     </div>
                     <div class="form-group">
-                        <label for="price_per_piece">ราคาแยกชิ้น:</label>
-                        <input type="number" id="price_per_piece" name="price_per_piece" class="form-control" step="0.01" required>
-                    </div>
-                    <div class="form-group">
                         <label for="cost">ต้นทุน:</label>
                         <input type="number" id="cost" name="cost" class="form-control" step="0.01" required>
                     </div>
@@ -178,7 +184,7 @@ $conn->close();
         </div>
     </div>
 
-    <!-- โมดัลฟอร์มแก้ไขสินค้า -->
+   <!-- โมดัลฟอร์มแก้ไขสินค้า -->
     <div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-labelledby="editProductModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -196,12 +202,8 @@ $conn->close();
                         <input type="text" id="edit_product_name" name="product_name" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label for="edit_price">ราคาขาย (กก.) :</label>
+                        <label for="edit_price">ราคาขาย (กก.):</label>
                         <input type="number" id="edit_price" name="price" class="form-control" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit_price_per_piece">ราคาแยกชิ้น:</label>
-                        <input type="number" id="edit_price_per_piece" name="price_per_piece" class="form-control" step="0.01" required>
                     </div>
                     <div class="form-group">
                         <label for="edit_cost">ต้นทุน:</label>
@@ -371,6 +373,7 @@ $conn->close();
             data: { restock_product: true, product_id: productId, quantity: quantity },
             success: function(response) {
                 alert('เติมสต็อกสำเร็จ'); // แจ้งเตือนเมื่อเติมสต็อกสำเร็จ
+                header("Location: manage_products.php"); // รีเฟรชหน้า
                 location.reload(); // โหลดหน้าใหม่เพื่อดูข้อมูลที่อัปเดต
             },
             error: function(xhr, status, error) {

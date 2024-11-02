@@ -8,7 +8,7 @@ include 'header.php';
 // ตรวจสอบการเข้าสู่ระบบของผู้ดูแลระบบเท่านั้น
 if (!isset($_SESSION['admin_id'])) {
     // หากไม่มีการล็อกอินของ admin ให้ส่งกลับไปหน้า login
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 ?>

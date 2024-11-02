@@ -4,7 +4,7 @@ include 'connectDB.php';
 
 // ตรวจสอบการเข้าสู่ระบบของ Admin
 if (!isset($_SESSION['admin_id'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 

@@ -100,22 +100,26 @@ if ($cart) {
                     <tbody>
                     <?php while ($item = mysqli_fetch_assoc($items_result)): ?>
                         <tr>
-                            <td><img src="./Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
+                            <td>
+                                <img src="./Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" 
+                                    alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" 
+                                    width="100">
+                            </td>
                             <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td>
                                 <form action="update_cart.php" method="post" class="d-flex align-items-center">
                                     <input type="hidden" name="cart_item_id" value="<?php echo htmlspecialchars($item['cart_item_id'], ENT_QUOTES, 'UTF-8'); ?>">
                                     <button type="submit" name="action" value="decrease" class="btn btn-outline-secondary">-</button>
                                     <input type="text" name="quantity" 
-                                    value="<?php 
-                                        // แสดงจำนวนตามเงื่อนไข
-                                        if ($item['quantity'] * $item['weight_per_item'] >= 1000) {
-                                            echo number_format($item['quantity'] * $item['weight_per_item'] / 1000, 2) . ' กก.'; // แสดงเป็นกิโลกรัม
-                                        } else {
-                                            echo number_format($item['quantity'], 0) . ' ชิ้น'; // แสดงเป็นจำนวนชิ้น
-                                        }
-                                    ?>" 
-                                    class="form-control mx-2" style="width: 80px; text-align: center;" readonly>
+                                        value="<?php 
+                                            // แสดงจำนวนตามเงื่อนไข
+                                            if ($item['quantity'] * $item['weight_per_item'] >= 1000) {
+                                                echo number_format($item['quantity'] * $item['weight_per_item'] / 1000) . ' กก.'; // แสดงเป็นกิโลกรัม
+                                            } else {
+                                                echo number_format($item['quantity'], 0) . ' ชิ้น'; // แสดงเป็นจำนวนชิ้น
+                                            }
+                                        ?>" 
+                                        class="form-control mx-2" style="width: 80px; text-align: center;" readonly>
                                     <button type="submit" name="action" value="increase" class="btn btn-outline-secondary">+</button>
                                 </form>
                             </td>
@@ -126,16 +130,18 @@ if ($cart) {
                                     echo number_format($item['price'], 2); // แสดงราคาเป็นกิโลกรัม
                                 } else {
                                     echo number_format($item['price_per_piece'], 2); // แสดงราคาเป็นชิ้น
-                                }
+                                }                                
                                 ?>
                             </td>
                             <td>
                                 <?php
                                 // คำนวณยอดรวมที่ถูกต้อง
                                 if ($item['quantity'] * $item['weight_per_item'] >= 1000) {
-                                    echo number_format($item['price'] * ($item['quantity'] * $item['weight_per_item'] / 1000), 2); // ยอดรวมเป็นกิโลกรัม
+                                    // คำนวณยอดรวมสำหรับกิโลกรัม
+                                    echo number_format(($item['price'] * ($item['quantity'] * $item['weight_per_item'] / 1000)), 2); // ยอดรวมเป็นกิโลกรัม
                                 } else {
-                                    echo number_format($item['price_per_piece'] * $item['quantity'], 2); // ยอดรวมเป็นชิ้น
+                                    // คำนวณยอดรวมสำหรับชิ้น
+                                    echo number_format(($item['price_per_piece'] * $item['quantity']), 2); // ยอดรวมเป็นชิ้น
                                 }
                                 ?>
                             </td>
@@ -146,7 +152,7 @@ if ($cart) {
                                 </a>
                             </td>
                         </tr>
-                    <?php endwhile; ?>
+                        <?php endwhile; ?>
                     </tbody>
                 </table>
                 <p><strong>รวมทั้งหมด: <?php echo number_format($grand_total, 2); ?></strong></p>
@@ -187,3 +193,4 @@ if ($cart) {
     ?>
 </body>
 </html>
+
