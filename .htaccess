@@ -1,0 +1,10 @@
+RewriteEngine On
+
+# เปลี่ยน URL จาก /home ไปยัง /index.php
+RewriteRule ^home$ index.php [L,QSA]
+
+# ตัวอย่างการเปลี่ยน URL จาก /product/{id} ไปยัง /index.php?product={id}
+RewriteRule ^product/([0-9]+)$ index.php?product=$1 [L,QSA]
+
+# ตัวอย่างการเปลี่ยน URL จาก /category/{slug} ไปยัง /index.php?category={slug}
+RewriteRule ^category/([a-zA-Z0-9_-]+)$ index.php?category=$1 [L,QSA]

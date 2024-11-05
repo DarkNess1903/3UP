@@ -13,14 +13,15 @@ if (isset($_POST['add_product'])) {
     $cost = $_POST['cost'] ?? 0.0;
     $stock = $_POST['stock'] ?? 0;
     $weight_per_item = $_POST['weight_per_item'] ?? 0;
+    $can_be_sold_as_piece = $_POST['can_be_sold_as_piece'] ?? 0;
 
     if (empty($name)) {
         echo "ชื่อสินค้าต้องไม่ว่าง";
         exit; // หยุดการทำงานของสคริปต์
     }
 
-    // คำนวณราคาแยกชิ้น
-    $price_per_piece = ($price / 1000) * $weight_per_item + 2.50; // คำนวณราคาแยกชิ้น
+    // คำนวณราคาแยกชิ้น ถ้าสามารถขายแยกชิ้นได้
+    $piece_price = ($can_be_sold_as_piece == 1) ? (($price / 1000) * $weight_per_item + 2.50) : 0; // กำหนดค่าเป็น 0 แทน NULL
 
     $image = '';
     if (!empty($_FILES['image']['name'])) {
@@ -29,8 +30,8 @@ if (isset($_POST['add_product'])) {
     }
 
     // ใช้ Prepared Statements
-    $stmt = $conn->prepare("INSERT INTO product (name, price, cost, weight_per_item, stock_quantity, price_per_piece, image) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param('ssdidds', $name, $price, $cost, $weight_per_item, $stock, $price_per_piece, $image);
+    $stmt = $conn->prepare("INSERT INTO product (name, price, cost, weight_per_item, stock_quantity, price_per_piece, can_be_sold_as_piece, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param('ssdiddis', $name, $price, $cost, $weight_per_item, $stock, $piece_price, $can_be_sold_as_piece, $image);
     
     if ($stmt->execute()) {
         // แจ้งเตือนเมื่อเติมสต็อกสำเร็จ
@@ -50,28 +51,27 @@ if (isset($_POST['edit_product'])) {
     $cost = $_POST['cost'];
     $stock = $_POST['stock'];
     $weight_per_item = $_POST['weight_per_item'];
-
-    // คำนวณราคาแยกชิ้น
-    $price_per_piece = ($price / 1000) * $weight_per_item + 2.50; // คำนวณราคาแยกชิ้น
+    $can_be_sold_as_piece = $_POST['can_be_sold_as_piece'] ?? 0; // ข้อมูลขายแยกชิ้น
+    $piece_price = ($can_be_sold_as_piece == 1) ? (($price / 1000) * $weight_per_item + 2.50) : null; // คำนวณราคาแยกชิ้น
 
     // อัพโหลดรูปภาพใหม่ถ้ามี
     if (!empty($_FILES['image']['name'])) {
         $image = $_FILES['image']['name'];
         move_uploaded_file($_FILES['image']['tmp_name'], "product/" . $image);
-        $sql = "UPDATE product SET name='$name', price='$price', cost='$cost', stock_quantity='$stock',
-                weight_per_item='$weight_per_item', price_per_piece='$price_per_piece', image='$image'
-                WHERE product_id='$product_id'";
+        $sql = "UPDATE product SET name=?, price=?, cost=?, stock_quantity=?, weight_per_item=?, price_per_piece=?, can_be_sold_as_piece=?, image=? WHERE product_id=?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('ssdiddisi', $name, $price, $cost, $stock, $weight_per_item, $piece_price, $can_be_sold_as_piece, $image, $product_id);
     } else {
-        $sql = "UPDATE product SET name='$name', price='$price', cost='$cost', stock_quantity='$stock',
-                weight_per_item='$weight_per_item', price_per_piece='$price_per_piece'
-                WHERE product_id='$product_id'";
+        $sql = "UPDATE product SET name=?, price=?, cost=?, stock_quantity=?, weight_per_item=?, price_per_piece=?, can_be_sold_as_piece=? WHERE product_id=?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('ssdiddii', $name, $price, $cost, $stock, $weight_per_item, $piece_price, $can_be_sold_as_piece, $product_id);
     }
 
-    if ($conn->query($sql) === TRUE) {
+    if ($stmt->execute()) {
         echo "<script>alert('แก้ไขสินค้าสำเร็จ');</script>";
         echo "<script>window.location.href='manage_products.php';</script>";
     } else {
-        echo "เกิดข้อผิดพลาด: " . $sql . "<br>" . $conn->error;
+        echo "เกิดข้อผิดพลาด: " . $stmt->error;
     }
 }
 
@@ -79,30 +79,33 @@ if (isset($_POST['edit_product'])) {
 if (isset($_GET['delete'])) {
     $product_id = $_GET['delete'];
 
-    $sql = "DELETE FROM product WHERE product_id='$product_id'";
+    $sql = "DELETE FROM product WHERE product_id=?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('i', $product_id);
 
-    if ($conn->query($sql) === TRUE) {
+    if ($stmt->execute()) {
         echo "<script>alert('ลบสินค้าสำเร็จ');</script>";
         echo "<script>window.location.href='manage_products.php';</script>";
     } else {
-        echo "เกิดข้อผิดพลาด: " . $conn->error;
+        echo "เกิดข้อผิดพลาด: " . $stmt->error;
     }
 }
 
 // เติมสต็อกสินค้า
-if (isset($_POST['restock_product'])) { // เปลี่ยนชื่อให้ตรงกับ AJAX
+if (isset($_POST['restock_product'])) {
     $product_id = $_POST['product_id'];
-    $additional_stock = $_POST['quantity']; // เปลี่ยนเป็น 'quantity'
+    $additional_stock = $_POST['quantity'];
 
-    // ตรวจสอบให้แน่ใจว่า $additional_stock เป็นตัวเลข
     if (is_numeric($additional_stock) && $additional_stock > 0) {
-        $sql = "UPDATE product SET stock_quantity = stock_quantity + '$additional_stock' WHERE product_id='$product_id'";
+        $sql = "UPDATE product SET stock_quantity = stock_quantity + ? WHERE product_id=?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('ii', $additional_stock, $product_id);
 
-        if ($conn->query($sql) === TRUE) {
+        if ($stmt->execute()) {
             echo "<script>alert('เติมสต็อกสำเร็จ');</script>";
             echo "<script>window.location.href='manage_products.php';</script>";
         } else {
-            echo "เกิดข้อผิดพลาด: " . $conn->error;
+            echo "เกิดข้อผิดพลาด: " . $stmt->error;
         }
     } else {
         echo "จำนวนที่เติมต้องเป็นตัวเลขที่มากกว่าศูนย์";
@@ -110,10 +113,9 @@ if (isset($_POST['restock_product'])) { // เปลี่ยนชื่อใ�
 }
 
 // รัน SQL Query
-$sql = "SELECT product_id, name, price, cost, stock_quantity, price_per_piece, image, weight_per_item FROM product";
+$sql = "SELECT product_id, name, price, cost, stock_quantity, price_per_piece, image, weight_per_item, can_be_sold_as_piece FROM product";
 $result = mysqli_query($conn, $sql);
 
-// เช็คว่ามีข้อมูลหรือไม่
 if (!$result) {
     die("Query failed: " . mysqli_error($conn));
 }
@@ -152,33 +154,40 @@ $conn->close();
                     </button>
                 </div>
                 <div class="modal-body">
-                <form action="manage_products.php" method="post" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label for="product_name">ชื่อสินค้า:</label>
-                        <input type="text" id="product_name" name="product_name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="price">ราคาขาย (กก.):</label>
-                        <input type="number" id="price" name="price" class="form-control" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="cost">ต้นทุน:</label>
-                        <input type="number" id="cost" name="cost" class="form-control" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="weight_per_item">น้ำหนักต่อชิ้น (กรัม):</label>
-                        <input type="number" id="weight_per_item" name="weight_per_item" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="stock">สต็อก (กก.):</label>
-                        <input type="number" id="stock" name="stock" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="image">รูปภาพสินค้า:</label>
-                        <input type="file" id="image" name="image" class="form-control">
-                    </div>
-                    <button type="submit" name="add_product" class="btn btn-primary">เพิ่มสินค้า</button>
-                </form>
+                    <form action="manage_products.php" method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="product_name">ชื่อสินค้า:</label>
+                            <input type="text" id="product_name" name="product_name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="price">ราคาขาย (กก.):</label>
+                            <input type="number" id="price" name="price" class="form-control" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cost">ต้นทุน:</label>
+                            <input type="number" id="cost" name="cost" class="form-control" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="weight_per_item">น้ำหนักต่อชิ้น (กรัม):</label>
+                            <input type="number" id="weight_per_item" name="weight_per_item" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="stock">สต็อก (กก.):</label>
+                            <input type="number" id="stock" name="stock" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="can_be_sold_as_piece">สามารถขายแยกชิ้นได้หรือไม่:</label>
+                            <select id="can_be_sold_as_piece" name="can_be_sold_as_piece" class="form-control" required>
+                                <option value="1">ใช่</option>
+                                <option value="0">ไม่</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="image">รูปภาพสินค้า:</label>
+                            <input type="file" id="image" name="image" class="form-control">
+                        </div>
+                        <button type="submit" name="add_product" class="btn btn-primary">เพิ่มสินค้า</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -284,7 +293,7 @@ $conn->close();
                 <?php while ($row = mysqli_fetch_assoc($result)) { 
                         // ตรวจสอบการตั้งค่ากำไร
                         $profit_per_piece = $row['price'] - $row['cost'];
-                        $total_profit = $profit_per_piece * ($row['stock_quantity'] ); // คำนวณจากสต็อกเป็นชิ้น
+                        $total_profit = $profit_per_piece * ($row['stock_quantity'] * 1000 / $row['weight_per_item']); // คำนวณจากสต็อกเป็นชิ้น
                     ?>
                         <tr>
                             <td><?php echo htmlspecialchars($row['name']); ?></td>
@@ -292,7 +301,16 @@ $conn->close();
                             <td><?php echo number_format($row['cost'], 2); ?> บาท</td>
                             <td><?php echo number_format($profit_per_piece, 2); ?> บาท</td>
                             <td><?php echo $row['stock_quantity']; ?> กก.</td>
-                            <td><?php echo number_format($row['price_per_piece'], 2); ?> บาท</td>
+                            <td>
+                                <?php 
+                                // ตรวจสอบว่าขายแยกชิ้นได้หรือไม่
+                                if ($row['can_be_sold_as_piece'] == 1) {
+                                    echo number_format($row['price_per_piece'], 2) . ' บาท';
+                                } else {
+                                    echo 'ไม่มีแยกชิ้นขาย';
+                                }
+                                ?>
+                            </td>
                             <td><?php echo number_format($total_profit, 2); ?> บาท</td>
                             <td>
                                 <img src="product/<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>" style="width: 100px; height: auto;">
@@ -307,7 +325,7 @@ $conn->close();
                                         data-cost="<?php echo htmlspecialchars($row['cost']); ?>"
                                         data-weight="<?php echo htmlspecialchars($row['weight_per_item']); ?>"
                                         data-stock="<?php echo htmlspecialchars($row['stock_quantity']); ?>"
-                                        data-price-per-piece="<?php echo htmlspecialchars($row['price_per_piece']); ?>">
+                                        data-price-per-piece="<?php echo htmlspecialchars($row['can_be_sold_as_piece'] == 1 ? $row['price_per_piece'] : ''); ?>">
                                         <i class="fas fa-edit"></i>
                                     </button>
 
@@ -353,34 +371,34 @@ $conn->close();
         $('#editProductModal').modal('show');
     });
 
-    // เมื่อคลิกปุ่มเติมสต็อก
-    $(document).on('click', '.restockBtn', function() {
-        const productId = $(this).data('id');
-        $('#restock_product_id').val(productId); // กำหนดค่า product_id ในฟอร์มเติมสต็อก
-        $('#restockModal').modal('show'); // แสดง Modal
-    });
-
-    // เมื่อส่งฟอร์มเติมสต็อก
-    $('#restockForm').on('submit', function(e) {
-        e.preventDefault(); // ป้องกันการส่งฟอร์มแบบปกติ
-        const productId = $('#restock_product_id').val();
-        const quantity = $('#restock_quantity').val();
-
-        // ส่งข้อมูลไปยังเซิร์ฟเวอร์
-        $.ajax({
-            url: 'manage_products.php', // เปลี่ยนให้ตรงกับ URL ที่ต้องการส่งข้อมูล
-            method: 'POST',
-            data: { restock_product: true, product_id: productId, quantity: quantity },
-            success: function(response) {
-                alert('เติมสต็อกสำเร็จ'); // แจ้งเตือนเมื่อเติมสต็อกสำเร็จ
-                header("Location: manage_products.php"); // รีเฟรชหน้า
-                location.reload(); // โหลดหน้าใหม่เพื่อดูข้อมูลที่อัปเดต
-            },
-            error: function(xhr, status, error) {
-                alert('เกิดข้อผิดพลาด: ' + error); // แจ้งเตือนเมื่อเกิดข้อผิดพลาด
-            }
+        // เมื่อคลิกปุ่มเติมสต็อก
+        $(document).on('click', '.restockBtn', function() {
+            const productId = $(this).data('id');
+            $('#restock_product_id').val(productId); // กำหนดค่า product_id ในฟอร์มเติมสต็อก
+            $('#restockModal').modal('show'); // แสดง Modal
         });
-    });
+
+        // เมื่อส่งฟอร์มเติมสต็อก
+        $('#restockForm').on('submit', function(e) {
+            e.preventDefault(); // ป้องกันการส่งฟอร์มแบบปกติ
+            const productId = $('#restock_product_id').val();
+            const quantity = $('#restock_quantity').val();
+
+            // ส่งข้อมูลไปยังเซิร์ฟเวอร์
+            $.ajax({
+                url: 'manage_products.php', // เปลี่ยนให้ตรงกับ URL ที่ต้องการส่งข้อมูล
+                method: 'POST',
+                data: { restock_product: true, product_id: productId, quantity: quantity },
+                success: function(response) {
+                    alert('เติมสต็อกสำเร็จ'); // แจ้งเตือนเมื่อเติมสต็อกสำเร็จ
+                    $('#restockModal').modal('hide'); // ปิด Modal หลังเติมสต็อกเสร็จ
+                    location.reload(); // โหลดหน้าใหม่เพื่อดูข้อมูลที่อัปเดต
+                },
+                error: function(xhr, status, error) {
+                    alert('เกิดข้อผิดพลาด: ' + error); // แจ้งเตือนเมื่อเกิดข้อผิดพลาด
+                }
+            });
+        });
 
     // เมื่อคลิกปุ่มลบสินค้า
     $(document).on('click', '.deleteBtn', function(e) {

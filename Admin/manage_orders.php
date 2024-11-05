@@ -97,36 +97,35 @@ if (!$result) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($order = mysqli_fetch_assoc($result)): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($order['order_id']); ?></td>
-                            <td><?php echo htmlspecialchars($order['name']); ?></td>
-                            <td><?php echo number_format($order['total_amount'], 2); ?></td>
-                            <td><?php echo htmlspecialchars($order['status']); ?></td>
-                            <td><?php echo date('d-m-Y H:i:s', strtotime($order['order_date'])); ?></td>
-                            <td>
-                                <a href="view_order.php?order_id=<?php echo $order['order_id']; ?>" class="btn btn-info">
-                                    <i class="fas fa-eye"></i> <!-- ไอคอนรายละเอียด -->
-                                </a>
-                                <?php if ($order['status'] === 'กำลังจัดส่ง'): ?>
-                                    <button class="btn btn-success completeOrderBtn" data-order-id="<?php echo $order['order_id']; ?>">
-                                        <i class="fas fa-check"></i> <!-- ไอคอนเสร็จสิ้น -->
-                                    </button>
-                                <?php endif; ?>
+                <?php while ($order = mysqli_fetch_assoc($result)): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($order['order_id']); ?></td>
+                        <td><?php echo htmlspecialchars($order['name']); ?></td>
+                        <td><?php echo number_format($order['total_amount'], 2); ?></td>
+                        <td><?php echo htmlspecialchars($order['status']); ?></td>
+                        <td><?php echo date('d-m-Y H:i:s', strtotime($order['order_date'])); ?></td>
+                        <td>
+                            <a href="view_order.php?order_id=<?php echo $order['order_id']; ?>" class="btn btn-info">
+                                <i class="fas fa-eye"></i> <!-- ไอคอนรายละเอียด -->
+                            </a>
+                            <?php if ($order['status'] === 'กำลังจัดส่ง'): ?>
+                                <button class="btn btn-success completeOrderBtn" data-order-id="<?php echo $order['order_id']; ?>">
+                                    <i class="fas fa-check"></i> <!-- ไอคอนเสร็จสิ้น -->
+                                </button>
+                            <?php endif; ?>
+                            <?php if ($order['status'] === 'รอตรวจสอบ'): // ตรวจสอบสถานะก่อนแสดงปุ่มลบ ?>
                                 <button class="btn btn-danger deleteOrderBtn" data-order-id="<?php echo $order['order_id']; ?>">
                                     <i class="fas fa-trash-alt"></i> <!-- ไอคอนลบ -->
                                 </button>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endwhile; ?>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <footer>
-        <!-- ใส่ Footer ของคุณที่นี่ -->
-    </footer>
     <script>
     $(document).ready(function() {
         $('.deleteOrderBtn').on('click', function() {

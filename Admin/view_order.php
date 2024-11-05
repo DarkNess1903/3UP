@@ -1,5 +1,4 @@
 <?php
-
 include 'connectDB.php';
 include 'topnavbar.php';
 
@@ -13,12 +12,12 @@ $order_id = intval($_GET['order_id']);
 // ดึงข้อมูลคำสั่งซื้อพร้อมข้อมูลอำเภอและจังหวัด
 $sql = "SELECT orders.*, customer.name AS customer_name, customer.address AS customer_address, 
                customer.province_id, customer.amphur_id, 
-               amphur.amphurName, province.provinceName, 
+               amphur.AMPHUR_NAME AS amphurName, province.PROVINCE_NAME AS provinceName, 
                orders.payment_slip
         FROM orders
         JOIN customer ON orders.customer_id = customer.customer_id
-        LEFT JOIN amphur ON customer.amphur_id = amphur.amphurID
-        LEFT JOIN province ON customer.province_id = province.provinceID
+        LEFT JOIN amphur ON customer.amphur_id = amphur.AMPHUR_ID
+        LEFT JOIN province ON customer.province_id = province.PROVINCE_ID
         WHERE orders.order_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('i', $order_id);
@@ -32,10 +31,11 @@ if (!$order) {
 }
 
 // ดึงข้อมูลรายการสินค้าที่สั่งซื้อ
-$sql = "SELECT orderdetails.*, product.name, product.price, product.image
+$sql = "SELECT orderdetails.*, product.name, product.image
         FROM orderdetails
         JOIN product ON orderdetails.product_id = product.product_id
         WHERE orderdetails.order_id = ?";
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param('i', $order_id);
 $stmt->execute();
@@ -210,10 +210,6 @@ $conn->close();
     </style>
 </head>
 <body>
-    <header>
-        <!-- ใส่ Navbar ของคุณที่นี่ -->
-    </header>
-
     <div class="container mt-4 order-details-container">
         <h1>รายละเอียดคำสั่งซื้อ</h1>
         <p>หมายเลขคำสั่งซื้อ: <?php echo htmlspecialchars($order_id); ?></p>
@@ -221,9 +217,9 @@ $conn->close();
         <p>ที่อยู่: <?php echo htmlspecialchars($order['customer_address']); ?></p>
         <p>อำเภอ: <?php echo htmlspecialchars($order['amphurName']); ?></p> <!-- แสดงชื่ออำเภอ -->
         <p>จังหวัด: <?php echo htmlspecialchars($order['provinceName']); ?></p> <!-- แสดงชื่อจังหวัด -->
+        <p>ค่าส่ง: <?php echo number_format($order['shipping_fee'], 2); ?> บาท</p> <!-- แสดงค่าส่ง -->
         <p>ยอดรวมที่ต้องชำระ: <?php echo number_format($order['total_amount'], 2); ?> บาท</p>
         <p>สถานะคำสั่งซื้อ: <?php echo htmlspecialchars($order['status']); ?></p>
-        <p>เลขพัสดุ: <?php echo htmlspecialchars($order['tracking_number']); ?></p>
 
         <h2>รายการสินค้าที่สั่งซื้อ</h2>
         <ul class="list-group product-list">
@@ -232,8 +228,27 @@ $conn->close();
                     <img src="../Admin/product/<?php echo htmlspecialchars($item['image']); ?>" alt="Product Image" width="50px" height="50px" class="mr-2">
                     <span><?php echo htmlspecialchars($item['name']); ?></span>
                     <span><?php echo number_format($item['price'], 2); ?> บาท</span>
-                    <span><?php echo htmlspecialchars($item['quantity']); ?> ชิ้น</span>
-                    <span>รวม: <?php echo number_format($item['price'] * $item['quantity'], 2); ?> บาท</span>
+
+                    <?php
+                    // คำนวณจำนวนและหน่วย
+                    $weight_in_grams = $item['weight_in_grams'];
+                    $quantity_text = '';
+                    $total = 0;
+
+                    if ($weight_in_grams >= 1000) {
+                        // สินค้าน้ำหนักเป็นกิโลกรัม
+                        $quantity_kg = $weight_in_grams / 1000;
+                        $quantity_text = "จำนวน: " . number_format($quantity_kg, 2) . " กก.";
+                        $total = $quantity_kg * $item['price']; // คำนวณยอดรวม
+                    } else {
+                        // สินค้าเป็นชิ้น
+                        $quantity_text = "จำนวน: " . $item['quantity'] . " ชิ้น";
+                        $total = $item['quantity'] * $item['price']; // คำนวณยอดรวม
+                    }
+                    ?>
+
+                    <span><?php echo $quantity_text; ?></span>
+                    <span>รวม: <?php echo number_format($total, 2); ?> บาท</span>
                 </li>
             <?php endwhile; ?>
         </ul>
@@ -265,97 +280,86 @@ $conn->close();
             <?php else: ?>
                 <p>ไม่มีสลิปการชำระเงิน</p>
             <?php endif; ?>
-            </div>
+        </div>
 
-            <footer>
-                <!-- ใส่ Footer ของคุณที่นี่ -->
-            </footer>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        var modal = $('#slipModal');
+        var btn = $('#viewSlipBtn');
+        var span = $('.close');
 
-            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-            <script>
-                $(document).ready(function() {
-                    var modal = $('#slipModal');
-                    var btn = $('#viewSlipBtn');
-                    var span = $('.close');
+        // แสดงโมดัลเมื่อคลิกปุ่มดูสลิป
+        btn.on('click', function() {
+            modal.show();
+        });
 
-                    // แสดงโมดัลเมื่อคลิกปุ่มดูสลิป
-                    btn.on('click', function() {
-                        modal.show();
-                    });
+        // ปิดโมดัลเมื่อคลิกที่ปุ่มปิด
+        span.on('click', function() {
+            modal.hide();
+        });
 
-                    // ปิดโมดัลเมื่อคลิกที่ปุ่มปิด
-                    span.on('click', function() {
-                        modal.hide();
-                    });
+        // ปิดโมดัลเมื่อคลิกนอกโมดัล
+        $(window).on('click', function(event) {
+            if ($(event.target).is(modal)) {
+                modal.hide();
+            }
+        });
 
-                    // ปิดโมดัลเมื่อคลิกนอกโมดัล
-                    $(window).on('click', function(event) {
-                        if ($(event.target).is(modal)) {
-                            modal.hide();
+        $('#verifySlipBtn').on('click', function() {
+            // แสดงกล่องยืนยัน
+            if (confirm('คุณแน่ใจหรือไม่ว่าตรวจสอบสลิปแล้ว?')) {
+                $.ajax({
+                    url: 'update_order_status.php',
+                    method: 'POST',
+                    data: { order_id: <?php echo $order_id; ?>, status: 'ตรวจสอบแล้วกำลังดำเนินการ' },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#verifySlipBtn').hide();
+                            $('#statusMessage').text('สลิปได้รับการตรวจสอบเรียบร้อยแล้ว').show();
+                            setTimeout(function() {
+                                location.reload(); // รีเฟรชหน้า
+                            }, 1000);
+                        } else {
+                            alert('เกิดข้อผิดพลาด: ' + response.message);
                         }
-                    });
-
-                    $('#verifySlipBtn').on('click', function() {
-                        $.ajax({
-                            url: 'update_order_status.php',
-                            method: 'POST',
-                            data: { order_id: <?php echo $order_id; ?>, status: 'ตรวจสอบแล้วกำลังดำเนินการ' },
-                            dataType: 'json',
-                            success: function(response) {
-                                if (response.success) {
-                                    $('#verifySlipBtn').hide();
-                                    $('#statusMessage').text('สลิปได้รับการตรวจสอบเรียบร้อยแล้ว').show();
-                                    setTimeout(function() {
-                                        location.reload(); // รีเฟรชหน้า
-                                    }, 1000);
-                                } else {
-                                    alert('เกิดข้อผิดพลาด: ' + response.message);
-                                }
-                            },
-                            error: function() {
-                                alert('เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์');
-                            }
-                        });
-                    });
-
-                    // อัปเดตสถานะการจัดส่ง
-                    $('#updateShippingBtn').on('click', function() {
-                        var trackingNumber = $('#trackingNumber').val().trim();
-                        if (trackingNumber === '') {
-                            alert('กรุณากรอกหมายเลขติดตามการจัดส่ง');
-                            return;
-                        }
-
-                        $.ajax({
-                            url: 'update_shipping_status.php',
-                            method: 'POST',
-                            data: { order_id: <?php echo $order_id; ?>, tracking_number: trackingNumber },
-                            dataType: 'json',
-                            success: function(response) {
-                                if (response.success) {
-                                    $('#shippingMessage').text('สถานะการจัดส่งได้รับการอัปเดตเรียบร้อยแล้ว').show();
-                                    setTimeout(function() {
-                                        location.reload(); // รีเฟรชหน้า
-                                    }, 1000);
-                                } else {
-                                    alert('เกิดข้อผิดพลาด: ' + response.message);
-                                }
-                            },
-                            error: function() {
-                                alert('เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์');
-                            }
-                        });
-                    });
+                    },
+                    error: function() {
+                        alert('เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์');
+                    }
                 });
-            </script>
-            </body>
-            </html>
-            <style>
-                #verifySlipBtn {
-                    display: <?php echo ($order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ' || $order['status'] === 'เสร็จสิ้น') ? 'none' : 'inline-block'; ?>;
-                }
+            }
+        });
 
-                #statusMessage {
-                    display: <?php echo $order['status'] === 'ตรวจสอบแล้วกำลังดำเนินการ' ? 'inline-block' : 'none'; ?>;
+        // อัปเดตสถานะการจัดส่ง
+        $('#updateShippingBtn').on('click', function() {
+            var trackingNumber = $('#trackingNumber').val().trim();
+            if (trackingNumber === '') {
+                alert('กรุณากรอกหมายเลขติดตามการจัดส่ง');
+                return;
+            }
+
+            $.ajax({
+                url: 'update_shipping_status.php',
+                method: 'POST',
+                data: { order_id: <?php echo $order_id; ?>, tracking_number: trackingNumber },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        $('#shippingMessage').text('สถานะการจัดส่งได้รับการอัปเดตเรียบร้อยแล้ว').show();
+                        setTimeout(function() {
+                            location.reload(); // รีเฟรชหน้า
+                        }, 1000);
+                    } else {
+                        alert('เกิดข้อผิดพลาด: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์');
                 }
-            </style>
+            });
+        });
+    });
+</script>
+</body>

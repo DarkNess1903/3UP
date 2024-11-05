@@ -96,8 +96,8 @@ if ($cart) {
 
 // รีเซ็ตตัวชี้ผลลัพธ์เพื่อดึงข้อมูลสินค้าซ้ำ
 mysqli_data_seek($items_result, 0);
+$shipping_fee = calculateShippingFeeForCart($customer_id, $conn); // ค่าจัดส่ง
 
-// การแทรกข้อมูลการสั่งซื้อและอัพเดตสต็อก
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
     $payment_slip = $_FILES['payment_slip'];
     $upload_dir = realpath(__DIR__ . '/./Admin/uploads/');
@@ -114,15 +114,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
     }
 
     if (move_uploaded_file($payment_slip['tmp_name'], $upload_file)) {
-        // แทรกคำสั่งซื้อใหม่ลงในตาราง orders (ไม่มี tracking_number)
-        $order_query = "INSERT INTO orders (customer_id, total_amount, payment_slip, order_date, status, address) VALUES (?, ?, ?, NOW(), ?, ?)";
+
+        // แทรกคำสั่งซื้อใหม่ลงในตาราง orders
+        $order_query = "INSERT INTO orders (customer_id, total_amount, payment_slip, order_date, status, address, shipping_fee) VALUES (?, ?, ?, NOW(), ?, ?, ?)";
         $stmt = mysqli_prepare($conn, $order_query);
         $status = 'รอตรวจสอบ';
-        mysqli_stmt_bind_param($stmt, 'idsss', $customer_id, $grand_total, $file_name, $status, $address);
+        mysqli_stmt_bind_param($stmt, 'idsssd', $customer_id, $grand_total, $file_name, $status, $address, $shipping_fee);
         if (!mysqli_stmt_execute($stmt)) {
             die("ข้อผิดพลาดในการแทรกคำสั่งซื้อ: " . mysqli_error($conn));
         }
-    
         $order_id = mysqli_insert_id($conn);
         
         // ดึงข้อมูลสินค้าจากตะกร้า
@@ -130,79 +130,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
                         FROM cart_items ci
                         JOIN product p ON ci.product_id = p.product_id
                         WHERE ci.cart_id = ?";
-
+        
         $stmt = mysqli_prepare($conn, $items_query);
         mysqli_stmt_bind_param($stmt, 'i', $cart_id);
         mysqli_stmt_execute($stmt);
         $items_result = mysqli_stmt_get_result($stmt);
-
+    
         // ตั้งค่า timezone
         date_default_timezone_set('Asia/Bangkok'); 
-
+    
         // สร้างข้อความสำหรับ Line Notify
-            $line_message = "🔔 แจ้งเตือนออเดอร์ใหม่\n";
-            $line_message .= "เลขออเดอร์: $order_id\n";
-            $line_message .= "เวลาที่สั่ง: " . date('Y-m-d H:i:s') . "\n";
-            $line_message .= "📋 รายการสั่งซื้อ:\n";
-
-            // คำนวณน้ำหนักรวม
-            $total_weight = 0;
-            while ($item = mysqli_fetch_assoc($items_result)) {
-                $product_id = $item['product_id']; // ตอนนี้สามารถเข้าถึงได้แล้ว
-                if ($product_id === null) {
-                    die("ไม่พบ product_id สำหรับสินค้าที่ดึงมา");
-                }
-                $quantity = $item['quantity'];
-                $price = $item['price'];
-                $name = $item['name'];
-
-                // แทรกข้อมูลลงใน orderdetails
-                $orderdetails_query = "INSERT INTO orderdetails (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
-                $stmt = mysqli_prepare($conn, $orderdetails_query);
-                mysqli_stmt_bind_param($stmt, 'iiid', $order_id, $product_id, $quantity, $price);
-                if (!mysqli_stmt_execute($stmt)) {
-                    die("ข้อผิดพลาดในการแทรกข้อมูลการสั่งซื้อ: " . mysqli_error($conn));
-                }
-
-                // อัพเดตสต็อก
-                $update_stock_query = "UPDATE product SET stock_quantity = stock_quantity - ? WHERE product_id = ?";
-                $stmt = mysqli_prepare($conn, $update_stock_query);
-                mysqli_stmt_bind_param($stmt, 'ii', $quantity, $product_id);
-                if (!mysqli_stmt_execute($stmt)) {
-                    die("ข้อผิดพลาดในการอัพเดตสต็อก: " . mysqli_error($conn));
-                }
-                // คำนวณค่าจัดส่ง
-                $shipping_fee = calculateShippingFee($total_weight, $customer_id, $conn);
-                if ($shipping_fee < 0) {
-                    die("เกิดข้อผิดพลาดในการคำนวณค่าจัดส่ง");
-                }
-                // คำนวณน้ำหนักรวม
-                $total_weight += $quantity * $item['weight_per_item'];
-
-                // เพิ่มรายละเอียดสินค้าในข้อความ Line Notify
-                $line_message .= "- $name จำนวน: $quantity, ราคา: " . number_format($price, 2) . " บาท\n";
+        $line_message = "🔔 แจ้งเตือนออเดอร์ใหม่\n";
+        $line_message .= "เลขออเดอร์: $order_id\n";
+        $line_message .= "เวลาที่สั่ง: " . date('Y-m-d H:i:s') . "\n";
+        $line_message .= "📋 รายการสั่งซื้อ:\n";
+    
+        $total_weight = 0;  // น้ำหนักรวม
+    
+        // คำนวณน้ำหนักรวมและอัพเดตสต็อก
+        while ($item = mysqli_fetch_assoc($items_result)) {
+            $product_id = $item['product_id'];
+            $quantity = $item['quantity'];
+            $weight_per_item = $item['weight_per_item']; // น้ำหนักต่อชิ้นของสินค้า
+            
+            // คำนวณน้ำหนักรวมเป็นกรัม
+            $weight_in_grams = $quantity * $weight_per_item;
+            $total_weight += $weight_in_grams; // เพิ่มน้ำหนักเข้าสู่น้ำหนักรวม
+            
+            // แทรกข้อมูลลงใน orderdetails
+            $orderdetails_query = "INSERT INTO orderdetails (order_id, product_id, quantity, price, weight_in_grams) VALUES (?, ?, ?, ?, ?)";
+            $stmt = mysqli_prepare($conn, $orderdetails_query);
+            mysqli_stmt_bind_param($stmt, 'iiidi', $order_id, $product_id, $quantity, $item['price'], $weight_in_grams);
+            if (!mysqli_stmt_execute($stmt)) {
+                die("ข้อผิดพลาดในการแทรกข้อมูลการสั่งซื้อ: " . mysqli_error($conn));
             }
+    
+            // คำนวณน้ำหนักที่จะหักจากสต็อก
+            $stock_to_deduct = ($weight_per_item >= 1000) ? $quantity * $weight_per_item / 1000 : $quantity; // แปลงน้ำหนักเป็นกิโลกรัมถ้าจำเป็น
+    
+            // อัพเดตสต็อก
+            $update_stock_query = "UPDATE product SET stock_quantity = stock_quantity - ? WHERE product_id = ?";
+            $stmt = mysqli_prepare($conn, $update_stock_query);
+            mysqli_stmt_bind_param($stmt, 'di', $stock_to_deduct, $product_id);
+            if (!mysqli_stmt_execute($stmt)) {
+                die("ข้อผิดพลาดในการอัพเดตสต็อก: " . mysqli_error($conn));
+            }
+    
+            // สร้างข้อความสำหรับส่งไปยัง Line Notify
+            if ($weight_in_grams >= 1000) {
+                $quantity_display = number_format($weight_in_grams / 1000, 2) . ' กก.'; // แสดงน้ำหนักในหน่วยกิโลกรัม
+                $item_total = $item['price'] * ($weight_in_grams / 1000); // คำนวณยอดรวมสำหรับน้ำหนัก
+            } else {
+                $quantity_display = number_format($quantity, 0) . ' ชิ้น'; // แสดงจำนวนเป็นชิ้น
+                $item_total = $item['price_per_piece'] * $quantity; // คำนวณยอดรวมสำหรับชิ้น
+            }
+            
+            // เพิ่มข้อมูลลงในข้อความ Line Notify
+            $line_message .= "- {$item['name']} จำนวน: {$quantity_display}, ราคา: " . number_format($item_total, 2) . " บาท\n";
+        }
+        $shippingFee = calculateShippingFeeForCart($customer_id, $conn); // ค่าจัดส่ง
+        $total_order_amount = $grand_total + $shippingFee; // ยอดรวมทั้งสิ้น
 
-            // คำนวณกล่องที่จำเป็น
-            $boxes = calculateBoxes($total_weight);
-            $line_message .= "📦 ขนาดกล่องที่จำเป็นสำหรับการจัดส่ง: " . implode(", ", $boxes) . "\n";
+        // บันทึกยอดรวมและค่าส่งลงในตาราง orders
+        $update_order_query = "UPDATE orders SET total_amount = ? WHERE order_id = ?";
+        $stmt = mysqli_prepare($conn, $update_order_query);
+        mysqli_stmt_bind_param($stmt, 'di', $total_order_amount, $order_id);
+        if (!mysqli_stmt_execute($stmt)) {
+            die("ข้อผิดพลาดในการอัปเดตยอดรวมในคำสั่งซื้อ: " . mysqli_error($conn));
+        }
 
-            // ยอดรวมรวมค่าส่ง
-            $grand_total_with_shipping = $grand_total + $shipping_fee;
+        // เพิ่มค่าส่งในข้อความ Line Notify
+        $line_message .= "💰 ยอดสั่งซื้อ: " . number_format($grand_total, 2) . " บาท\n";
+        $line_message .= "🚚 ค่าส่ง: " . number_format($shippingFee, 2) . " บาท\n";
+        $line_message .= "💵 ยอดรวมทั้งสิ้น: " . number_format($total_order_amount, 2) . " บาท\n";
+        $line_message .= "📍 ที่อยู่ผู้สั่ง:\n";
+        $line_message .= "ชื่อ: $customer_name ,$customer_phone\n";
+        $line_message .= "ที่อยู่: $address, $amphurName, $provinceName \n";
 
-            // เพิ่มยอดรวมและค่าส่ง
-            $line_message .= "💰 ยอดสั่งซื้อ: " . number_format($grand_total, 2) . " บาท\n";
-            $line_message .= "🚚 ค่าส่ง: " . number_format($shipping_fee, 2) . " บาท\n";
-            $line_message .= "💵 ยอดรวมทั้งสิ้น: " . number_format($grand_total_with_shipping, 2) . " บาท\n";
-
-            // เพิ่มรายละเอียดที่อยู่ผู้สั่ง
-            $line_message .= "📍 ที่อยู่ผู้สั่ง:\n";
-            $line_message .= "ชื่อ: $customer_name\n";
-            $line_message .= "ที่อยู่: $address, $amphurName, $provinceName\n";
-
-            // ส่งข้อความไปยัง Line Notify (เพิ่มโค้ดที่ใช้สำหรับส่งข้อความที่นี่)
-
-        // ส่งการแจ้งเตือนผ่าน Line Notify
+        // ส่งข้อความไปยัง Line Notify
         $lineToken = 'BKShK2Llhdrohu0Nwr9w5CdiAWVaBeFkG8KB4Ts0GWW'; 
         sendLineNotify($line_message, $lineToken);
 
@@ -213,7 +218,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
         if (!mysqli_stmt_execute($stmt)) {
             die("ข้อผิดพลาดในการลบข้อมูลใน cart_items: " . mysqli_error($conn));
         }
-    
         // แสดงการแจ้งเตือนและเปลี่ยนเส้นทาง
         echo "
             <div id='confirmationModal' style='display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 9999;'>
@@ -225,13 +229,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['payment_slip'])) {
 
             <script>
                 setTimeout(function() {
-                    document.getElementById('confirmationModal').style.display = 'none';
                     window.location.href = 'order_history.php';
-                }, 3000); // 3000 milliseconds = 3 seconds
-            </script>";
+                }, 3000);
+            </script>
+        ";
     } else {
-        die("ข้อผิดพลาดในการอัพโหลดใบเสร็จการชำระเงิน");
-    }    
+        die("การอัปโหลดไฟล์ไม่สำเร็จ");
+    }
 }
 
 include 'topnavbar.php';
@@ -260,12 +264,37 @@ function sendLineNotify($message, $lineToken) {
     return $result;
 }
 
+function calculateShippingFeeForCart($customer_id, $conn) {
+    // ดึงน้ำหนักรวมจากตาราง cart_items โดยรวม weight_per_item จาก product
+    $query = "SELECT SUM(ci.quantity * p.weight_per_item) AS total_weight
+              FROM cart_items ci
+              JOIN cart c ON ci.cart_id = c.cart_id
+              JOIN product p ON ci.product_id = p.product_id
+              WHERE c.customer_id = ?";
+    
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("i", $customer_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows == 0) {
+        return -1; // ส่งค่าผิดพลาดเมื่อไม่พบข้อมูลในตะกร้า
+    }
+
+    $row = $result->fetch_assoc();
+    $total_weight_in_grams = $row['total_weight'];
+
+    // แปลงน้ำหนักเป็นกิโลกรัม
+    $total_weight_in_kilograms = $total_weight_in_grams / 1000;
+
+    // คำนวณค่าจัดส่ง
+    return calculateShippingFee($total_weight_in_kilograms, $customer_id, $conn);
+}
+
 function calculateShippingFee($weight, $customer_id, $conn) {
     // ดึงข้อมูลภูมิภาคของลูกค้าจาก customer_id
-    $query = "SELECT p.GEO_ID, g.GEO_NAME
-              FROM customer c
+    $query = "SELECT p.GEO_ID FROM customer c
               JOIN province p ON c.province_id = p.PROVINCE_ID
-              JOIN geography g ON p.GEO_ID = g.GEO_ID
               WHERE c.customer_id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $customer_id);
@@ -275,89 +304,78 @@ function calculateShippingFee($weight, $customer_id, $conn) {
     if ($result->num_rows == 0) {
         return -1; // ส่งค่าผิดพลาดเมื่อไม่พบข้อมูลลูกค้า
     }
-
+    
     $row = $result->fetch_assoc();
     $geo_id = $row['GEO_ID'];
 
-    // กำหนดค่าจัดส่งพื้นฐานสำหรับน้ำหนักไม่เกิน 30 กิโลกรัม
-    $base_fee = 0;
-    $remaining_weight = $weight;
-
-    // คำนวณค่าจัดส่งสำหรับน้ำหนักช่วงแรก (สูงสุด 30 กิโลกรัม)
-    if ($remaining_weight >= 1 && $remaining_weight <= 5) {
-        $base_fee = ($geo_id == 2) ? 190 : 270;
-    } elseif ($remaining_weight >= 6 && $remaining_weight <= 10) {
-        $base_fee = ($geo_id == 2) ? 230 : 290;
-    } elseif ($remaining_weight >= 11 && $remaining_weight <= 15) {
-        $base_fee = ($geo_id == 2) ? 260 : 330;
-    } elseif ($remaining_weight >= 16 && $remaining_weight <= 20) {
-        $base_fee = ($geo_id == 2) ? 290 : 370;
-    } elseif ($remaining_weight >= 21 && $remaining_weight <= 25) {
-        $base_fee = ($geo_id == 2) ? 330 : 430;
-    } elseif ($remaining_weight >= 26 && $remaining_weight <= 30) {
-        $base_fee = ($geo_id == 2) ? 390 : 490;
-    }
-    
-    // ลดน้ำหนักที่คำนวณแล้ว
-    $remaining_weight -= 30;
-
-    // คำนวณค่าจัดส่งสำหรับน้ำหนักที่เกิน 30 กิโลกรัม
+    // คำนวณค่าจัดส่ง
+    $base_fee = calculateBaseFee($weight, $geo_id);
     $additional_fee = 0;
-    while ($remaining_weight > 0) {
-        if ($remaining_weight >= 1 && $remaining_weight <= 5) {
-            $additional_fee += ($geo_id == 2) ? 190 : 270;
-            $remaining_weight -= 5;
-        } elseif ($remaining_weight >= 6 && $remaining_weight <= 10) {
-            $additional_fee += ($geo_id == 2) ? 230 : 290;
-            $remaining_weight -= 10;
-        } elseif ($remaining_weight >= 11 && $remaining_weight <= 15) {
-            $additional_fee += ($geo_id == 2) ? 260 : 330;
-            $remaining_weight -= 15;
-        } elseif ($remaining_weight >= 16 && $remaining_weight <= 20) {
-            $additional_fee += ($geo_id == 2) ? 290 : 370;
-            $remaining_weight -= 20;
-        } elseif ($remaining_weight >= 21 && $remaining_weight <= 25) {
-            $additional_fee += ($geo_id == 2) ? 330 : 430;
-            $remaining_weight -= 25;
-        } elseif ($remaining_weight >= 26 && $remaining_weight <= 30) {
-            $additional_fee += ($geo_id == 2) ? 390 : 490;
-            $remaining_weight -= 30;
-        }
+
+    // ตรวจสอบน้ำหนักมากกว่า 30 กก.
+    if ($weight > 30) {
+        $remaining_weight = $weight - 30; // หัก 30 ออก
+        $additional_fee = calculateAdditionalFee($remaining_weight, $geo_id); // คำนวณค่าจัดส่งเพิ่มเติม
     }
-    // รวมค่าจัดส่งพื้นฐานกับค่าจัดส่งเพิ่มเติม
+
+    // ตรวจสอบค่าฐาน ค่าจัดส่งห้ามเป็น 0
+    if ($base_fee === 0) {
+        return 0; // หาก base_fee เป็น 0 ให้คืน 0
+    }
+
     return $base_fee + $additional_fee; 
 }
 
-function calculateBoxes($total_weight) {
-    $boxes = [];
-
-    // คำนวณจำนวนกล่องสำหรับน้ำหนักรวม
-    while ($total_weight > 0) {
-        if ($total_weight >= 30) {
-            $boxes[] = 'B2'; // กล่องขนาด B2
-            $total_weight -= 30;
-        } elseif ($total_weight >= 25) {
-            $boxes[] = 'B1'; // กล่องขนาด B1
-            $total_weight -= 25;
-        } elseif ($total_weight >= 20) {
-            $boxes[] = 'A2'; // กล่องขนาด A2
-            $total_weight -= 20;
-        } elseif ($total_weight >= 15) {
-            $boxes[] = 'A1'; // กล่องขนาด A1
-            $total_weight -= 15;
-        } elseif ($total_weight >= 10) {
-            $boxes[] = 'S2'; // กล่องขนาด S2
-            $total_weight -= 10;
-        } elseif ($total_weight >= 5) {
-            $boxes[] = 'S1'; // กล่องขนาด S1
-            $total_weight -= 5;
-        } else {
-            break; // เมื่อไม่มีน้ำหนักเหลือ
-        }
+function calculateBaseFee($weight, $geo_id) {
+    // คำนวณค่าจัดส่งโดยไม่ใช้การปัดน้ำหนัก
+    if ($weight >= 0 && $weight <= 5) {
+        return ($geo_id == 2) ? 190 : 270;
+    } elseif ($weight > 5 && $weight <= 10) {
+        return ($geo_id == 2) ? 230 : 290;
+    } elseif ($weight > 10 && $weight <= 15) {
+        return ($geo_id == 2) ? 260 : 330;
+    } elseif ($weight > 15 && $weight <= 20) {
+        return ($geo_id == 2) ? 290 : 370;
+    } elseif ($weight > 20 && $weight <= 25) {
+        return ($geo_id == 2) ? 330 : 430;
+    } elseif ($weight > 25 && $weight <= 30) {
+        return ($geo_id == 2) ? 390 : 490;
+    } elseif ($weight > 30) {
+        return ($geo_id == 2) ? 390 : 490;
     }
-    return $boxes; // คืนค่ากล่องที่จำเป็น
+    return 0; // ส่งค่าผิดพลาดเมื่อไม่ตรงตามเงื่อนไข
 }
 
+function calculateAdditionalFee($weight, $geo_id) {
+    $additional_fee = 0;
+
+    // ลบการใช้ floor() เพื่อให้น้ำหนักเป็นทศนิยม
+    while ($weight > 0) {
+        if ($weight > 0 && $weight <= 5) {
+            $additional_fee += ($geo_id == 2) ? 190 : 270;
+            $weight -= 5;
+        } elseif ($weight > 5 && $weight <= 10) {
+            $additional_fee += ($geo_id == 2) ? 230 : 290;
+            $weight -= 10;
+        } elseif ($weight > 10 && $weight <= 15) {
+            $additional_fee += ($geo_id == 2) ? 260 : 330;
+            $weight -= 15;
+        } elseif ($weight > 15 && $weight <= 20) {
+            $additional_fee += ($geo_id == 2) ? 290 : 370;
+            $weight -= 20;
+        } elseif ($weight > 20 && $weight <= 25) {
+            $additional_fee += ($geo_id == 2) ? 330 : 430;
+            $weight -= 25;
+        } elseif ($weight > 25 && $weight <= 30) {
+            $additional_fee += ($geo_id == 2) ? 390 : 490;
+            $weight -= 30;
+        } else {
+            // หยุดการคำนวณเมื่อไม่ตรงตามเงื่อนไข
+            break;
+        }
+    }
+    return $additional_fee; 
+}
 ?>
 
 <!DOCTYPE html>
@@ -393,57 +411,56 @@ function calculateBoxes($total_weight) {
                 <input type="hidden" name="cart_id" value="<?php echo htmlspecialchars($cart_id, ENT_QUOTES, 'UTF-8'); ?>">
                 <h3>รายการสินค้าในตะกร้าของคุณ:</h3>
                 <?php if (mysqli_num_rows($items_result) > 0): ?>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>รูปภาพ</th>
-                            <th>สินค้า</th>
-                            <th>จำนวน</th>
-                            <th>ราคา</th>
-                            <th>รวม</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php 
-                        $total_weight = 0; // น้ำหนักรวม
-                        $grand_total = 0; // ยอดรวมทั้งหมด
-                        while ($item = mysqli_fetch_assoc($items_result)): 
-                            // คำนวณน้ำหนักและยอดรวมที่ถูกต้อง
-                            $item_weight = $item['quantity'] * $item['weight_per_item'];
-                            $total_weight += $item_weight;
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>รูปภาพ</th>
+                                <th>สินค้า</th>
+                                <th>จำนวน</th>
+                                <th>ราคา</th>
+                                <th>รวม</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php 
+                            $total_weight = 0; // น้ำหนักรวม
+                            $grand_total = 0; // ยอดรวมทั้งหมด
+                            while ($item = mysqli_fetch_assoc($items_result)): 
+                                $item_weight = $item['quantity'] * $item['weight_per_item'];
+                                $total_weight += $item_weight;
 
-                            if ($item_weight >= 1000) {
-                                $quantity_display = number_format($item_weight / 1000, 2) . ' กก.';
-                                $price = $item['price'];
-                                $item_total = $price * ($item_weight / 1000);
-                            } else {
-                                $quantity_display = number_format($item['quantity'], 0) . ' ชิ้น';
-                                $price = $item['price_per_piece'];
-                                $item_total = $price * $item['quantity'];
-                            }
-                            $grand_total += $item_total;
-                        ?>
-                        <tr>
-                            <td><img src="./Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
-                            <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td><?php echo $quantity_display; ?></td>
-                            <td><?php echo number_format($price, 2); ?></td>
-                            <td><?php echo number_format($item_total, 2); ?></td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
+                                if ($item_weight >= 1000) {
+                                    $quantity_display = number_format($item_weight / 1000, 2) . ' กก.';
+                                    $price = $item['price'];
+                                    $item_total = $price * ($item_weight / 1000);
+                                } else {
+                                    $quantity_display = number_format($item['quantity'], 0) . ' ชิ้น';
+                                    $price = $item['price_per_piece'];
+                                    $item_total = $price * $item['quantity'];
+                                }
+                                $grand_total += $item_total;
+                            ?>
+                            <tr>
+                                <td><img src="./Admin/product/<?php echo htmlspecialchars($item['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?>" width="100"></td>
+                                <td><?php echo htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td><?php echo $quantity_display; ?></td>
+                                <td><?php echo number_format($price, 2); ?></td>
+                                <td><?php echo number_format($item_total, 2); ?></td>
+                            </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
 
-                <?php
-                $shippingFee = calculateShippingFee($total_weight / 1000, $customer_id, $conn); // คำนวณในหน่วยกิโลกรัม
-                $shipping_info = "น้ำหนักรวม: " . number_format($total_weight / 1000, 2) . " กก. ค่าจัดส่ง: " . number_format($shippingFee, 2) . " บาท";
-                ?>
-                
-                <div class="order-summary">
-                    <h4>ยอดคำสั่งซื้อ: <span class="text-success"><?php echo number_format($grand_total, 2); ?> บาท</span></h4>
-                    <h4><?php echo $shipping_info; ?></h4>
-                    <h4>ยอดรวมทั้งหมด: <span class="text-danger"><?php echo number_format($grand_total + $shippingFee, 2); ?> บาท</span></h4>
-                </div>
+                    <?php
+                    $shippingFee = calculateShippingFee($total_weight/1000, $customer_id, $conn);
+                    $shipping_info = "น้ำหนักรวม: " . number_format($total_weight / 1000, 2) . " กก. ค่าจัดส่ง: " . number_format($shippingFee, 2) . " บาท";
+                    ?>
+
+                    <div class="order-summary">
+                        <h4>ยอดคำสั่งซื้อ: <span class="text-success"><?php echo number_format($grand_total, 2); ?> บาท</span></h4>
+                        <h4><?php echo $shipping_info; ?></h4>
+                        <h4>ยอดรวมทั้งหมด: <span class="text-danger"><?php echo number_format($grand_total + $shippingFee, 2); ?> บาท</span></h4>
+                    </div>
 
                 <!-- ข้อมูลสำหรับจัดส่ง -->
                 <h4 class="mt-4">ข้อมูลสำหรับจัดส่ง:</h4>

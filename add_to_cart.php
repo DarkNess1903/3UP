@@ -7,12 +7,14 @@ if (!$conn) {
     die("Connection failed: " . mysqli_connect_error());
 }
 
-// รับ product_id และ unit จาก query string
+// รับ product_id, unit, quantity, และ price จาก query string
 $product_id = intval($_GET['product_id']);
-$unit = $_GET['unit'] ?? ''; // รับค่าจากฟอร์ม
+$unit = $_GET['unit'] ?? '';
+$quantity = intval($_GET['quantity']);
+$price = floatval($_GET['price']); // รับราคาเป็น float
 
 // ตรวจสอบว่ามีการเลือกสินค้าหรือไม่
-if ($product_id > 0) {
+if ($product_id > 0 && $quantity > 0) {
     // ตรวจสอบว่ามีการเข้าสู่ระบบหรือยัง
     if (!isset($_SESSION['customer_id'])) {
         header("Location: login.php");
@@ -45,23 +47,19 @@ if ($product_id > 0) {
     $product_result = mysqli_stmt_get_result($stmt);
     $product_data = mysqli_fetch_assoc($product_result);
 
-    // กำหนดจำนวนสินค้าตามที่ผู้ใช้เลือก
-    $quantity = 0;
-    $weight_in_grams = 0; // เพิ่มตัวแปรสำหรับน้ำหนักรวม
+    // กำหนดน้ำหนักรวมตามที่ผู้ใช้เลือก
     if ($product_data) {
         $weight_per_piece = $product_data['weight_per_item']; // น้ำหนักของ 1 ชิ้น (กรัม)
 
-        // หากเลือก 1 กก ให้เพิ่มเป็นจำนวนชิ้นตามน้ำหนัก
+        // คำนวณน้ำหนักรวมตามจำนวนที่กรอก
         if ($unit === '1kg') {
-            $quantity = 1000 / $weight_per_piece; // แปลง 1 กิโลกรัมเป็นจำนวนชิ้น
-            $weight_in_grams = 1000; // น้ำหนักรวมเป็น 1000 กรัม
+            $weight_in_grams = $quantity * 1000; // แปลงจากจำนวนกิโลกรัมเป็นกรัม
+            $quantity = $weight_in_grams / $weight_per_piece; // คำนวณจำนวนชิ้นจากน้ำหนักรวม
         } elseif ($unit === '1piece') {
-            $quantity = 1; // เพิ่ม 1 ชิ้น
-            $weight_in_grams = $weight_per_piece; // น้ำหนักรวมเป็นน้ำหนักของ 1 ชิ้น
+            $weight_in_grams = $quantity * $weight_per_piece; // น้ำหนักรวมเป็นน้ำหนักของจำนวนชิ้นที่กรอก
         }
     }
-
-    // ตรวจสอบว่ามีสินค้านี้อยู่ในตะกร้าหรือไม่
+    // ตรวจสอบว่ามีสินค้าในตะกร้าแล้วหรือไม่
     $query = "SELECT * FROM cart_items WHERE cart_id = ? AND product_id = ?";
     $stmt = mysqli_prepare($conn, $query);
     mysqli_stmt_bind_param($stmt, 'ii', $cart_id, $product_id);
@@ -69,29 +67,27 @@ if ($product_id > 0) {
     $result = mysqli_stmt_get_result($stmt);
 
     if (mysqli_num_rows($result) > 0) {
-        // ถ้ามีสินค้าในตะกร้าแล้ว ให้เพิ่มจำนวนสินค้าและอัปเดตน้ำหนักรวม
+        // ถ้ามีสินค้าในตะกร้าแล้ว
         $query = "UPDATE cart_items SET quantity = quantity + ?, weight_in_grams = weight_in_grams + ? WHERE cart_id = ? AND product_id = ?";
         $stmt = mysqli_prepare($conn, $query);
         mysqli_stmt_bind_param($stmt, 'iiii', $quantity, $weight_in_grams, $cart_id, $product_id);
     } else {
-        // ถ้ายังไม่มีสินค้าในตะกร้า ให้เพิ่มสินค้าใหม่
+        // ถ้ายังไม่มีสินค้าในตะกร้า
         $query = "INSERT INTO cart_items (cart_id, product_id, quantity, price, weight_in_grams)
-        SELECT ?, p.product_id, ?, p.price, ? 
-        FROM product p 
-        WHERE p.product_id = ?";
+        VALUES (?, ?, ?, ?, ?)";
         $stmt = mysqli_prepare($conn, $query);
-        mysqli_stmt_bind_param($stmt, 'iiii', $cart_id, $quantity, $weight_in_grams, $product_id);
-    }    
-
-    // Execute the statement to add or update the item in the cart
-    if (mysqli_stmt_execute($stmt)) {
-        header("Location: index.php"); // กลับไปที่หน้าสินค้า
-        exit();
-    } else {
-        die("Error adding item to cart: " . mysqli_error($conn));
+        mysqli_stmt_bind_param($stmt, 'iiidi', $cart_id, $product_id, $quantity, $price, $weight_in_grams);
     }
+
+   // Execute the statement to add or update the item in the cart
+   if (mysqli_stmt_execute($stmt)) {
+       header("Location: index.php"); // กลับไปที่หน้าสินค้า
+       exit();
+   } else {
+       die("Error adding item to cart: " . mysqli_error($conn));
+   }
 } else {
-    die("Invalid product ID.");
+    die("Invalid product ID or quantity.");
 }
 
 // ปิดการเชื่อมต่อฐานข้อมูล

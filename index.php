@@ -47,6 +47,12 @@ include 'topnavbar.php';
                 echo '<div class="card-body">';
                 echo '<h5 class="card-title">' . htmlspecialchars($row['name']) . '</h5>';
                 echo '<p class="card-text">ราคา: ' . number_format($row['price'], 2) . '฿ (1 กก.)</p>';
+
+                // เงื่อนไขแสดงราคาต่อชิ้น
+                if ($row['can_be_sold_as_piece'] == 1) {
+                    echo '<p class="card-text">แยกชิ้น : ' . number_format($row['price_per_piece'], 2) . '฿ (1 ชิ้น)</p>';
+                }
+
                 echo '<p class="card-text">สต็อก: ' . number_format($stock_kg, 2) . ' (กก.)</p>';  // Show stock in kilograms
                 echo '<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productModal' . $product_id . '">เพิ่มในตะกร้า</button>';
                 echo '</div>';
@@ -63,14 +69,21 @@ include 'topnavbar.php';
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form action="add_to_cart.php" method="GET">
+                                <form action="add_to_cart.php" method="GET" id="addToCartForm' . $product_id . '">
                                     <input type="hidden" name="product_id" value="' . $product_id . '">
+                                    <input type="hidden" name="price" id="price_' . $product_id . '" value="' . $row['price'] . '"> <!-- ส่งราคาสินค้า -->
                                     <div class="mb-3">
                                         <label for="unit_' . $product_id . '">เลือกปริมาณ:</label>
-                                        <select id="unit_' . $product_id . '" name="unit" class="form-select">
-                                            <option value="1kg">1 กิโลกรัม</option>
-                                            <option value="1piece">1 ชิ้น (' . number_format($weight_per_piece, 0) . ' กรัม)</option>
-                                        </select>
+                                        <select id="unit_' . $product_id . '" name="unit" class="form-select" onchange="updatePrice(' . $product_id . ', ' . ($row['can_be_sold_as_piece'] == 1 ? $row['price_per_piece'] : 0) . ', ' . $row['price'] . ')">
+                                            <option value="1kg">1 กิโลกรัม</option>';
+                if ($row['can_be_sold_as_piece'] == 1) {
+                    echo '<option value="1piece">1 ชิ้น (' . number_format($weight_per_piece, 0) . ' กรัม)</option>';
+                }
+                echo '        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="quantity">จำนวน:</label>
+                                        <input type="number" id="quantity" name="quantity" min="1" value="1" class="form-control" required>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
@@ -87,6 +100,18 @@ include 'topnavbar.php';
             echo '<p class="text-center">ไม่พบสินค้า</p>';
         }
         ?>
+<script>
+    function updatePrice(productId, pricePerPiece, pricePerKg) {
+        const unitSelect = document.getElementById('unit_' + productId);
+        const priceInput = document.getElementById('price_' + productId);
+        
+        if (unitSelect.value === '1piece') {
+            priceInput.value = pricePerPiece; // เปลี่ยนเป็นราคาชิ้น
+        } else {
+            priceInput.value = pricePerKg; // เปลี่ยนเป็นราคากิโลกรัม
+        }
+    }
+</script>
     </section>
 </main>
             
